@@ -1,7 +1,6 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Committee, Donor, Income, Expense, Event, User } from '@/types/mosque';
+import { Committee, Donor, Income, Expense, User } from '@/types/mosque';
 
 interface MosqueSettings {
   name: string;
@@ -32,7 +31,8 @@ interface MosqueStore {
   
   // Notices
   notices: Notice[];
-  addNotice: (notice: Omit<Notice, 'id'>) => void;
+  addNotice: (notice: Omit<Notice, 'id' | 'date'>) => void;
+  updateNotice: (id: string, notice: Partial<Notice>) => void;
   deleteNotice: (id: string) => void;
   
   // Auth
@@ -62,12 +62,6 @@ interface MosqueStore {
   expenses: Expense[];
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   deleteExpense: (id: string) => void;
-  
-  // Events
-  events: Event[];
-  addEvent: (event: Omit<Event, 'id'>) => void;
-  updateEvent: (id: string, event: Partial<Event>) => void;
-  deleteEvent: (id: string) => void;
   
   // Calculations
   getTotalIncome: () => number;
@@ -174,32 +168,40 @@ export const useMosqueStore = create<MosqueStore>()(
       // Notices
       notices: demoNotices,
       addNotice: (notice) => set((state) => ({
-        notices: [...state.notices, { ...notice, id: Date.now().toString() }]
+        notices: [...state.notices, { 
+          ...notice, 
+          id: Date.now().toString(),
+          date: new Date().toISOString().split('T')[0]
+        }]
+      })),
+      updateNotice: (id, notice) => set((state) => ({
+        notices: state.notices.map(n => n.id === id ? { ...n, ...notice } : n)
       })),
       deleteNotice: (id) => set((state) => ({
         notices: state.notices.filter(n => n.id !== id)
       })),
       
-      // Auth
-      user: null,
-      isAuthenticated: false,
+      // Auth - Auto login as viewer for general users
+      user: { id: 'viewer', username: 'viewer', role: 'viewer', name: 'দর্শক' },
+      isAuthenticated: true,
       login: (username: string, password: string) => {
-        if ((username === 'admin' && password === 'admin123') || 
-            (username === 'viewer' && password === 'viewer123')) {
+        if (username === 'admin' && password === 'admin123') {
           const user: User = {
             id: '1',
             username,
-            role: username === 'admin' ? 'admin' : 'viewer',
-            name: username === 'admin' ? 'Admin User' : 'Viewer User'
+            role: 'admin',
+            name: 'এডমিন'
           };
           set({ user, isAuthenticated: true });
           return true;
         }
         return false;
       },
-      logout: () => set({ user: null, isAuthenticated: false }),
+      logout: () => set({ 
+        user: { id: 'viewer', username: 'viewer', role: 'viewer', name: 'দর্শক' }, 
+        isAuthenticated: true 
+      }),
       
-      // Committee
       committee: demoCommittee,
       addCommitteeMember: (member) => set((state) => ({
         committee: [...state.committee, { ...member, id: Date.now().toString() }]
@@ -211,7 +213,6 @@ export const useMosqueStore = create<MosqueStore>()(
         committee: state.committee.filter(m => m.id !== id)
       })),
       
-      // Donors
       donors: demoDonors,
       addDonor: (donor) => set((state) => ({
         donors: [...state.donors, { ...donor, id: Date.now().toString(), paymentHistory: [] }]
@@ -223,7 +224,6 @@ export const useMosqueStore = create<MosqueStore>()(
         donors: state.donors.filter(d => d.id !== id)
       })),
       
-      // Income
       income: demoIncome,
       addIncome: (income) => set((state) => {
         const receiptNumber = `RCP${String(state.income.length + 1).padStart(3, '0')}`;
@@ -235,7 +235,6 @@ export const useMosqueStore = create<MosqueStore>()(
         income: state.income.filter(i => i.id !== id)
       })),
       
-      // Expenses
       expenses: demoExpenses,
       addExpense: (expense) => set((state) => ({
         expenses: [...state.expenses, { ...expense, id: Date.now().toString() }]
@@ -244,19 +243,6 @@ export const useMosqueStore = create<MosqueStore>()(
         expenses: state.expenses.filter(e => e.id !== id)
       })),
       
-      // Events
-      events: [],
-      addEvent: (event) => set((state) => ({
-        events: [...state.events, { ...event, id: Date.now().toString() }]
-      })),
-      updateEvent: (id, event) => set((state) => ({
-        events: state.events.map(e => e.id === id ? { ...e, ...event } : e)
-      })),
-      deleteEvent: (id) => set((state) => ({
-        events: state.events.filter(e => e.id !== id)
-      })),
-      
-      // Calculations
       getTotalIncome: () => {
         const { income } = get();
         return income.reduce((total, item) => total + item.amount, 0);

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Home, Users, DollarSign, CreditCard, FileText, Calendar, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Home, Users, DollarSign, CreditCard, FileText, Bell, Settings, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMosqueStore } from '@/store/mosqueStore';
 
@@ -11,16 +11,17 @@ interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { logout, user } = useMosqueStore();
+  const { logout, user, settings } = useMosqueStore();
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'committee', label: 'Committee', icon: Users },
-    { id: 'income', label: 'Income', icon: DollarSign },
-    { id: 'expense', label: 'Expenses', icon: CreditCard },
-    { id: 'donors', label: 'Donors', icon: Users },
-    { id: 'reports', label: 'Reports', icon: FileText },
-    { id: 'events', label: 'Events', icon: Calendar },
+    { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: Home },
+    { id: 'committee', label: 'কমিটি', icon: Users },
+    { id: 'income', label: 'আয়', icon: DollarSign },
+    { id: 'expense', label: 'খরচ', icon: CreditCard },
+    { id: 'donors', label: 'দাতা', icon: Users },
+    { id: 'reports', label: 'রিপোর্ট', icon: FileText },
+    { id: 'notices', label: 'নোটিশ বোর্ড', icon: Bell },
+    { id: 'settings', label: 'সেটিং', icon: Settings },
   ];
 
   const handleLogout = () => {
@@ -59,31 +60,38 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <div className="text-2xl">🕌</div>
             </div>
-            <h1 className="text-xl font-bold text-green-800 mb-1">বায়তুল আমান মসজিদ</h1>
+            <h1 className="text-xl font-bold text-green-800 mb-1">{settings.name}</h1>
             <p className="text-sm text-green-600">ব্যবস্থাপনা সিস্টেম</p>
           </div>
         </div>
 
         {/* User Info */}
-        <div className="px-6 py-4 border-b border-green-50">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium text-green-700">
-                {user?.name?.charAt(0) || 'U'}
-              </span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-800">{user?.name}</p>
-              <p className="text-xs text-green-600 capitalize">{user?.role}</p>
+        {user && (
+          <div className="px-6 py-4 border-b border-green-50">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-green-700">
+                  {user?.name?.charAt(0) || 'U'}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-800">{user?.name}</p>
+                <p className="text-xs text-green-600 capitalize">{user?.role}</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Navigation Menu */}
         <nav className="flex-1 px-4 py-4 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
+            
+            // Hide admin-only items for viewers
+            if (!user && ['committee', 'income', 'expense', 'donors', 'settings'].includes(item.id)) {
+              return null;
+            }
             
             return (
               <button
@@ -106,15 +114,17 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
         </nav>
 
         {/* Logout Button */}
-        <div className="p-4 border-t border-green-100">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-          >
-            <LogOut size={20} />
-            <span className="font-medium">Logout</span>
-          </button>
-        </div>
+        {user && (
+          <div className="p-4 border-t border-green-100">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+            >
+              <LogOut size={20} />
+              <span className="font-medium">লগআউট</span>
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

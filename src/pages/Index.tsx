@@ -8,17 +8,13 @@ import IncomeManagement from '@/pages/IncomeManagement';
 import ExpenseManagement from '@/pages/ExpenseManagement';
 import DonorManagement from '@/pages/DonorManagement';
 import Reports from '@/pages/Reports';
-import Events from '@/pages/Events';
+import NoticeBoard from '@/pages/NoticeBoard';
 import Settings from '@/pages/Settings';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const { isAuthenticated } = useMosqueStore();
-
-  if (!isAuthenticated) {
-    return <Login onLogin={() => setCurrentPage('dashboard')} />;
-  }
+  const { user } = useMosqueStore();
 
   const renderPage = () => {
     switch (currentPage) {
@@ -34,20 +30,27 @@ const Index = () => {
         return <DonorManagement />;
       case 'reports':
         return <Reports />;
-      case 'events':
-        return <Events />;
+      case 'notices':
+        return <NoticeBoard />;
       case 'settings':
         return <Settings />;
+      case 'login':
+        return <Login onLogin={() => setCurrentPage('dashboard')} />;
       default:
         return <Dashboard />;
     }
   };
 
+  // Show login page only when explicitly requested
+  if (currentPage === 'login') {
+    return <Login onLogin={() => setCurrentPage('dashboard')} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
       <div className="flex-1 lg:ml-0">
-        <div className="lg:hidden h-16"></div> {/* Mobile header spacer */}
+        <div className="lg:hidden h-16"></div>
         {renderPage()}
       </div>
     </div>
