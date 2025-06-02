@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,10 +34,7 @@ const Settings: React.FC = () => {
 
   const handleNoticeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addNotice({
-      ...noticeData,
-      date: new Date().toISOString().split('T')[0]
-    });
+    addNotice(noticeData);
     toast({ title: "সফল!", description: "নোটিশ যোগ করা হয়েছে।" });
     setNoticeData({ title: '', message: '', type: 'info' });
   };
