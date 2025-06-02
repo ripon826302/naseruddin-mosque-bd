@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/dates';
 
 const IncomeManagement: React.FC = () => {
-  const { incomes, donors, addIncome, user } = useMosqueStore();
+  const { income, donors, addIncome, user } = useMosqueStore();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     source: '',
@@ -68,7 +67,7 @@ const IncomeManagement: React.FC = () => {
     });
   };
 
-  const printReceipt = (income: any) => {
+  const printReceipt = (incomeItem: any) => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`
@@ -91,13 +90,13 @@ const IncomeManagement: React.FC = () => {
                 <p>Money Receipt</p>
               </div>
               <div class="content">
-                <div class="row"><span>Receipt No:</span><span>${income.receiptNumber}</span></div>
-                <div class="row"><span>Date:</span><span>${new Date(income.date).toLocaleDateString('bn-BD')}</span></div>
-                <div class="row"><span>Source:</span><span>${income.source}</span></div>
-                ${income.donorId ? `<div class="row"><span>Donor:</span><span>${donors.find(d => d.id === income.donorId)?.name || 'Unknown'}</span></div>` : ''}
-                ${income.month ? `<div class="row"><span>Month:</span><span>${income.month}</span></div>` : ''}
-                ${income.description ? `<div class="row"><span>Description:</span><span>${income.description}</span></div>` : ''}
-                <div class="row total"><span>Amount:</span><span>${formatCurrency(income.amount)}</span></div>
+                <div class="row"><span>Receipt No:</span><span>${incomeItem.receiptNumber}</span></div>
+                <div class="row"><span>Date:</span><span>${new Date(incomeItem.date).toLocaleDateString('bn-BD')}</span></div>
+                <div class="row"><span>Source:</span><span>${incomeItem.source}</span></div>
+                ${incomeItem.donorId ? `<div class="row"><span>Donor:</span><span>${donors.find(d => d.id === incomeItem.donorId)?.name || 'Unknown'}</span></div>` : ''}
+                ${incomeItem.month ? `<div class="row"><span>Month:</span><span>${incomeItem.month}</span></div>` : ''}
+                ${incomeItem.description ? `<div class="row"><span>Description:</span><span>${incomeItem.description}</span></div>` : ''}
+                <div class="row total"><span>Amount:</span><span>${formatCurrency(incomeItem.amount)}</span></div>
               </div>
             </div>
           </body>
@@ -136,31 +135,31 @@ const IncomeManagement: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {incomes.length === 0 ? (
+                {income.length === 0 ? (
                   <p className="text-center text-gray-500 py-8">কোন আয়ের তথ্য পাওয়া যায়নি।</p>
                 ) : (
-                  incomes.map((income) => (
-                    <div key={income.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  income.map((incomeItem) => (
+                    <div key={incomeItem.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start">
                         <div className="space-y-2">
                           <div className="flex items-center space-x-4">
-                            <span className="font-semibold text-green-800">{formatCurrency(income.amount)}</span>
-                            <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">{income.source}</span>
+                            <span className="font-semibold text-green-800">{formatCurrency(incomeItem.amount)}</span>
+                            <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">{incomeItem.source}</span>
                           </div>
                           <div className="text-sm text-gray-600 space-y-1">
-                            <p>তারিখ: {new Date(income.date).toLocaleDateString('bn-BD')}</p>
-                            <p>রসিদ নম্বর: {income.receiptNumber}</p>
-                            {income.donorId && (
-                              <p>দাতা: {donors.find(d => d.id === income.donorId)?.name || 'Unknown'}</p>
+                            <p>তারিখ: {new Date(incomeItem.date).toLocaleDateString('bn-BD')}</p>
+                            <p>রসিদ নম্বর: {incomeItem.receiptNumber}</p>
+                            {incomeItem.donorId && (
+                              <p>দাতা: {donors.find(d => d.id === incomeItem.donorId)?.name || 'Unknown'}</p>
                             )}
-                            {income.month && <p>মাস: {income.month}</p>}
-                            {income.description && <p>বিবরণ: {income.description}</p>}
+                            {incomeItem.month && <p>মাস: {incomeItem.month}</p>}
+                            {incomeItem.description && <p>বিবরণ: {incomeItem.description}</p>}
                           </div>
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => printReceipt(income)}
+                          onClick={() => printReceipt(incomeItem)}
                           className="text-green-600 border-green-600 hover:bg-green-50"
                         >
                           <Printer size={16} className="mr-1" />
