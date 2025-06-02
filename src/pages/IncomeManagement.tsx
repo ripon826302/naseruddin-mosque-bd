@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,13 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, Plus, Printer, Eye } from 'lucide-react';
+import { DollarSign, Plus, Printer, Eye, Trash2 } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/dates';
 
 const IncomeManagement: React.FC = () => {
-  const { income, donors, addIncome, user } = useMosqueStore();
+  const { income, donors, addIncome, deleteIncome, user } = useMosqueStore();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     source: '',
@@ -67,6 +68,13 @@ const IncomeManagement: React.FC = () => {
     });
   };
 
+  const handleDelete = (id: string) => {
+    if (window.confirm('আপনি কি এই আয়ের তথ্য মুছে ফেলতে চান?')) {
+      deleteIncome(id);
+      toast({ title: "সফল!", description: "আয়ের তথ্য মুছে ফেলা হয়েছে।" });
+    }
+  };
+
   const printReceipt = (incomeItem: any) => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -86,7 +94,7 @@ const IncomeManagement: React.FC = () => {
           <body>
             <div class="receipt">
               <div class="header">
-                <h2>🕌 বায়তুল আমান জামে মসজিদ</h2>
+                <h2>🕌 উত্তর জুরকাঠী নছের উদ্দিন জামে মসজিদ</h2>
                 <p>Money Receipt</p>
               </div>
               <div class="content">
@@ -156,15 +164,28 @@ const IncomeManagement: React.FC = () => {
                             {incomeItem.description && <p>বিবরণ: {incomeItem.description}</p>}
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => printReceipt(incomeItem)}
-                          className="text-green-600 border-green-600 hover:bg-green-50"
-                        >
-                          <Printer size={16} className="mr-1" />
-                          প্রিন্ট
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => printReceipt(incomeItem)}
+                            className="text-green-600 border-green-600 hover:bg-green-50"
+                          >
+                            <Printer size={16} className="mr-1" />
+                            প্রিন্ট
+                          </Button>
+                          {isAdmin && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(incomeItem.id)}
+                              className="text-red-600 border-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 size={16} className="mr-1" />
+                              মুছুন
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))

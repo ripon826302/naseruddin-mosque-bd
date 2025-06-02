@@ -3,7 +3,38 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Committee, Donor, Income, Expense, Event, User } from '@/types/mosque';
 
+interface MosqueSettings {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  prayerTimes: {
+    fajr: string;
+    dhuhr: string;
+    asr: string;
+    maghrib: string;
+    isha: string;
+  };
+}
+
+interface Notice {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+  type: 'info' | 'warning' | 'urgent';
+}
+
 interface MosqueStore {
+  // Settings
+  settings: MosqueSettings;
+  updateSettings: (settings: Partial<MosqueSettings>) => void;
+  
+  // Notices
+  notices: Notice[];
+  addNotice: (notice: Omit<Notice, 'id'>) => void;
+  deleteNotice: (id: string) => void;
+  
   // Auth
   user: User | null;
   isAuthenticated: boolean;
@@ -43,6 +74,21 @@ interface MosqueStore {
   getTotalExpenses: () => number;
   getBalance: () => number;
 }
+
+// Default settings
+const defaultSettings: MosqueSettings = {
+  name: 'উত্তর জুরকাঠী নছের উদ্দিন জামে মসজিদ',
+  address: 'উত্তর জুরকাঠী, নলছিটি, ঝালকাঠী',
+  phone: '01712345678',
+  email: 'mosque@email.com',
+  prayerTimes: {
+    fajr: '5:15',
+    dhuhr: '12:30',
+    asr: '16:15',
+    maghrib: '18:45',
+    isha: '20:15'
+  }
+};
 
 // Demo data
 const demoCommittee: Committee[] = [
@@ -106,14 +152,38 @@ const demoExpenses: Expense[] = [
   }
 ];
 
+const demoNotices: Notice[] = [
+  {
+    id: '1',
+    title: 'বিশেষ দোয়া মাহফিল',
+    message: 'আগামী শুক্রবার বিশেষ দোয়া মাহফিল অনুষ্ঠিত হবে',
+    date: '2024-06-01',
+    type: 'info'
+  }
+];
+
 export const useMosqueStore = create<MosqueStore>()(
   persist(
     (set, get) => ({
+      // Settings
+      settings: defaultSettings,
+      updateSettings: (newSettings) => set((state) => ({
+        settings: { ...state.settings, ...newSettings }
+      })),
+      
+      // Notices
+      notices: demoNotices,
+      addNotice: (notice) => set((state) => ({
+        notices: [...state.notices, { ...notice, id: Date.now().toString() }]
+      })),
+      deleteNotice: (id) => set((state) => ({
+        notices: state.notices.filter(n => n.id !== id)
+      })),
+      
       // Auth
       user: null,
       isAuthenticated: false,
       login: (username: string, password: string) => {
-        // Demo login - admin/admin123 or viewer/viewer123
         if ((username === 'admin' && password === 'admin123') || 
             (username === 'viewer' && password === 'viewer123')) {
           const user: User = {

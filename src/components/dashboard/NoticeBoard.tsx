@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Bell, AlertTriangle, Calendar } from 'lucide-react';
+import { Bell, AlertTriangle, Calendar, Info } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const NoticeBoard: React.FC = () => {
-  const { donors, expenses } = useMosqueStore();
+  const { donors, expenses, notices } = useMosqueStore();
   
   const defaulterDonors = donors.filter(donor => donor.status === 'Defaulter');
   const pendingSalary = expenses.find(expense => 
@@ -12,7 +12,7 @@ const NoticeBoard: React.FC = () => {
     expense.date === new Date().toISOString().split('T')[0]
   );
 
-  const notices = [
+  const allNotices = [
     ...defaulterDonors.map(donor => ({
       type: 'warning' as const,
       message: `${donor.name} - মাসিক চাঁদা বকেয়া`,
@@ -23,11 +23,11 @@ const NoticeBoard: React.FC = () => {
       message: 'ইমাম সাহেবের বেতন পরিশোধ করুন',
       icon: Calendar
     }] : []),
-    {
-      type: 'info' as const,
-      message: 'আগামী শুক্রবার - বিশেষ দোয়া মাহফিল',
-      icon: Calendar
-    }
+    ...notices.map(notice => ({
+      type: notice.type as 'info' | 'warning' | 'urgent',
+      message: `${notice.title} - ${notice.message}`,
+      icon: notice.type === 'urgent' ? AlertTriangle : notice.type === 'warning' ? AlertTriangle : Info
+    }))
   ];
 
   return (
@@ -37,15 +37,15 @@ const NoticeBoard: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-800">নোটিশ বোর্ড</h3>
       </div>
       
-      {notices.length > 0 ? (
+      {allNotices.length > 0 ? (
         <div className="space-y-3">
-          {notices.map((notice, index) => {
+          {allNotices.map((notice, index) => {
             const Icon = notice.icon;
             return (
               <div
                 key={index}
                 className={`flex items-start space-x-3 p-3 rounded-xl ${
-                  notice.type === 'warning'
+                  notice.type === 'urgent' || notice.type === 'warning'
                     ? 'bg-orange-50 border border-orange-200'
                     : 'bg-blue-50 border border-blue-200'
                 }`}
@@ -53,11 +53,15 @@ const NoticeBoard: React.FC = () => {
                 <Icon
                   size={18}
                   className={
-                    notice.type === 'warning' ? 'text-orange-600 mt-0.5' : 'text-blue-600 mt-0.5'
+                    notice.type === 'urgent' || notice.type === 'warning' 
+                      ? 'text-orange-600 mt-0.5' 
+                      : 'text-blue-600 mt-0.5'
                   }
                 />
                 <p className={`text-sm font-medium ${
-                  notice.type === 'warning' ? 'text-orange-800' : 'text-blue-800'
+                  notice.type === 'urgent' || notice.type === 'warning' 
+                    ? 'text-orange-800' 
+                    : 'text-blue-800'
                 }`}>
                   {notice.message}
                 </p>

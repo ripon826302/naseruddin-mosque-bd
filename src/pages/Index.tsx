@@ -7,6 +7,9 @@ import CommitteeMembers from '@/pages/CommitteeMembers';
 import IncomeManagement from '@/pages/IncomeManagement';
 import ExpenseManagement from '@/pages/ExpenseManagement';
 import DonorManagement from '@/pages/DonorManagement';
+import Reports from '@/pages/Reports';
+import Events from '@/pages/Events';
+import Settings from '@/pages/Settings';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const Index = () => {
@@ -30,9 +33,11 @@ const Index = () => {
       case 'donors':
         return <DonorManagement />;
       case 'reports':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Reports - Coming Soon</h1></div>;
+        return <Reports />;
       case 'events':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Events - Coming Soon</h1></div>;
+        return <Events />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Dashboard />;
     }

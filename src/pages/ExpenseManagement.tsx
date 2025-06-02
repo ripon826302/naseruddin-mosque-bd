@@ -6,13 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, Plus, Eye } from 'lucide-react';
+import { CreditCard, Plus, Eye, Trash2 } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/dates';
 
 const ExpenseManagement: React.FC = () => {
-  const { expenses, addExpense, user } = useMosqueStore();
+  const { expenses, addExpense, deleteExpense, user } = useMosqueStore();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     type: '',
@@ -49,6 +49,13 @@ const ExpenseManagement: React.FC = () => {
     });
   };
 
+  const handleDelete = (id: string) => {
+    if (window.confirm('আপনি কি এই খরচের তথ্য মুছে ফেলতে চান?')) {
+      deleteExpense(id);
+      toast({ title: "সফল!", description: "খরচের তথ্য মুছে ফেলা হয়েছে।" });
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center space-x-3">
@@ -82,16 +89,29 @@ const ExpenseManagement: React.FC = () => {
                 ) : (
                   expenses.map((expense) => (
                     <div key={expense.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-4">
-                          <span className="font-semibold text-red-800">{formatCurrency(expense.amount)}</span>
-                          <span className="text-sm bg-red-100 text-red-800 px-2 py-1 rounded">{expense.type}</span>
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-4">
+                            <span className="font-semibold text-red-800">{formatCurrency(expense.amount)}</span>
+                            <span className="text-sm bg-red-100 text-red-800 px-2 py-1 rounded">{expense.type}</span>
+                          </div>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <p>তারিখ: {new Date(expense.date).toLocaleDateString('bn-BD')}</p>
+                            {expense.month && <p>মাস: {expense.month}</p>}
+                            {expense.description && <p>বিবরণ: {expense.description}</p>}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600 space-y-1">
-                          <p>তারিখ: {new Date(expense.date).toLocaleDateString('bn-BD')}</p>
-                          {expense.month && <p>মাস: {expense.month}</p>}
-                          {expense.description && <p>বিবরণ: {expense.description}</p>}
-                        </div>
+                        {isAdmin && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(expense.id)}
+                            className="text-red-600 border-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 size={16} className="mr-1" />
+                            মুছুন
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))

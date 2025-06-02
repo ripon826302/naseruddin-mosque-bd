@@ -8,17 +8,19 @@ import { useMosqueStore } from '@/store/mosqueStore';
 import { getBengaliDate, getEnglishDate, getArabicDate } from '@/utils/dates';
 
 const Dashboard: React.FC = () => {
-  const { getTotalIncome, getTotalExpenses, getBalance } = useMosqueStore();
+  const { getTotalIncome, getTotalExpenses, getBalance, settings, donors } = useMosqueStore();
   
   const totalIncome = getTotalIncome();
   const totalExpenses = getTotalExpenses();
   const balance = getBalance();
+  const totalDonors = donors.length;
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2 mb-8">
-        <h1 className="text-3xl font-bold text-green-800 mb-2">বায়তুল আমান জামে মসজিদ</h1>
+        <h1 className="text-3xl font-bold text-green-800 mb-2">{settings.name}</h1>
+        <p className="text-gray-600 mb-4">{settings.address}</p>
         <div className="flex flex-col md:flex-row justify-center space-y-1 md:space-y-0 md:space-x-6 text-sm text-gray-600">
           <span>🇧🇩 {getBengaliDate()}</span>
           <span>🇺🇸 {getEnglishDate()}</span>
@@ -51,7 +53,7 @@ const Dashboard: React.FC = () => {
         />
         <StatCard
           title="মোট দাতা"
-          value="12"
+          value={totalDonors.toString()}
           icon={DollarSign}
           color="green"
         />
