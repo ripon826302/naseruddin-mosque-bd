@@ -3,6 +3,10 @@ import React, { useState } from 'react';
 import Navigation from '@/components/layout/Navigation';
 import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
+import CommitteeMembers from '@/pages/CommitteeMembers';
+import IncomeManagement from '@/pages/IncomeManagement';
+import ExpenseManagement from '@/pages/ExpenseManagement';
+import DonorManagement from '@/pages/DonorManagement';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const Index = () => {
@@ -18,13 +22,13 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard />;
       case 'committee':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Committee Members - Coming Soon</h1></div>;
+        return <CommitteeMembers />;
       case 'income':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Income Management - Coming Soon</h1></div>;
+        return <IncomeManagement />;
       case 'expense':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Expense Management - Coming Soon</h1></div>;
+        return <ExpenseManagement />;
       case 'donors':
-        return <div className="p-6"><h1 className="text-2xl font-bold">Donor Management - Coming Soon</h1></div>;
+        return <DonorManagement />;
       case 'reports':
         return <div className="p-6"><h1 className="text-2xl font-bold">Reports - Coming Soon</h1></div>;
       case 'events':
