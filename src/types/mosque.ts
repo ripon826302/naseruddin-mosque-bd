@@ -55,6 +55,7 @@ export interface Event {
   time: string;
   description: string;
   type: 'Prayer' | 'Event' | 'Program';
+  location: string;
 }
 
 export interface PrayerTime {

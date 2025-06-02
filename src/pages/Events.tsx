@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Plus, Eye, Trash2, Edit } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
@@ -17,7 +18,8 @@ const Events: React.FC = () => {
     description: '',
     date: '',
     time: '',
-    location: ''
+    location: '',
+    type: 'Event' as 'Prayer' | 'Event' | 'Program'
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -40,7 +42,8 @@ const Events: React.FC = () => {
       description: '',
       date: '',
       time: '',
-      location: ''
+      location: '',
+      type: 'Event'
     });
   };
 
@@ -50,7 +53,8 @@ const Events: React.FC = () => {
       description: event.description,
       date: event.date,
       time: event.time,
-      location: event.location
+      location: event.location,
+      type: event.type
     });
     setEditingId(event.id);
   };
@@ -69,7 +73,8 @@ const Events: React.FC = () => {
       description: '',
       date: '',
       time: '',
-      location: ''
+      location: '',
+      type: 'Event'
     });
   };
 
@@ -114,6 +119,7 @@ const Events: React.FC = () => {
                             <p>📅 তারিখ: {new Date(event.date).toLocaleDateString('bn-BD')}</p>
                             <p>🕐 সময়: {event.time}</p>
                             <p>📍 স্থান: {event.location}</p>
+                            <p>🏷️ ধরন: {event.type}</p>
                           </div>
                         </div>
                         {isAdmin && (
@@ -177,6 +183,20 @@ const Events: React.FC = () => {
                       placeholder="ইভেন্টের বিস্তারিত বিবরণ লিখুন"
                       required
                     />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="type">ইভেন্টের ধরন</Label>
+                    <Select value={formData.type} onValueChange={(value: 'Prayer' | 'Event' | 'Program') => setFormData({...formData, type: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="ইভেন্টের ধরন নির্বাচন করুন" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Prayer">নামাজ</SelectItem>
+                        <SelectItem value="Event">ইভেন্ট</SelectItem>
+                        <SelectItem value="Program">কার্যক্রম</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
