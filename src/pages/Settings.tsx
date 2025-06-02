@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +49,7 @@ const Settings: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold text-gray-600">সেটিং</h2>
           <p className="text-gray-500 mt-2">এই পেজ দেখার জন্য অ্যাডমিন অ্যাক্সেস প্রয়োজন।</p>
@@ -58,25 +59,28 @@ const Settings: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
       <div className="flex items-center space-x-3">
         <SettingsIcon className="text-gray-600" size={32} />
-        <h1 className="text-3xl font-bold text-gray-800">সেটিং</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">সেটিং</h1>
       </div>
 
       <Tabs defaultValue="mosque" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="mosque" className="flex items-center space-x-2">
+          <TabsTrigger value="mosque" className="flex items-center space-x-2 text-xs lg:text-sm">
             <Building size={16} />
-            <span>মসজিদের তথ্য</span>
+            <span className="hidden sm:inline">মসজিদের তথ্য</span>
+            <span className="sm:hidden">তথ্য</span>
           </TabsTrigger>
-          <TabsTrigger value="prayer" className="flex items-center space-x-2">
+          <TabsTrigger value="prayer" className="flex items-center space-x-2 text-xs lg:text-sm">
             <Clock size={16} />
-            <span>নামাজের সময়</span>
+            <span className="hidden sm:inline">নামাজের সময়</span>
+            <span className="sm:hidden">নামাজ</span>
           </TabsTrigger>
-          <TabsTrigger value="notices" className="flex items-center space-x-2">
+          <TabsTrigger value="notices" className="flex items-center space-x-2 text-xs lg:text-sm">
             <Bell size={16} />
-            <span>নোটিশ</span>
+            <span className="hidden sm:inline">নোটিশ</span>
+            <span className="sm:hidden">নোটিশ</span>
           </TabsTrigger>
         </TabsList>
 
@@ -275,8 +279,8 @@ const Settings: React.FC = () => {
                         notice.type === 'warning' ? 'border-orange-300 bg-orange-50' :
                         'border-blue-300 bg-blue-50'
                       }`}>
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-2">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                          <div className="space-y-2 flex-1">
                             <h3 className="font-semibold">{notice.title}</h3>
                             <p className="text-gray-600">{notice.message}</p>
                             <p className="text-sm text-gray-500">
@@ -287,7 +291,7 @@ const Settings: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeleteNotice(notice.id)}
-                            className="text-red-600 border-red-600 hover:bg-red-50"
+                            className="text-red-600 border-red-600 hover:bg-red-50 self-start"
                           >
                             <Trash2 size={16} className="mr-1" />
                             মুছুন

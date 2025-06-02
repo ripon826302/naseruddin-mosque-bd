@@ -32,8 +32,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden bg-white shadow-sm border-b border-green-100 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-green-800">মসজিদ ব্যবস্থাপনা</h1>
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-green-100 px-4 py-3 flex items-center justify-between z-40">
+        <h1 className="text-lg font-bold text-green-800 truncate">{settings.name}</h1>
         <Button
           variant="ghost"
           size="sm"
@@ -50,32 +50,32 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
       )}
 
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-50 lg:translate-x-0 ${
+      <div className={`fixed left-0 top-0 h-full w-72 bg-white shadow-lg transform transition-transform duration-300 z-50 lg:translate-x-0 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:relative lg:shadow-none lg:border-r lg:border-green-100`}>
         
         {/* Header */}
-        <div className="p-6 border-b border-green-100">
+        <div className="p-4 border-b border-green-100">
           <div className="text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <div className="text-2xl">🕌</div>
             </div>
-            <h1 className="text-xl font-bold text-green-800 mb-1">{settings.name}</h1>
+            <h1 className="text-lg font-bold text-green-800 mb-1 px-2 break-words">{settings.name}</h1>
             <p className="text-sm text-green-600">ব্যবস্থাপনা সিস্টেম</p>
           </div>
         </div>
 
         {/* User Info */}
         {user && (
-          <div className="px-6 py-4 border-b border-green-50">
+          <div className="px-4 py-3 border-b border-green-50">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-green-700">
                   {user?.name?.charAt(0) || 'U'}
                 </span>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">{user?.name}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800 truncate">{user?.name}</p>
                 <p className="text-xs text-green-600 capitalize">{user?.role}</p>
               </div>
             </div>
@@ -83,13 +83,13 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
         )}
 
         {/* Navigation Menu */}
-        <nav className="flex-1 px-4 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
             
             // Hide admin-only items for viewers
-            if (!user && ['committee', 'income', 'expense', 'donors', 'settings'].includes(item.id)) {
+            if (user?.role === 'viewer' && ['committee', 'income', 'expense', 'donors', 'settings'].includes(item.id)) {
               return null;
             }
             
@@ -100,28 +100,28 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
                   onPageChange(item.id);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-left transition-all duration-200 ${
                   isActive
                     ? 'bg-green-50 text-green-700 border border-green-200'
                     : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
                 }`}
               >
-                <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
+                <Icon size={18} />
+                <span className="font-medium text-sm">{item.label}</span>
               </button>
             );
           })}
         </nav>
 
         {/* Logout Button */}
-        {user && (
-          <div className="p-4 border-t border-green-100">
+        {user && user.role !== 'viewer' && (
+          <div className="p-3 border-t border-green-100">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+              className="w-full flex items-center space-x-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
             >
-              <LogOut size={20} />
-              <span className="font-medium">লগআউট</span>
+              <LogOut size={18} />
+              <span className="font-medium text-sm">লগআউট</span>
             </button>
           </div>
         )}

@@ -51,7 +51,9 @@ const Index = () => {
       <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
       <div className="flex-1 lg:ml-0">
         <div className="lg:hidden h-16"></div>
-        {renderPage()}
+        <div className="min-h-screen">
+          {renderPage()}
+        </div>
       </div>
     </div>
   );
