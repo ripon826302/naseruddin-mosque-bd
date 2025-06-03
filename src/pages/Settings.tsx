@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,17 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings as SettingsIcon, Building, Clock, Bell, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Building, Clock, Bell, Trash2, Lock } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 
 const Settings: React.FC = () => {
-  const { settings, updateSettings, notices, addNotice, deleteNotice, user } = useMosqueStore();
+  const { settings, updateSettings, notices, addNotice, deleteNotice, user, changePassword } = useMosqueStore();
   const [mosqueData, setMosqueData] = useState(settings);
   const [noticeData, setNoticeData] = useState({
     title: '',
     message: '',
     type: 'info' as 'info' | 'warning' | 'urgent'
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
   const isAdmin = user?.role === 'admin';
@@ -47,6 +51,29 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handlePasswordChange = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({ 
+        title: "ত্রুটি!", 
+        description: "নতুন পাসওয়ার্ড ও নিশ্চিত পাসওয়ার্ড মিলছে না।",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      toast({ 
+        title: "ত্রুটি!", 
+        description: "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+        variant: "destructive"
+      });
+      return;
+    }
+    changePassword(passwordData.newPassword);
+    toast({ title: "সফল!", description: "পাসওয়ার্ড পরিবর্তন করা হয়েছে।" });
+    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  };
+
   if (!isAdmin) {
     return (
       <div className="p-4 lg:p-6">
@@ -66,7 +93,7 @@ const Settings: React.FC = () => {
       </div>
 
       <Tabs defaultValue="mosque" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="mosque" className="flex items-center space-x-2 text-xs lg:text-sm">
             <Building size={16} />
             <span className="hidden sm:inline">মসজিদের তথ্য</span>
@@ -81,6 +108,11 @@ const Settings: React.FC = () => {
             <Bell size={16} />
             <span className="hidden sm:inline">নোটিশ</span>
             <span className="sm:hidden">নোটিশ</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center space-x-2 text-xs lg:text-sm">
+            <Lock size={16} />
+            <span className="hidden sm:inline">নিরাপত্তা</span>
+            <span className="sm:hidden">নিরাপত্তা</span>
           </TabsTrigger>
         </TabsList>
 
@@ -304,6 +336,45 @@ const Settings: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-gray-800">পাসওয়ার্ড পরিবর্তন করুন</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div>
+                  <Label htmlFor="newPassword">নতুন পাসওয়ার্ড</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    placeholder="নতুন পাসওয়ার্ড লিখুন"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="confirmPassword">নতুন পাসওয়ার্ড নিশ্চিত করুন</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                    placeholder="নতুন পাসওয়ার্ড পুনরায় লিখুন"
+                    required
+                  />
+                </div>
+                
+                <Button type="submit" className="w-full">
+                  পাসওয়ার্ড পরিবর্তন করুন
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

@@ -24,6 +24,11 @@ interface Notice {
   type: 'info' | 'warning' | 'urgent';
 }
 
+interface AuthCredentials {
+  username: string;
+  password: string;
+}
+
 interface MosqueStore {
   // Settings
   settings: MosqueSettings;
@@ -38,8 +43,10 @@ interface MosqueStore {
   // Auth
   user: User | null;
   isAuthenticated: boolean;
+  adminCredentials: AuthCredentials;
   login: (username: string, password: string) => boolean;
   logout: () => void;
+  changePassword: (newPassword: string) => void;
   
   // Committee
   committee: Committee[];
@@ -181,11 +188,13 @@ export const useMosqueStore = create<MosqueStore>()(
         notices: state.notices.filter(n => n.id !== id)
       })),
       
-      // Auth - Auto login as viewer for general users
+      // Auth - Start as viewer
       user: { id: 'viewer', username: 'viewer', role: 'viewer', name: 'দর্শক' },
       isAuthenticated: true,
+      adminCredentials: { username: 'admin', password: 'admin123' },
       login: (username: string, password: string) => {
-        if (username === 'admin' && password === 'admin123') {
+        const { adminCredentials } = get();
+        if (username === adminCredentials.username && password === adminCredentials.password) {
           const user: User = {
             id: '1',
             username,
@@ -201,6 +210,9 @@ export const useMosqueStore = create<MosqueStore>()(
         user: { id: 'viewer', username: 'viewer', role: 'viewer', name: 'দর্শক' }, 
         isAuthenticated: true 
       }),
+      changePassword: (newPassword: string) => set((state) => ({
+        adminCredentials: { ...state.adminCredentials, password: newPassword }
+      })),
       
       committee: demoCommittee,
       addCommitteeMember: (member) => set((state) => ({

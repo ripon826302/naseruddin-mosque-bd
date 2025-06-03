@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Home, Users, DollarSign, CreditCard, FileText, Bell, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Home, Users, DollarSign, CreditCard, FileText, Bell, Settings, LogOut, Menu, X, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMosqueStore } from '@/store/mosqueStore';
 
@@ -21,12 +21,16 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
     { id: 'donors', label: 'দাতা', icon: Users },
     { id: 'reports', label: 'রিপোর্ট', icon: FileText },
     { id: 'notices', label: 'নোটিশ বোর্ড', icon: Bell },
-    { id: 'settings', label: 'সেটিং', icon: Settings },
   ];
 
   const handleLogout = () => {
     logout();
+    onPageChange('dashboard');
+  };
+
+  const handleAdminLogin = () => {
     onPageChange('login');
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -88,11 +92,6 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
             const Icon = item.icon;
             const isActive = currentPage === item.id;
             
-            // Hide admin-only items for viewers
-            if (user?.role === 'viewer' && ['committee', 'income', 'expense', 'donors', 'settings'].includes(item.id)) {
-              return null;
-            }
-            
             return (
               <button
                 key={item.id}
@@ -111,11 +110,37 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
               </button>
             );
           })}
+
+          {/* Settings - Only for admin */}
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => {
+                onPageChange('settings');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-left transition-all duration-200 ${
+                currentPage === 'settings'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
+              }`}
+            >
+              <Settings size={18} />
+              <span className="font-medium text-sm">সেটিং</span>
+            </button>
+          )}
         </nav>
 
-        {/* Logout Button */}
-        {user && user.role !== 'viewer' && (
-          <div className="p-3 border-t border-green-100">
+        {/* Bottom Actions */}
+        <div className="p-3 border-t border-green-100 space-y-2">
+          {user?.role === 'viewer' ? (
+            <button
+              onClick={handleAdminLogin}
+              className="w-full flex items-center space-x-3 px-3 py-3 text-green-600 hover:bg-green-50 rounded-xl transition-colors"
+            >
+              <LogIn size={18} />
+              <span className="font-medium text-sm">এডমিন লগইন</span>
+            </button>
+          ) : (
             <button
               onClick={handleLogout}
               className="w-full flex items-center space-x-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
@@ -123,8 +148,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
               <LogOut size={18} />
               <span className="font-medium text-sm">লগআউট</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );

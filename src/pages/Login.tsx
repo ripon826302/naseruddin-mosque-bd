@@ -56,7 +56,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">লগইন করুন</h2>
+          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">এডমিন লগইন</h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -93,15 +93,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {isLoading ? 'লগইন হচ্ছে...' : 'লগইন করুন'}
             </Button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-            <p className="text-sm text-gray-600 font-medium mb-2">ডেমো ক্রেডেনশিয়াল:</p>
-            <div className="text-xs text-gray-500 space-y-1">
-              <p><strong>Admin:</strong> username: admin, password: admin123</p>
-              <p><strong>Viewer:</strong> username: viewer, password: viewer123</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
