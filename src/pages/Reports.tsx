@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, Download, Printer } from 'lucide-react';
+import { FileText, Download, Printer, Calendar } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { formatCurrency } from '@/utils/dates';
 
@@ -36,8 +37,10 @@ const Reports: React.FC = () => {
     if (filters.category) {
       if (filters.category === 'Monthly Donation' || filters.category === 'One-time Donation') {
         incomeData = incomeData.filter(item => item.source === filters.category);
+        expenseData = []; // Clear expense data if filtering by income category
       } else {
         expenseData = expenseData.filter(item => item.type === filters.category);
+        incomeData = []; // Clear income data if filtering by expense category
       }
     }
 
@@ -49,9 +52,18 @@ const Reports: React.FC = () => {
   const totalExpense = expenseData.reduce((sum, item) => sum + item.amount, 0);
   const balance = totalIncome - totalExpense;
 
+  const resetFilters = () => {
+    setFilters({
+      type: 'all',
+      startDate: '',
+      endDate: '',
+      category: ''
+    });
+  };
+
   const generatePrintableReport = () => {
     const dateRange = filters.startDate || filters.endDate 
-      ? `${filters.startDate ? new Date(filters.startDate).toLocaleDateString('bn-BD') : ''} থেকে ${filters.endDate ? new Date(filters.endDate).toLocaleDateString('bn-BD') : ''}`
+      ? `${filters.startDate ? new Date(filters.startDate).toLocaleDateString('bn-BD') : 'শুরু'} থেকে ${filters.endDate ? new Date(filters.endDate).toLocaleDateString('bn-BD') : 'শেষ'}`
       : 'সব তারিখ';
 
     return `
@@ -171,10 +183,17 @@ const Reports: React.FC = () => {
             }
             .filter-info {
               background: #e7f3ff;
-              padding: 10px;
-              border-radius: 5px;
+              padding: 15px;
+              border-radius: 8px;
               margin: 20px 0;
               font-size: 13px;
+              border: 1px solid #b3d9ff;
+            }
+            .no-data {
+              text-align: center;
+              padding: 40px;
+              color: #666;
+              font-style: italic;
             }
           </style>
         </head>
@@ -191,9 +210,9 @@ const Reports: React.FC = () => {
           </div>
 
           <div class="filter-info">
-            <strong>ফিল্টার তথ্য:</strong> 
-            সময়কাল: ${dateRange} | 
-            ধরন: ${filters.type === 'all' ? 'সব' : filters.type === 'income' ? 'আয়' : 'ব্যয়'} |
+            <strong>ফিল্টার তথ্য:</strong><br>
+            সময়কাল: ${dateRange}<br>
+            ধরন: ${filters.type === 'all' ? 'সব' : filters.type === 'income' ? 'আয়' : 'ব্যয়'}<br>
             ক্যাটেগরি: ${filters.category || 'সব'}
           </div>
 
@@ -262,6 +281,12 @@ const Reports: React.FC = () => {
             </table>
           ` : ''}
 
+          ${incomeData.length === 0 && expenseData.length === 0 ? `
+            <div class="no-data">
+              নির্বাচিত ফিল্টারে কোন ডেটা পাওয়া যায়নি।
+            </div>
+          ` : ''}
+
           <div class="footer">
             <p>এই প্রতিবেদন ${settings.name} এর ব্যবস্থাপনা সিস্টেম দ্বারা স্বয়ংক্রিয়ভাবে তৈরি করা হয়েছে।</p>
             <p>যেকোনো প্রশ্নের জন্য যোগাযোগ করুন: ${settings.phone || 'N/A'}</p>
@@ -273,8 +298,11 @@ const Reports: React.FC = () => {
 
   const printReport = () => {
     try {
+      console.log('Starting print process...');
+      console.log('Filtered data:', { incomeData, expenseData, totalIncome, totalExpense });
+      
       const htmlContent = generatePrintableReport();
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
       
       if (printWindow) {
         printWindow.document.open();
@@ -283,15 +311,18 @@ const Reports: React.FC = () => {
         
         // Wait for content to load before printing
         printWindow.onload = () => {
-          printWindow.focus();
-          printWindow.print();
+          console.log('Print window loaded');
+          setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+          }, 100);
         };
         
         // Fallback for browsers that don't support onload
         setTimeout(() => {
           printWindow.focus();
           printWindow.print();
-        }, 500);
+        }, 1000);
       } else {
         alert('পপ-আপ ব্লক করা হয়েছে। দয়া করে পপ-আপ অনুমতি দিন এবং আবার চেষ্টা করুন।');
       }
@@ -329,7 +360,10 @@ const Reports: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>ফিল্টার</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar size={20} />
+            ফিল্টার অপশন
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -341,8 +375,8 @@ const Reports: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">সব</SelectItem>
-                  <SelectItem value="income">আয়</SelectItem>
-                  <SelectItem value="expense">ব্যয়</SelectItem>
+                  <SelectItem value="income">শুধু আয়</SelectItem>
+                  <SelectItem value="expense">শুধু ব্যয়</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -354,6 +388,7 @@ const Reports: React.FC = () => {
                 type="date"
                 value={filters.startDate}
                 onChange={(e) => setFilters({...filters, startDate: e.target.value})}
+                className="w-full"
               />
             </div>
             
@@ -364,6 +399,7 @@ const Reports: React.FC = () => {
                 type="date"
                 value={filters.endDate}
                 onChange={(e) => setFilters({...filters, endDate: e.target.value})}
+                className="w-full"
               />
             </div>
             
@@ -384,6 +420,16 @@ const Reports: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          
+          <div className="mt-4 flex gap-2">
+            <Button 
+              onClick={resetFilters} 
+              variant="outline" 
+              size="sm"
+            >
+              ফিল্টার রিসেট করুন
+            </Button>
           </div>
         </CardContent>
       </Card>
