@@ -16,7 +16,7 @@ const Reports: React.FC = () => {
     type: 'all', // all, income, expense
     startDate: '',
     endDate: '',
-    category: ''
+    category: 'all'
   });
 
   const getFilteredData = () => {
@@ -34,7 +34,7 @@ const Reports: React.FC = () => {
     }
 
     // Filter by category
-    if (filters.category) {
+    if (filters.category && filters.category !== 'all') {
       if (filters.category === 'Monthly Donation' || filters.category === 'One-time Donation') {
         incomeData = incomeData.filter(item => item.source === filters.category);
         expenseData = []; // Clear expense data if filtering by income category
@@ -57,7 +57,7 @@ const Reports: React.FC = () => {
       type: 'all',
       startDate: '',
       endDate: '',
-      category: ''
+      category: 'all'
     });
   };
 
@@ -213,7 +213,7 @@ const Reports: React.FC = () => {
             <strong>ফিল্টার তথ্য:</strong><br>
             সময়কাল: ${dateRange}<br>
             ধরন: ${filters.type === 'all' ? 'সব' : filters.type === 'income' ? 'আয়' : 'ব্যয়'}<br>
-            ক্যাটেগরি: ${filters.category || 'সব'}
+            ক্যাটেগরি: ${filters.category === 'all' ? 'সব' : filters.category}
           </div>
 
           <div class="summary-section">
@@ -410,7 +410,7 @@ const Reports: React.FC = () => {
                   <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">সব ক্যাটেগরি</SelectItem>
+                  <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
                   <SelectItem value="Monthly Donation">মাসিক চাঁদা</SelectItem>
                   <SelectItem value="One-time Donation">একবারের দান</SelectItem>
                   <SelectItem value="Imam Salary">ইমাম বেতন</SelectItem>
