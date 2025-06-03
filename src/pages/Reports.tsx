@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -273,29 +272,51 @@ const Reports: React.FC = () => {
   };
 
   const printReport = () => {
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
-    if (printWindow) {
-      printWindow.document.write(generatePrintableReport());
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 250);
+    try {
+      const htmlContent = generatePrintableReport();
+      const printWindow = window.open('', '_blank');
+      
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        
+        // Wait for content to load before printing
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+        };
+        
+        // Fallback for browsers that don't support onload
+        setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+        }, 500);
+      } else {
+        alert('পপ-আপ ব্লক করা হয়েছে। দয়া করে পপ-আপ অনুমতি দিন এবং আবার চেষ্টা করুন।');
+      }
+    } catch (error) {
+      console.error('Print error:', error);
+      alert('প্রিন্ট করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।');
     }
   };
 
   const downloadReport = () => {
-    const htmlContent = generatePrintableReport();
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `mosque-report-${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const htmlContent = generatePrintableReport();
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mosque-report-${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('ডাউনলোড করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।');
+    }
   };
 
   return (
