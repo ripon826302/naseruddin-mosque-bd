@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'mosque-management-v1';
+const CACHE_NAME = 'mosque-management-v2';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -24,19 +24,43 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Background sync for offline data
+// Enhanced background sync for offline data
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(doBackgroundSync());
+  if (event.tag === 'mosque-data-sync') {
+    event.waitUntil(syncMosqueData());
   }
 });
 
-function doBackgroundSync() {
-  // This will sync offline data when connection is restored
-  return fetch('/api/sync', {
-    method: 'POST',
-    body: JSON.stringify({
-      timestamp: Date.now()
-    })
+// Enhanced sync function
+function syncMosqueData() {
+  return new Promise((resolve) => {
+    // Get stored offline data
+    const offlineData = localStorage.getItem('mosque-storage');
+    
+    if (offlineData) {
+      // Send to Supabase when online
+      fetch('/api/sync-mosque-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: offlineData
+      }).then(() => {
+        console.log('Mosque data synced successfully');
+        resolve();
+      }).catch((error) => {
+        console.error('Sync failed:', error);
+        resolve();
+      });
+    } else {
+      resolve();
+    }
   });
 }
+
+// Listen for messages from main thread
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});

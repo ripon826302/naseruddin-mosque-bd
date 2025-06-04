@@ -1,6 +1,8 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Committee, Donor, Income, Expense, User } from '@/types/mosque';
+import { supabase } from '@/lib/supabase';
 
 interface MosqueSettings {
   name: string;
@@ -76,6 +78,11 @@ interface MosqueStore {
   getTotalIncome: () => number;
   getTotalExpenses: () => number;
   getBalance: () => number;
+  
+  // Sync functions
+  syncToSupabase: () => Promise<void>;
+  loadFromSupabase: () => Promise<void>;
+  setupRealtimeSubscription: () => void;
 }
 
 // Default settings
@@ -172,25 +179,77 @@ export const useMosqueStore = create<MosqueStore>()(
     (set, get) => ({
       // Settings
       settings: defaultSettings,
-      updateSettings: (newSettings) => set((state) => ({
-        settings: { ...state.settings, ...newSettings }
-      })),
+      updateSettings: async (newSettings) => {
+        set((state) => ({
+          settings: { ...state.settings, ...newSettings }
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('mosque_settings').upsert({
+            id: '1',
+            name: get().settings.name,
+            address: get().settings.address,
+            phone: get().settings.phone,
+            email: get().settings.email,
+            prayer_times: get().settings.prayerTimes,
+            updated_at: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error('Error syncing settings:', error);
+        }
+      },
       
       // Notices
       notices: demoNotices,
-      addNotice: (notice) => set((state) => ({
-        notices: [...state.notices, { 
+      addNotice: async (notice) => {
+        const newNotice = { 
           ...notice, 
           id: Date.now().toString(),
           date: new Date().toISOString().split('T')[0]
-        }]
-      })),
-      updateNotice: (id, notice) => set((state) => ({
-        notices: state.notices.map(n => n.id === id ? { ...n, ...notice } : n)
-      })),
-      deleteNotice: (id) => set((state) => ({
-        notices: state.notices.filter(n => n.id !== id)
-      })),
+        };
+        
+        set((state) => ({
+          notices: [...state.notices, newNotice]
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('notices').insert({
+            id: newNotice.id,
+            title: newNotice.title,
+            message: newNotice.message,
+            date: newNotice.date,
+            type: newNotice.type
+          });
+        } catch (error) {
+          console.error('Error syncing notice:', error);
+        }
+      },
+      updateNotice: async (id, notice) => {
+        set((state) => ({
+          notices: state.notices.map(n => n.id === id ? { ...n, ...notice } : n)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('notices').update(notice).eq('id', id);
+        } catch (error) {
+          console.error('Error updating notice:', error);
+        }
+      },
+      deleteNotice: async (id) => {
+        set((state) => ({
+          notices: state.notices.filter(n => n.id !== id)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('notices').delete().eq('id', id);
+        } catch (error) {
+          console.error('Error deleting notice:', error);
+        }
+      },
       
       // Auth - Start as viewer
       user: { id: 'viewer', username: 'viewer', role: 'viewer', name: 'দর্শক' },
@@ -219,26 +278,110 @@ export const useMosqueStore = create<MosqueStore>()(
       })),
       
       committee: demoCommittee,
-      addCommitteeMember: (member) => set((state) => ({
-        committee: [...state.committee, { ...member, id: Date.now().toString() }]
-      })),
-      updateCommitteeMember: (id, member) => set((state) => ({
-        committee: state.committee.map(m => m.id === id ? { ...m, ...member } : m)
-      })),
-      deleteCommitteeMember: (id) => set((state) => ({
-        committee: state.committee.filter(m => m.id !== id)
-      })),
+      addCommitteeMember: async (member) => {
+        const newMember = { ...member, id: Date.now().toString() };
+        set((state) => ({
+          committee: [...state.committee, newMember]
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('committee').insert({
+            id: newMember.id,
+            name: newMember.name,
+            role: newMember.role,
+            phone: newMember.phone,
+            email: newMember.email || null,
+            join_date: newMember.joinDate
+          });
+        } catch (error) {
+          console.error('Error syncing committee member:', error);
+        }
+      },
+      updateCommitteeMember: async (id, member) => {
+        set((state) => ({
+          committee: state.committee.map(m => m.id === id ? { ...m, ...member } : m)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('committee').update({
+            name: member.name,
+            role: member.role,
+            phone: member.phone,
+            email: member.email || null,
+            join_date: member.joinDate
+          }).eq('id', id);
+        } catch (error) {
+          console.error('Error updating committee member:', error);
+        }
+      },
+      deleteCommitteeMember: async (id) => {
+        set((state) => ({
+          committee: state.committee.filter(m => m.id !== id)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('committee').delete().eq('id', id);
+        } catch (error) {
+          console.error('Error deleting committee member:', error);
+        }
+      },
       
       donors: demoDonors,
-      addDonor: (donor) => set((state) => ({
-        donors: [...state.donors, { ...donor, id: Date.now().toString(), paymentHistory: [] }]
-      })),
-      updateDonor: (id, donor) => set((state) => ({
-        donors: state.donors.map(d => d.id === id ? { ...d, ...donor } : d)
-      })),
-      deleteDonor: (id) => set((state) => ({
-        donors: state.donors.filter(d => d.id !== id)
-      })),
+      addDonor: async (donor) => {
+        const newDonor = { ...donor, id: Date.now().toString(), paymentHistory: [] };
+        set((state) => ({
+          donors: [...state.donors, newDonor]
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('donors').insert({
+            id: newDonor.id,
+            name: newDonor.name,
+            phone: newDonor.phone,
+            address: newDonor.address,
+            monthly_amount: newDonor.monthlyAmount,
+            status: newDonor.status,
+            start_date: newDonor.startDate
+          });
+        } catch (error) {
+          console.error('Error syncing donor:', error);
+        }
+      },
+      updateDonor: async (id, donor) => {
+        set((state) => ({
+          donors: state.donors.map(d => d.id === id ? { ...d, ...donor } : d)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('donors').update({
+            name: donor.name,
+            phone: donor.phone,
+            address: donor.address,
+            monthly_amount: donor.monthlyAmount,
+            status: donor.status,
+            start_date: donor.startDate
+          }).eq('id', id);
+        } catch (error) {
+          console.error('Error updating donor:', error);
+        }
+      },
+      deleteDonor: async (id) => {
+        set((state) => ({
+          donors: state.donors.filter(d => d.id !== id)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('donors').delete().eq('id', id);
+        } catch (error) {
+          console.error('Error deleting donor:', error);
+        }
+      },
       
       getMissingMonths: (donorId: string) => {
         const { donors, income } = get();
@@ -274,23 +417,74 @@ export const useMosqueStore = create<MosqueStore>()(
       },
       
       income: demoIncome,
-      addIncome: (income) => set((state) => {
-        const receiptNumber = `RCP${String(state.income.length + 1).padStart(3, '0')}`;
-        return {
-          income: [...state.income, { ...income, id: Date.now().toString(), receiptNumber }]
-        };
-      }),
-      deleteIncome: (id) => set((state) => ({
-        income: state.income.filter(i => i.id !== id)
-      })),
+      addIncome: async (income) => {
+        const receiptNumber = `RCP${String(get().income.length + 1).padStart(3, '0')}`;
+        const newIncome = { ...income, id: Date.now().toString(), receiptNumber };
+        
+        set((state) => ({
+          income: [...state.income, newIncome]
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('income').insert({
+            id: newIncome.id,
+            date: newIncome.date,
+            source: newIncome.source,
+            amount: newIncome.amount,
+            donor_id: newIncome.donorId || null,
+            month: newIncome.month || null,
+            receipt_number: newIncome.receiptNumber
+          });
+        } catch (error) {
+          console.error('Error syncing income:', error);
+        }
+      },
+      deleteIncome: async (id) => {
+        set((state) => ({
+          income: state.income.filter(i => i.id !== id)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('income').delete().eq('id', id);
+        } catch (error) {
+          console.error('Error deleting income:', error);
+        }
+      },
       
       expenses: demoExpenses,
-      addExpense: (expense) => set((state) => ({
-        expenses: [...state.expenses, { ...expense, id: Date.now().toString() }]
-      })),
-      deleteExpense: (id) => set((state) => ({
-        expenses: state.expenses.filter(e => e.id !== id)
-      })),
+      addExpense: async (expense) => {
+        const newExpense = { ...expense, id: Date.now().toString() };
+        set((state) => ({
+          expenses: [...state.expenses, newExpense]
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('expenses').insert({
+            id: newExpense.id,
+            date: newExpense.date,
+            type: newExpense.type,
+            amount: newExpense.amount,
+            month: newExpense.month || null
+          });
+        } catch (error) {
+          console.error('Error syncing expense:', error);
+        }
+      },
+      deleteExpense: async (id) => {
+        set((state) => ({
+          expenses: state.expenses.filter(e => e.id !== id)
+        }));
+        
+        // Sync to Supabase
+        try {
+          await supabase.from('expenses').delete().eq('id', id);
+        } catch (error) {
+          console.error('Error deleting expense:', error);
+        }
+      },
       
       getTotalIncome: () => {
         const { income } = get();
@@ -303,6 +497,110 @@ export const useMosqueStore = create<MosqueStore>()(
       getBalance: () => {
         const { getTotalIncome, getTotalExpenses } = get();
         return getTotalIncome() - getTotalExpenses();
+      },
+      
+      // Sync functions
+      syncToSupabase: async () => {
+        const state = get();
+        try {
+          // This would be called when going online
+          console.log('Syncing to Supabase...');
+        } catch (error) {
+          console.error('Error syncing to Supabase:', error);
+        }
+      },
+      
+      loadFromSupabase: async () => {
+        try {
+          // Load all data from Supabase
+          const [donorsData, incomeData, expensesData, committeeData, noticesData] = await Promise.all([
+            supabase.from('donors').select('*'),
+            supabase.from('income').select('*'),
+            supabase.from('expenses').select('*'),
+            supabase.from('committee').select('*'),
+            supabase.from('notices').select('*')
+          ]);
+          
+          if (donorsData.data) {
+            const mappedDonors = donorsData.data.map(d => ({
+              id: d.id,
+              name: d.name,
+              phone: d.phone,
+              address: d.address,
+              monthlyAmount: d.monthly_amount,
+              status: d.status,
+              startDate: d.start_date,
+              paymentHistory: []
+            }));
+            set({ donors: mappedDonors });
+          }
+          
+          if (incomeData.data) {
+            const mappedIncome = incomeData.data.map(i => ({
+              id: i.id,
+              date: i.date,
+              source: i.source,
+              amount: i.amount,
+              donorId: i.donor_id,
+              month: i.month,
+              receiptNumber: i.receipt_number
+            }));
+            set({ income: mappedIncome });
+          }
+          
+          if (expensesData.data) {
+            const mappedExpenses = expensesData.data.map(e => ({
+              id: e.id,
+              date: e.date,
+              type: e.type,
+              amount: e.amount,
+              month: e.month
+            }));
+            set({ expenses: mappedExpenses });
+          }
+          
+          if (committeeData.data) {
+            const mappedCommittee = committeeData.data.map(c => ({
+              id: c.id,
+              name: c.name,
+              role: c.role,
+              phone: c.phone,
+              email: c.email || '',
+              joinDate: c.join_date
+            }));
+            set({ committee: mappedCommittee });
+          }
+          
+          if (noticesData.data) {
+            set({ notices: noticesData.data });
+          }
+          
+        } catch (error) {
+          console.error('Error loading from Supabase:', error);
+        }
+      },
+      
+      setupRealtimeSubscription: () => {
+        // Setup realtime subscriptions for all tables
+        const channels = [
+          supabase.channel('donors').on('postgres_changes', { event: '*', schema: 'public', table: 'donors' }, () => {
+            get().loadFromSupabase();
+          }),
+          supabase.channel('income').on('postgres_changes', { event: '*', schema: 'public', table: 'income' }, () => {
+            get().loadFromSupabase();
+          }),
+          supabase.channel('expenses').on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
+            get().loadFromSupabase();
+          }),
+          supabase.channel('committee').on('postgres_changes', { event: '*', schema: 'public', table: 'committee' }, () => {
+            get().loadFromSupabase();
+          }),
+          supabase.channel('notices').on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, () => {
+            get().loadFromSupabase();
+          })
+        ];
+        
+        channels.forEach(channel => channel.subscribe());
       }
     }),
     {

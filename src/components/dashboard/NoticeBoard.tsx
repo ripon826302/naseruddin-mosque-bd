@@ -6,15 +6,19 @@ import { useMosqueStore } from '@/store/mosqueStore';
 const NoticeBoard: React.FC = () => {
   const { donors, expenses, notices, getMissingMonths } = useMosqueStore();
   
-  // Get all donors with missing payments
-  const defaulterNotices = donors.flatMap(donor => {
-    const missingMonths = getMissingMonths(donor.id);
-    return missingMonths.map(month => ({
-      type: 'warning' as const,
-      message: `${donor.name} - ${month} মাসের চাঁদা বকেয়া`,
-      icon: AlertTriangle
-    }));
-  });
+  // Group missing payments by donor (one notice per donor with all missing months)
+  const defaulterNotices = donors
+    .map(donor => {
+      const missingMonths = getMissingMonths(donor.id);
+      if (missingMonths.length === 0) return null;
+      
+      return {
+        type: 'warning' as const,
+        message: `${donor.name} - ${missingMonths.join(', ')} মাসের চাঁদা বকেয়া`,
+        icon: AlertTriangle
+      };
+    })
+    .filter(notice => notice !== null);
 
   const pendingSalary = expenses.find(expense => 
     expense.type === 'Imam Salary' && 
@@ -36,10 +40,17 @@ const NoticeBoard: React.FC = () => {
   ];
 
   return (
-    <div className="mosque-card p-6">
+    <div className="mosque-card p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-gradient-to-r from-blue-200 to-purple-200">
       <div className="flex items-center mb-4">
-        <Bell className="text-green-600 mr-2" size={20} />
-        <h3 className="text-lg font-semibold text-gray-800">নোটিশ বোর্ড</h3>
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-full mr-3">
+          <Bell className="text-white" size={20} />
+        </div>
+        <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">
+          নোটিশ বোর্ড
+        </h3>
+        <div className="ml-auto bg-gradient-to-r from-orange-400 to-red-500 text-white px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+          {allNotices.length} টি নোটিশ
+        </div>
       </div>
       
       {allNotices.length > 0 ? (
@@ -49,33 +60,49 @@ const NoticeBoard: React.FC = () => {
             return (
               <div
                 key={index}
-                className={`flex items-start space-x-3 p-3 rounded-xl ${
+                className={`flex items-start space-x-3 p-4 rounded-xl shadow-md transition-all duration-300 hover:scale-102 hover:shadow-lg border-l-4 ${
                   notice.type === 'urgent' || notice.type === 'warning'
-                    ? 'bg-orange-50 border border-orange-200'
-                    : 'bg-blue-50 border border-blue-200'
+                    ? 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-400 hover:from-orange-100 hover:to-red-100'
+                    : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-400 hover:from-blue-100 hover:to-indigo-100'
                 }`}
               >
-                <Icon
-                  size={18}
-                  className={
-                    notice.type === 'urgent' || notice.type === 'warning' 
-                      ? 'text-orange-600 mt-0.5' 
-                      : 'text-blue-600 mt-0.5'
-                  }
-                />
-                <p className={`text-sm font-medium ${
+                <div className={`p-2 rounded-full ${
                   notice.type === 'urgent' || notice.type === 'warning' 
-                    ? 'text-orange-800' 
-                    : 'text-blue-800'
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500' 
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-500'
                 }`}>
-                  {notice.message}
-                </p>
+                  <Icon
+                    size={16}
+                    className="text-white"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-medium leading-relaxed ${
+                    notice.type === 'urgent' || notice.type === 'warning' 
+                      ? 'text-orange-800' 
+                      : 'text-blue-800'
+                  }`}>
+                    {notice.message}
+                  </p>
+                  <div className="mt-1 flex items-center text-xs text-gray-500">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-ping"></div>
+                    এখনই দেখুন
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
       ) : (
-        <p className="text-gray-500 text-center py-4">কোন নতুন নোটিশ নেই</p>
+        <div className="text-center py-8">
+          <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl p-6 border-2 border-green-200">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Bell className="text-white" size={24} />
+            </div>
+            <p className="text-green-700 font-medium">🎉 কোন নতুন নোটিশ নেই</p>
+            <p className="text-green-600 text-sm mt-1">সব কিছু ঠিকঠাক চলছে!</p>
+          </div>
+        </div>
       )}
     </div>
   );
