@@ -1,16 +1,25 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Use dummy values if environment variables are not set
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dummy.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'dummy-key'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
-    },
-  },
-})
+// Only create real client if both URL and key are provided
+export const supabase = supabaseUrl !== 'https://dummy.supabase.co' && supabaseAnonKey !== 'dummy-key' 
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      realtime: {
+        params: {
+          eventsPerSecond: 10,
+        },
+      },
+    })
+  : null;
+
+// Helper function to check if Supabase is configured
+export const isSupabaseConfigured = () => {
+  return supabase !== null;
+};
 
 // Database types
 export type Database = {
