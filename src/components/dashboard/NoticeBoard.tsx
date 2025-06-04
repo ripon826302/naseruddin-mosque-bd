@@ -4,20 +4,25 @@ import { Bell, AlertTriangle, Calendar, Info } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const NoticeBoard: React.FC = () => {
-  const { donors, expenses, notices } = useMosqueStore();
+  const { donors, expenses, notices, getMissingMonths } = useMosqueStore();
   
-  const defaulterDonors = donors.filter(donor => donor.status === 'Defaulter');
+  // Get all donors with missing payments
+  const defaulterNotices = donors.flatMap(donor => {
+    const missingMonths = getMissingMonths(donor.id);
+    return missingMonths.map(month => ({
+      type: 'warning' as const,
+      message: `${donor.name} - ${month} মাসের চাঁদা বকেয়া`,
+      icon: AlertTriangle
+    }));
+  });
+
   const pendingSalary = expenses.find(expense => 
     expense.type === 'Imam Salary' && 
     expense.date === new Date().toISOString().split('T')[0]
   );
 
   const allNotices = [
-    ...defaulterDonors.map(donor => ({
-      type: 'warning' as const,
-      message: `${donor.name} - মাসিক চাঁদা বকেয়া`,
-      icon: AlertTriangle
-    })),
+    ...defaulterNotices,
     ...(pendingSalary ? [{
       type: 'info' as const,
       message: 'ইমাম সাহেবের বেতন পরিশোধ করুন',
@@ -38,7 +43,7 @@ const NoticeBoard: React.FC = () => {
       </div>
       
       {allNotices.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-96 overflow-y-auto">
           {allNotices.map((notice, index) => {
             const Icon = notice.icon;
             return (

@@ -1,4 +1,3 @@
-
 export interface Committee {
   id: string;
   name: string;
@@ -16,6 +15,7 @@ export interface Donor {
   monthlyAmount: number;
   status: 'Active' | 'Inactive' | 'Defaulter';
   paymentHistory: PaymentRecord[];
+  startDate: string; // যে তারিখ থেকে দান শুরু করেছে
 }
 
 export interface PaymentRecord {

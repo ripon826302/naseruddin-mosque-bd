@@ -59,6 +59,8 @@ interface MosqueStore {
   addDonor: (donor: Omit<Donor, 'id' | 'paymentHistory'>) => void;
   updateDonor: (id: string, donor: Partial<Donor>) => void;
   deleteDonor: (id: string) => void;
+  getMissingMonths: (donorId: string) => string[];
+  getDonorPaidMonths: (donorId: string) => string[];
   
   // Income
   income: Income[];
@@ -118,7 +120,8 @@ const demoDonors: Donor[] = [
     address: 'ঢাকা',
     monthlyAmount: 5000,
     status: 'Active',
-    paymentHistory: []
+    paymentHistory: [],
+    startDate: '2024-01-01'
   },
   {
     id: '2',
@@ -127,7 +130,8 @@ const demoDonors: Donor[] = [
     address: 'চট্টগ্রাম',
     monthlyAmount: 3000,
     status: 'Defaulter',
-    paymentHistory: []
+    paymentHistory: [],
+    startDate: '2024-02-01'
   }
 ];
 
@@ -235,6 +239,39 @@ export const useMosqueStore = create<MosqueStore>()(
       deleteDonor: (id) => set((state) => ({
         donors: state.donors.filter(d => d.id !== id)
       })),
+      
+      getMissingMonths: (donorId: string) => {
+        const { donors, income } = get();
+        const donor = donors.find(d => d.id === donorId);
+        if (!donor) return [];
+        
+        const startDate = new Date(donor.startDate);
+        const currentDate = new Date();
+        const paidMonths = income
+          .filter(i => i.donorId === donorId && i.source === 'Monthly Donation')
+          .map(i => i.month || '');
+        
+        const missingMonths: string[] = [];
+        const date = new Date(startDate);
+        
+        while (date <= currentDate) {
+          const monthYear = `${date.toLocaleDateString('en-US', { month: 'long' })} ${date.getFullYear()}`;
+          if (!paidMonths.includes(monthYear)) {
+            missingMonths.push(monthYear);
+          }
+          date.setMonth(date.getMonth() + 1);
+        }
+        
+        return missingMonths;
+      },
+      
+      getDonorPaidMonths: (donorId: string) => {
+        const { income } = get();
+        return income
+          .filter(i => i.donorId === donorId && i.source === 'Monthly Donation')
+          .map(i => i.month || '')
+          .sort();
+      },
       
       income: demoIncome,
       addIncome: (income) => set((state) => {

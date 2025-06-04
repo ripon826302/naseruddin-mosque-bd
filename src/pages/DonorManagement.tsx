@@ -7,22 +7,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, Phone, MapPin, Edit, Trash2 } from 'lucide-react';
+import { Users, Plus, Phone, MapPin, Edit, Trash2, Eye, Calendar } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 import { Donor } from '@/types/mosque';
 import { formatCurrency } from '@/utils/dates';
+import DonorDetails from '@/components/DonorDetails';
 
 const DonorManagement: React.FC = () => {
-  const { donors, addDonor, updateDonor, deleteDonor, user } = useMosqueStore();
+  const { donors, addDonor, updateDonor, deleteDonor, user, getMissingMonths } = useMosqueStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
+  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     address: '',
     monthlyAmount: '',
-    status: 'Active' as 'Active' | 'Inactive' | 'Defaulter'
+    status: 'Active' as 'Active' | 'Inactive' | 'Defaulter',
+    startDate: ''
   });
 
   const isAdmin = user?.role === 'admin';
@@ -50,7 +53,8 @@ const DonorManagement: React.FC = () => {
       phone: '',
       address: '',
       monthlyAmount: '',
-      status: 'Active'
+      status: 'Active',
+      startDate: ''
     });
   };
 
@@ -61,7 +65,8 @@ const DonorManagement: React.FC = () => {
       phone: donor.phone,
       address: donor.address,
       monthlyAmount: donor.monthlyAmount.toString(),
-      status: donor.status
+      status: donor.status,
+      startDate: donor.startDate
     });
   };
 
@@ -157,6 +162,17 @@ const DonorManagement: React.FC = () => {
                 </div>
                 
                 <div>
+                  <Label htmlFor="startDate">দান শুরুর তারিখ</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div>
                   <Label htmlFor="status">অবস্থা</Label>
                   <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
                     <SelectTrigger>
@@ -180,51 +196,77 @@ const DonorManagement: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {donors.map((donor) => (
-          <Card key={donor.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-blue-800">{donor.name}</CardTitle>
-                {isAdmin && (
+        {donors.map((donor) => {
+          const missingMonths = getMissingMonths(donor.id);
+          const hasMissingPayments = missingMonths.length > 0;
+          
+          return (
+            <Card key={donor.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg text-blue-800">{donor.name}</CardTitle>
                   <div className="flex space-x-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleEdit(donor)}
+                      onClick={() => setSelectedDonor(donor)}
+                      title="বিস্তারিত দেখুন"
                     >
-                      <Edit size={16} className="text-blue-600" />
+                      <Eye size={16} className="text-green-600" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(donor.id)}
-                    >
-                      <Trash2 size={16} className="text-red-600" />
-                    </Button>
+                    {isAdmin && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(donor)}
+                        >
+                          <Edit size={16} className="text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(donor.id)}
+                        >
+                          <Trash2 size={16} className="text-red-600" />
+                        </Button>
+                      </>
+                    )}
                   </div>
-                )}
-              </div>
-              <Badge className={getStatusColor(donor.status)}>
-                {getStatusBangla(donor.status)}
-              </Badge>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center space-x-2 text-gray-600">
-                <Phone size={16} />
-                <span>{donor.phone}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-gray-600">
-                <MapPin size={16} />
-                <span className="text-sm">{donor.address}</span>
-              </div>
-              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800 font-medium">
-                  মাসিক অনুদান: {formatCurrency(donor.monthlyAmount)}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge className={getStatusColor(donor.status)}>
+                    {getStatusBangla(donor.status)}
+                  </Badge>
+                  {hasMissingPayments && (
+                    <Badge className="bg-red-100 text-red-800">
+                      {missingMonths.length} মাস বাকী
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Phone size={16} />
+                  <span>{donor.phone}</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <MapPin size={16} />
+                  <span className="text-sm">{donor.address}</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Calendar size={16} />
+                  <span className="text-sm">শুরু: {new Date(donor.startDate).toLocaleDateString('bn-BD')}</span>
+                </div>
+                <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">
+                    মাসিক অনুদান: {formatCurrency(donor.monthlyAmount)}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Edit Dialog */}
@@ -277,6 +319,17 @@ const DonorManagement: React.FC = () => {
               </div>
               
               <div>
+                <Label htmlFor="edit-startDate">দান শুরুর তারিখ</Label>
+                <Input
+                  id="edit-startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
                 <Label htmlFor="edit-status">অবস্থা</Label>
                 <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
                   <SelectTrigger>
@@ -306,6 +359,14 @@ const DonorManagement: React.FC = () => {
             </form>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Donor Details Dialog */}
+      {selectedDonor && (
+        <DonorDetails
+          donor={selectedDonor}
+          onClose={() => setSelectedDonor(null)}
+        />
       )}
     </div>
   );
