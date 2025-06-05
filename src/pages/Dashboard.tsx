@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { DollarSign, CreditCard, TrendingUp, TrendingDown, Sparkles, Users, Calendar, BarChart3 } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
@@ -51,11 +52,10 @@ const Dashboard: React.FC = () => {
                 <div className="absolute inset-0 islamic-pattern opacity-30"></div>
                 
                 {/* Multiple text shadows for depth */}
-                <h1 className="relative text-5xl md:text-8xl font-bold mb-6 digital-font"
+                <h1 className="relative text-5xl md:text-8xl font-bold mb-6 digital-font gradient-shift-animation"
                   style={{ 
                     background: 'linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ff00, #00ffff)',
                     backgroundSize: '400% 400%',
-                    animation: 'gradient-shift 4s ease-in-out infinite',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -251,11 +251,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
-<style jsx>{`
-  @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-`}</style>
