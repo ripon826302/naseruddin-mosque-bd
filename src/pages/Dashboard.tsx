@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { DollarSign, CreditCard, TrendingUp, TrendingDown, Sparkles, Wifi, WifiOff } from 'lucide-react';
+import { DollarSign, CreditCard, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
 import PrayerTimeCard from '@/components/dashboard/PrayerTimeCard';
 import NoticeBoard from '@/components/dashboard/NoticeBoard';
@@ -14,43 +14,16 @@ const Dashboard: React.FC = () => {
   const totalExpenses = getTotalExpenses();
   const balance = getBalance();
   const totalDonors = donors.length;
-  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
 
   // Setup Supabase sync on component mount
   useEffect(() => {
     loadFromSupabase();
     setupRealtimeSubscription();
-    
-    // Monitor online/offline status
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 via-green-50 to-yellow-50 islamic-pattern">
       <div className="p-6 space-y-8">
-        {/* Online/Offline Status Banner */}
-        <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-full shadow-lg transition-all duration-500 ${
-          isOnline 
-            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
-            : 'bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse'
-        }`}>
-          <div className="flex items-center space-x-2">
-            {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
-            <span className="text-sm font-medium">
-              {isOnline ? 'অনলাইন - ডাটা সিঙ্ক হচ্ছে' : 'অফলাইন মোড'}
-            </span>
-          </div>
-        </div>
-
         {/* Enhanced Header with more colorful elements */}
         <div className="text-center space-y-4 mb-12">
           <div className="relative">

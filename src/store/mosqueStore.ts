@@ -180,22 +180,23 @@ export const useMosqueStore = create<MosqueStore>()(
       // Settings
       settings: defaultSettings,
       updateSettings: async (newSettings) => {
-        set((state) => ({
-          settings: { ...state.settings, ...newSettings }
-        }));
+        const updatedSettings = { ...get().settings, ...newSettings };
+        set({ settings: updatedSettings });
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('mosque_settings').upsert({
+            const { error } = await supabase.from('mosque_settings').upsert({
               id: '1',
-              name: get().settings.name,
-              address: get().settings.address,
-              phone: get().settings.phone,
-              email: get().settings.email,
-              prayer_times: get().settings.prayerTimes,
+              name: updatedSettings.name,
+              address: updatedSettings.address,
+              phone: updatedSettings.phone,
+              email: updatedSettings.email,
+              prayer_times: updatedSettings.prayerTimes,
               updated_at: new Date().toISOString()
             });
+            
+            if (error) throw error;
             console.log('Settings synced to Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -216,16 +217,18 @@ export const useMosqueStore = create<MosqueStore>()(
           notices: [...state.notices, newNotice]
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('notices').insert({
+            const { error } = await supabase.from('notices').insert({
               id: newNotice.id,
               title: newNotice.title,
               message: newNotice.message,
               date: newNotice.date,
               type: newNotice.type
             });
+            
+            if (error) throw error;
             console.log('Notice synced to Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -237,10 +240,11 @@ export const useMosqueStore = create<MosqueStore>()(
           notices: state.notices.map(n => n.id === id ? { ...n, ...notice } : n)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('notices').update(notice).eq('id', id);
+            const { error } = await supabase.from('notices').update(notice).eq('id', id);
+            if (error) throw error;
             console.log('Notice updated in Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -252,10 +256,11 @@ export const useMosqueStore = create<MosqueStore>()(
           notices: state.notices.filter(n => n.id !== id)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('notices').delete().eq('id', id);
+            const { error } = await supabase.from('notices').delete().eq('id', id);
+            if (error) throw error;
             console.log('Notice deleted from Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -296,10 +301,10 @@ export const useMosqueStore = create<MosqueStore>()(
           committee: [...state.committee, newMember]
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('committee').insert({
+            const { error } = await supabase.from('committee').insert({
               id: newMember.id,
               name: newMember.name,
               role: newMember.role,
@@ -307,6 +312,8 @@ export const useMosqueStore = create<MosqueStore>()(
               email: newMember.email || null,
               join_date: newMember.joinDate
             });
+            
+            if (error) throw error;
             console.log('Committee member synced to Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -318,16 +325,18 @@ export const useMosqueStore = create<MosqueStore>()(
           committee: state.committee.map(m => m.id === id ? { ...m, ...member } : m)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('committee').update({
+            const { error } = await supabase.from('committee').update({
               name: member.name,
               role: member.role,
               phone: member.phone,
               email: member.email || null,
               join_date: member.joinDate
             }).eq('id', id);
+            
+            if (error) throw error;
             console.log('Committee member updated in Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -339,10 +348,11 @@ export const useMosqueStore = create<MosqueStore>()(
           committee: state.committee.filter(m => m.id !== id)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('committee').delete().eq('id', id);
+            const { error } = await supabase.from('committee').delete().eq('id', id);
+            if (error) throw error;
             console.log('Committee member deleted from Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -357,10 +367,10 @@ export const useMosqueStore = create<MosqueStore>()(
           donors: [...state.donors, newDonor]
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('donors').insert({
+            const { error } = await supabase.from('donors').insert({
               id: newDonor.id,
               name: newDonor.name,
               phone: newDonor.phone,
@@ -369,6 +379,8 @@ export const useMosqueStore = create<MosqueStore>()(
               status: newDonor.status,
               start_date: newDonor.startDate
             });
+            
+            if (error) throw error;
             console.log('Donor synced to Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -380,10 +392,10 @@ export const useMosqueStore = create<MosqueStore>()(
           donors: state.donors.map(d => d.id === id ? { ...d, ...donor } : d)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('donors').update({
+            const { error } = await supabase.from('donors').update({
               name: donor.name,
               phone: donor.phone,
               address: donor.address,
@@ -391,6 +403,8 @@ export const useMosqueStore = create<MosqueStore>()(
               status: donor.status,
               start_date: donor.startDate
             }).eq('id', id);
+            
+            if (error) throw error;
             console.log('Donor updated in Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -402,10 +416,11 @@ export const useMosqueStore = create<MosqueStore>()(
           donors: state.donors.filter(d => d.id !== id)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('donors').delete().eq('id', id);
+            const { error } = await supabase.from('donors').delete().eq('id', id);
+            if (error) throw error;
             console.log('Donor deleted from Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -455,10 +470,10 @@ export const useMosqueStore = create<MosqueStore>()(
           income: [...state.income, newIncome]
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('income').insert({
+            const { error } = await supabase.from('income').insert({
               id: newIncome.id,
               date: newIncome.date,
               source: newIncome.source,
@@ -467,6 +482,8 @@ export const useMosqueStore = create<MosqueStore>()(
               month: newIncome.month || null,
               receipt_number: newIncome.receiptNumber
             });
+            
+            if (error) throw error;
             console.log('Income synced to Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -478,10 +495,11 @@ export const useMosqueStore = create<MosqueStore>()(
           income: state.income.filter(i => i.id !== id)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('income').delete().eq('id', id);
+            const { error } = await supabase.from('income').delete().eq('id', id);
+            if (error) throw error;
             console.log('Income deleted from Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -496,16 +514,18 @@ export const useMosqueStore = create<MosqueStore>()(
           expenses: [...state.expenses, newExpense]
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('expenses').insert({
+            const { error } = await supabase.from('expenses').insert({
               id: newExpense.id,
               date: newExpense.date,
               type: newExpense.type,
               amount: newExpense.amount,
               month: newExpense.month || null
             });
+            
+            if (error) throw error;
             console.log('Expense synced to Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -517,10 +537,11 @@ export const useMosqueStore = create<MosqueStore>()(
           expenses: state.expenses.filter(e => e.id !== id)
         }));
         
-        // Sync to Supabase only if configured
+        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
-            await supabase.from('expenses').delete().eq('id', id);
+            const { error } = await supabase.from('expenses').delete().eq('id', id);
+            if (error) throw error;
             console.log('Expense deleted from Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
@@ -549,8 +570,67 @@ export const useMosqueStore = create<MosqueStore>()(
         }
         
         try {
-          console.log('Syncing to Supabase...');
-          // Sync happens automatically through individual operations
+          console.log('Force syncing all data to Supabase...');
+          const state = get();
+          
+          // Sync all data to Supabase
+          await Promise.all([
+            supabase.from('mosque_settings').upsert({
+              id: '1',
+              name: state.settings.name,
+              address: state.settings.address,
+              phone: state.settings.phone,
+              email: state.settings.email,
+              prayer_times: state.settings.prayerTimes,
+              updated_at: new Date().toISOString()
+            }),
+            supabase.from('donors').delete().neq('id', '').then(() => 
+              supabase.from('donors').insert(state.donors.map(d => ({
+                id: d.id,
+                name: d.name,
+                phone: d.phone,
+                address: d.address,
+                monthly_amount: d.monthlyAmount,
+                status: d.status,
+                start_date: d.startDate
+              })))
+            ),
+            supabase.from('income').delete().neq('id', '').then(() => 
+              supabase.from('income').insert(state.income.map(i => ({
+                id: i.id,
+                date: i.date,
+                source: i.source,
+                amount: i.amount,
+                donor_id: i.donorId || null,
+                month: i.month || null,
+                receipt_number: i.receiptNumber
+              })))
+            ),
+            supabase.from('expenses').delete().neq('id', '').then(() => 
+              supabase.from('expenses').insert(state.expenses.map(e => ({
+                id: e.id,
+                date: e.date,
+                type: e.type,
+                amount: e.amount,
+                month: e.month || null
+              })))
+            ),
+            supabase.from('committee').delete().neq('id', '').then(() => 
+              supabase.from('committee').insert(state.committee.map(c => ({
+                id: c.id,
+                name: c.name,
+                role: c.role,
+                phone: c.phone,
+                email: c.email || null,
+                join_date: c.joinDate
+              })))
+            ),
+            supabase.from('notices').delete().neq('id', '').then(() => 
+              supabase.from('notices').insert(state.notices)
+            )
+          ]);
+          
+          console.log('All data synced to Supabase successfully');
         } catch (error) {
           console.error('Error syncing to Supabase:', error);
         }
@@ -574,6 +654,8 @@ export const useMosqueStore = create<MosqueStore>()(
             supabase.from('notices').select('*'),
             supabase.from('mosque_settings').select('*').limit(1).single()
           ]);
+          
+          const state = get();
           
           if (donorsData.data && donorsData.data.length > 0) {
             const mappedDonors = donorsData.data.map(d => ({
@@ -656,40 +738,28 @@ export const useMosqueStore = create<MosqueStore>()(
         
         try {
           // Setup realtime subscriptions for all tables
-          const channels = [
-            supabase.channel('donors').on('postgres_changes', { event: '*', schema: 'public', table: 'donors' }, () => {
-              console.log('Donors table changed, reloading data...');
-              get().loadFromSupabase();
-            }),
-            supabase.channel('income').on('postgres_changes', { event: '*', schema: 'public', table: 'income' }, () => {
-              console.log('Income table changed, reloading data...');
-              get().loadFromSupabase();
-            }),
-            supabase.channel('expenses').on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
-              console.log('Expenses table changed, reloading data...');
-              get().loadFromSupabase();
-            }),
-            supabase.channel('committee').on('postgres_changes', { event: '*', schema: 'public', table: 'committee' }, () => {
-              console.log('Committee table changed, reloading data...');
-              get().loadFromSupabase();
-            }),
-            supabase.channel('notices').on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, () => {
-              console.log('Notices table changed, reloading data...');
-              get().loadFromSupabase();
-            }),
-            supabase.channel('mosque_settings').on('postgres_changes', { event: '*', schema: 'public', table: 'mosque_settings' }, () => {
-              console.log('Settings table changed, reloading data...');
-              get().loadFromSupabase();
-            })
-          ];
+          const tables = ['donors', 'income', 'expenses', 'committee', 'notices', 'mosque_settings'];
           
-          channels.forEach(channel => {
-            channel.subscribe((status) => {
-              console.log('Realtime subscription status:', status);
-            });
+          tables.forEach(table => {
+            supabase
+              .channel(`realtime-${table}`)
+              .on('postgres_changes', 
+                { event: '*', schema: 'public', table }, 
+                (payload) => {
+                  console.log(`${table} table changed:`, payload);
+                  // Reload data when any table changes
+                  get().loadFromSupabase();
+                }
+              )
+              .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                  console.log(`Realtime subscription for ${table} established`);
+                } else if (status === 'CHANNEL_ERROR') {
+                  console.log(`Realtime subscription error for ${table}`);
+                }
+              });
           });
           
-          console.log('Realtime subscriptions setup successfully');
         } catch (error) {
           console.error('Error setting up realtime subscriptions:', error);
         }
