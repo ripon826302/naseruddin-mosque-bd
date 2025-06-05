@@ -77,64 +77,6 @@ const PrayerTimeCard: React.FC = () => {
     return { hour: displayHour.toString().padStart(2, '0'), minutes, ampm };
   };
 
-  // 7-segment digit patterns
-  const segmentPatterns = {
-    '0': [1, 1, 1, 1, 1, 1, 0],
-    '1': [0, 1, 1, 0, 0, 0, 0],
-    '2': [1, 1, 0, 1, 1, 0, 1],
-    '3': [1, 1, 1, 1, 0, 0, 1],
-    '4': [0, 1, 1, 0, 0, 1, 1],
-    '5': [1, 0, 1, 1, 0, 1, 1],
-    '6': [1, 0, 1, 1, 1, 1, 1],
-    '7': [1, 1, 1, 0, 0, 0, 0],
-    '8': [1, 1, 1, 1, 1, 1, 1],
-    '9': [1, 1, 1, 1, 0, 1, 1]
-  };
-
-  const SevenSegmentDigit: React.FC<{ digit: string, color: string, isActive?: boolean }> = ({ digit, color, isActive = false }) => {
-    const pattern = segmentPatterns[digit] || [0, 0, 0, 0, 0, 0, 0];
-    const activeClass = isActive ? 'animate-pulse scale-110' : '';
-    
-    return (
-      <div className={`relative w-16 h-24 ${activeClass} transition-all duration-300`}>
-        {/* Segment A (top) */}
-        <div className={`absolute top-0 left-2 w-10 h-2 ${pattern[0] ? `bg-current ${color}` : 'bg-gray-800/30'} 
-          transform skew-x-12 shadow-lg transition-all duration-300`} 
-          style={{ filter: pattern[0] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
-        
-        {/* Segment B (top right) */}
-        <div className={`absolute top-1 right-0 w-2 h-9 ${pattern[1] ? `bg-current ${color}` : 'bg-gray-800/30'} 
-          transform skew-y-12 shadow-lg transition-all duration-300`}
-          style={{ filter: pattern[1] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
-        
-        {/* Segment C (bottom right) */}
-        <div className={`absolute bottom-1 right-0 w-2 h-9 ${pattern[2] ? `bg-current ${color}` : 'bg-gray-800/30'} 
-          transform -skew-y-12 shadow-lg transition-all duration-300`}
-          style={{ filter: pattern[2] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
-        
-        {/* Segment D (bottom) */}
-        <div className={`absolute bottom-0 left-2 w-10 h-2 ${pattern[3] ? `bg-current ${color}` : 'bg-gray-800/30'} 
-          transform -skew-x-12 shadow-lg transition-all duration-300`}
-          style={{ filter: pattern[3] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
-        
-        {/* Segment E (bottom left) */}
-        <div className={`absolute bottom-1 left-0 w-2 h-9 ${pattern[4] ? `bg-current ${color}` : 'bg-gray-800/30'} 
-          transform skew-y-12 shadow-lg transition-all duration-300`}
-          style={{ filter: pattern[4] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
-        
-        {/* Segment F (top left) */}
-        <div className={`absolute top-1 left-0 w-2 h-9 ${pattern[5] ? `bg-current ${color}` : 'bg-gray-800/30'} 
-          transform -skew-y-12 shadow-lg transition-all duration-300`}
-          style={{ filter: pattern[5] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
-        
-        {/* Segment G (middle) */}
-        <div className={`absolute top-11 left-2 w-10 h-2 ${pattern[6] ? `bg-current ${color}` : 'bg-gray-800/30'} 
-          shadow-lg transition-all duration-300`}
-          style={{ filter: pattern[6] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
-      </div>
-    );
-  };
-
   const LEDTimeDisplay: React.FC<{ prayer: any, isNext: boolean }> = ({ prayer, isNext }) => {
     const { hour, minutes, ampm } = formatTime(prayer.time);
     const color = isNext ? 'text-cyan-400' : prayer.neonColor.split(' ')[2];
@@ -146,38 +88,29 @@ const PrayerTimeCard: React.FC = () => {
         
         {/* Prayer name in neon style */}
         <div className={`text-center mb-4 ${isNext ? 'text-cyan-400' : color}`}>
-          <div className="text-2xl font-bold mb-1 filter drop-shadow-lg"
+          <div className="text-2xl font-bold mb-1 filter drop-shadow-lg digital-font"
             style={{ filter: `drop-shadow(0 0 10px currentColor)` }}>
             {prayer.nameBangla}
           </div>
           <div className="text-lg font-arabic opacity-80">{prayer.nameArabic}</div>
         </div>
         
-        {/* 7-segment time display */}
+        {/* Digital time display */}
         <div className="flex items-center space-x-2 mb-3">
-          <SevenSegmentDigit digit={hour[0]} color={color} isActive={isNext} />
-          <SevenSegmentDigit digit={hour[1]} color={color} isActive={isNext} />
-          
-          {/* Colon separator */}
-          <div className={`flex flex-col space-y-2 ${isNext ? 'text-cyan-400' : color}`}>
-            <div className="w-2 h-2 bg-current rounded-full shadow-lg"
-              style={{ filter: 'drop-shadow(0 0 6px currentColor)' }} />
-            <div className="w-2 h-2 bg-current rounded-full shadow-lg"
-              style={{ filter: 'drop-shadow(0 0 6px currentColor)' }} />
+          <div className={`text-5xl font-mono font-bold ${isNext ? 'text-cyan-400' : color} tracking-wider digital-font`}
+            style={{ filter: 'drop-shadow(0 0 15px currentColor)' }}>
+            {hour}:{minutes}
           </div>
-          
-          <SevenSegmentDigit digit={minutes[0]} color={color} isActive={isNext} />
-          <SevenSegmentDigit digit={minutes[1]} color={color} isActive={isNext} />
         </div>
         
         {/* AM/PM indicator */}
-        <div className={`text-sm font-bold ${isNext ? 'text-cyan-400' : color} opacity-80`}>
+        <div className={`text-lg font-bold ${isNext ? 'text-cyan-400' : color} opacity-80 digital-font`}>
           {ampm}
         </div>
         
         {/* Next prayer indicator */}
         {isNext && (
-          <div className="mt-3 px-3 py-1 bg-cyan-400/20 border border-cyan-400/40 rounded-full">
+          <div className="mt-3 px-4 py-2 bg-cyan-400/20 border border-cyan-400/40 rounded-full">
             <span className="text-cyan-300 text-sm font-medium">পরবর্তী নামাজ</span>
           </div>
         )}
@@ -201,7 +134,7 @@ const PrayerTimeCard: React.FC = () => {
             <Clock className="w-6 h-6 text-cyan-400 animate-bounce" />
           </div>
           
-          <h2 className="text-3xl font-bold text-center text-cyan-400 mb-2 filter drop-shadow-lg"
+          <h2 className="text-3xl font-bold text-center text-cyan-400 mb-2 filter drop-shadow-lg digital-font"
             style={{ filter: 'drop-shadow(0 0 15px cyan)' }}>
             নামাজের সময়সূচি
           </h2>

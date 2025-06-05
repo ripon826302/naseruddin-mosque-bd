@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { DollarSign, CreditCard, TrendingUp, TrendingDown, Sparkles, Users, Calendar, BarChart3 } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
@@ -32,81 +31,115 @@ const Dashboard: React.FC = () => {
       
       <div className="relative p-6 space-y-8">
         {/* Enhanced Futuristic Header */}
-        <div className="text-center space-y-6 mb-12">
+        <div className="text-center space-y-8 mb-12">
           <div className="relative">
-            {/* Glowing background orb */}
+            {/* Multiple layered glowing backgrounds */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-40 h-40 bg-gradient-to-r from-cyan-400 via-purple-400 to-green-400 rounded-full opacity-20 animate-spin blur-2xl"></div>
+              <div className="w-72 h-72 bg-gradient-to-r from-cyan-400 via-purple-400 to-green-400 rounded-full opacity-20 animate-spin blur-3xl"></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-56 h-56 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full opacity-15 animate-spin blur-2xl" style={{animationDirection: 'reverse', animationDuration: '8s'}}></div>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-40 h-40 bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 rounded-full opacity-25 animate-pulse blur-xl"></div>
             </div>
             
-            {/* Main title with neon effect */}
+            {/* Main mosque name with enhanced styling */}
             <div className="relative z-10">
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-green-400 animate-pulse"
-                style={{ filter: 'drop-shadow(0 0 20px cyan)' }}>
-                {settings.name}
-              </h1>
-              
-              {/* Sparkle effects around title */}
-              <div className="absolute -top-4 left-1/4">
-                <Sparkles className="text-cyan-400 w-8 h-8 animate-bounce" />
-              </div>
-              <div className="absolute -top-2 right-1/4">
-                <Sparkles className="text-purple-400 w-6 h-6 animate-bounce" style={{animationDelay: '0.5s'}} />
-              </div>
-              <div className="absolute -bottom-4 left-1/3">
-                <Sparkles className="text-green-400 w-7 h-7 animate-bounce" style={{animationDelay: '1s'}} />
+              <div className="mb-8">
+                {/* Islamic pattern background */}
+                <div className="absolute inset-0 islamic-pattern opacity-30"></div>
+                
+                {/* Multiple text shadows for depth */}
+                <h1 className="relative text-5xl md:text-8xl font-bold mb-6 digital-font"
+                  style={{ 
+                    background: 'linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ff00, #00ffff)',
+                    backgroundSize: '400% 400%',
+                    animation: 'gradient-shift 4s ease-in-out infinite',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    filter: 'drop-shadow(0 0 30px cyan) drop-shadow(0 0 60px purple) drop-shadow(0 0 90px green)',
+                    textShadow: '0 0 20px rgba(0,255,255,0.8), 0 0 40px rgba(255,0,255,0.6), 0 0 60px rgba(255,255,0,0.4)'
+                  }}>
+                  {settings.name}
+                </h1>
+                
+                {/* Decorative elements around mosque name */}
+                <div className="absolute -top-8 left-1/4 transform -translate-x-1/2">
+                  <div className="w-4 h-4 bg-cyan-400 rounded-full animate-bounce shadow-cyan-400 shadow-lg"></div>
+                </div>
+                <div className="absolute -top-4 right-1/4 transform translate-x-1/2">
+                  <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce shadow-purple-400 shadow-lg" style={{animationDelay: '0.3s'}}></div>
+                </div>
+                <div className="absolute -bottom-8 left-1/3 transform -translate-x-1/2">
+                  <div className="w-5 h-5 bg-green-400 rounded-full animate-bounce shadow-green-400 shadow-lg" style={{animationDelay: '0.6s'}}></div>
+                </div>
+                <div className="absolute -bottom-4 right-1/3 transform translate-x-1/2">
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce shadow-yellow-400 shadow-lg" style={{animationDelay: '0.9s'}}></div>
+                </div>
+                
+                {/* Sparkle effects around title */}
+                <div className="absolute -top-6 left-1/6">
+                  <Sparkles className="text-cyan-400 w-8 h-8 animate-pulse" style={{filter: 'drop-shadow(0 0 10px cyan)'}} />
+                </div>
+                <div className="absolute -top-2 right-1/6">
+                  <Sparkles className="text-purple-400 w-6 h-6 animate-pulse" style={{animationDelay: '0.5s', filter: 'drop-shadow(0 0 10px purple)'}} />
+                </div>
+                <div className="absolute -bottom-6 left-1/5">
+                  <Sparkles className="text-green-400 w-7 h-7 animate-pulse" style={{animationDelay: '1s', filter: 'drop-shadow(0 0 10px green)'}} />
+                </div>
+                <div className="absolute -bottom-2 right-1/5">
+                  <Sparkles className="text-yellow-400 w-5 h-5 animate-pulse" style={{animationDelay: '1.5s', filter: 'drop-shadow(0 0 10px yellow)'}} />
+                </div>
               </div>
             </div>
           </div>
           
-          {/* Futuristic address card */}
-          <div className="relative mx-auto max-w-2xl">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-green-500/20 rounded-2xl blur-lg animate-pulse" />
-            <div className="relative bg-black/60 backdrop-blur-lg border-2 border-cyan-400/30 rounded-2xl p-6 shadow-2xl">
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-ping" />
-                <p className="text-cyan-300 font-medium text-lg">{settings.address}</p>
-                <div className="w-2 h-2 bg-green-400 rounded-full ml-3 animate-ping" />
+          {/* Enhanced address card with better styling */}
+          <div className="relative mx-auto max-w-3xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/30 via-purple-500/30 to-green-500/30 rounded-3xl blur-xl animate-pulse" />
+            <div className="relative bg-black/70 backdrop-blur-xl border-2 border-cyan-400/40 rounded-3xl p-8 shadow-2xl">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-3 h-3 bg-green-400 rounded-full mr-4 animate-ping shadow-green-400 shadow-lg" />
+                <p className="text-cyan-300 font-medium text-xl digital-font" style={{filter: 'drop-shadow(0 0 10px cyan)'}}>{settings.address}</p>
+                <div className="w-3 h-3 bg-green-400 rounded-full ml-4 animate-ping shadow-green-400 shadow-lg" />
               </div>
               
-              {/* Animated status indicators */}
-              <div className="flex justify-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" />
-                  <span className="text-cyan-300 text-sm">সক্রিয়</span>
+              {/* Enhanced status indicators */}
+              <div className="flex justify-center space-x-8">
+                <div className="flex items-center space-x-3 bg-cyan-500/20 px-4 py-2 rounded-full border border-cyan-400/30">
+                  <div className="w-3 h-3 bg-cyan-400 rounded-full animate-bounce shadow-cyan-400 shadow-lg" />
+                  <span className="text-cyan-300 font-medium">সক্রিয়</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}} />
-                  <span className="text-green-300 text-sm">অনলাইন</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}} />
-                  <span className="text-purple-300 text-sm">সুরক্ষিত</span>
+                <div className="flex items-center space-x-3 bg-purple-500/20 px-4 py-2 rounded-full border border-purple-400/30">
+                  <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce shadow-purple-400 shadow-lg" style={{animationDelay: '0.4s'}} />
+                  <span className="text-purple-300 font-medium">সুরক্ষিত</span>
                 </div>
               </div>
             </div>
           </div>
           
           {/* Enhanced date displays with neon borders */}
-          <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6">
+          <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8">
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full opacity-30 blur-lg group-hover:opacity-50 transition-all duration-300" />
-              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-green-400/40 rounded-full px-8 py-4 shadow-2xl hover:border-green-400/60 transition-all duration-300">
-                <span className="text-green-300 font-bold text-lg">🇧🇩 {getBengaliDate()}</span>
+              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-green-400/40 rounded-full px-10 py-5 shadow-2xl hover:border-green-400/60 transition-all duration-300">
+                <span className="text-green-300 font-bold text-lg digital-font">🇧🇩 {getBengaliDate()}</span>
               </div>
             </div>
             
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-30 blur-lg group-hover:opacity-50 transition-all duration-300" />
-              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-blue-400/40 rounded-full px-8 py-4 shadow-2xl hover:border-blue-400/60 transition-all duration-300">
-                <span className="text-blue-300 font-bold text-lg">🇺🇸 {getEnglishDate()}</span>
+              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-blue-400/40 rounded-full px-10 py-5 shadow-2xl hover:border-blue-400/60 transition-all duration-300">
+                <span className="text-blue-300 font-bold text-lg digital-font">🇺🇸 {getEnglishDate()}</span>
               </div>
             </div>
             
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-30 blur-lg group-hover:opacity-50 transition-all duration-300" />
-              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-purple-400/40 rounded-full px-8 py-4 shadow-2xl hover:border-purple-400/60 transition-all duration-300">
-                <span className="text-purple-300 font-bold text-lg">🕌 {getArabicDate()}</span>
+              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-purple-400/40 rounded-full px-10 py-5 shadow-2xl hover:border-purple-400/60 transition-all duration-300">
+                <span className="text-purple-300 font-bold text-lg digital-font">🕌 {getArabicDate()}</span>
               </div>
             </div>
           </div>
@@ -218,3 +251,11 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+<style jsx>{`
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+`}</style>
