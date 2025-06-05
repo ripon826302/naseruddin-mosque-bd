@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { DollarSign, CreditCard, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
+import { DollarSign, CreditCard, TrendingUp, TrendingDown, Sparkles, Users, Calendar, BarChart3 } from 'lucide-react';
 import StatCard from '@/components/dashboard/StatCard';
 import PrayerTimeCard from '@/components/dashboard/PrayerTimeCard';
 import NoticeBoard from '@/components/dashboard/NoticeBoard';
@@ -22,52 +22,101 @@ const Dashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 via-green-50 to-yellow-50 islamic-pattern">
-      <div className="p-6 space-y-8">
-        {/* Enhanced Header with more colorful elements */}
-        <div className="text-center space-y-4 mb-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}} />
+      </div>
+      
+      <div className="relative p-6 space-y-8">
+        {/* Enhanced Futuristic Header */}
+        <div className="text-center space-y-6 mb-12">
           <div className="relative">
+            {/* Glowing background orb */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 rounded-full opacity-20 floating-animation blur-xl"></div>
+              <div className="w-40 h-40 bg-gradient-to-r from-cyan-400 via-purple-400 to-green-400 rounded-full opacity-20 animate-spin blur-2xl"></div>
             </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Sparkles className="text-gradient w-24 h-24 floating-animation" style={{animationDelay: '1s'}} />
+            
+            {/* Main title with neon effect */}
+            <div className="relative z-10">
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-green-400 animate-pulse"
+                style={{ filter: 'drop-shadow(0 0 20px cyan)' }}>
+                {settings.name}
+              </h1>
+              
+              {/* Sparkle effects around title */}
+              <div className="absolute -top-4 left-1/4">
+                <Sparkles className="text-cyan-400 w-8 h-8 animate-bounce" />
+              </div>
+              <div className="absolute -top-2 right-1/4">
+                <Sparkles className="text-purple-400 w-6 h-6 animate-bounce" style={{animationDelay: '0.5s'}} />
+              </div>
+              <div className="absolute -bottom-4 left-1/3">
+                <Sparkles className="text-green-400 w-7 h-7 animate-bounce" style={{animationDelay: '1s'}} />
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 via-green-600 to-yellow-600 bg-clip-text text-transparent mb-4 relative z-10 slide-up animate-pulse">
-              {settings.name}
-            </h1>
           </div>
           
-          <div className="card-gradient rounded-2xl p-6 mx-auto max-w-2xl slide-up border-2 border-gradient-to-r from-purple-200 to-pink-200 shadow-xl" style={{animationDelay: '0.2s'}}>
-            <div className="flex items-center justify-center mb-2">
-              <div className="w-4 h-4 bg-gradient-to-r from-green-400 to-blue-400 rounded-full mr-2 animate-ping"></div>
-              <p className="text-gray-700 font-medium text-lg">{settings.address}</p>
-            </div>
-            <div className="flex justify-center space-x-2">
-              <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
+          {/* Futuristic address card */}
+          <div className="relative mx-auto max-w-2xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-green-500/20 rounded-2xl blur-lg animate-pulse" />
+            <div className="relative bg-black/60 backdrop-blur-lg border-2 border-cyan-400/30 rounded-2xl p-6 shadow-2xl">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-ping" />
+                <p className="text-cyan-300 font-medium text-lg">{settings.address}</p>
+                <div className="w-2 h-2 bg-green-400 rounded-full ml-3 animate-ping" />
+              </div>
+              
+              {/* Animated status indicators */}
+              <div className="flex justify-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" />
+                  <span className="text-cyan-300 text-sm">সক্রিয়</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}} />
+                  <span className="text-green-300 text-sm">অনলাইন</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}} />
+                  <span className="text-purple-300 text-sm">সুরক্ষিত</span>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div className="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-8 text-sm">
-            <div className="bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-200 rounded-full px-6 py-3 slide-up shadow-lg hover:shadow-xl transition-all duration-300" style={{animationDelay: '0.3s'}}>
-              <span className="bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent font-bold">🇧🇩 {getBengaliDate()}</span>
+          {/* Enhanced date displays with neon borders */}
+          <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full opacity-30 blur-lg group-hover:opacity-50 transition-all duration-300" />
+              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-green-400/40 rounded-full px-8 py-4 shadow-2xl hover:border-green-400/60 transition-all duration-300">
+                <span className="text-green-300 font-bold text-lg">🇧🇩 {getBengaliDate()}</span>
+              </div>
             </div>
-            <div className="bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-200 rounded-full px-6 py-3 slide-up shadow-lg hover:shadow-xl transition-all duration-300" style={{animationDelay: '0.4s'}}>
-              <span className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent font-bold">🇺🇸 {getEnglishDate()}</span>
+            
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-30 blur-lg group-hover:opacity-50 transition-all duration-300" />
+              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-blue-400/40 rounded-full px-8 py-4 shadow-2xl hover:border-blue-400/60 transition-all duration-300">
+                <span className="text-blue-300 font-bold text-lg">🇺🇸 {getEnglishDate()}</span>
+              </div>
             </div>
-            <div className="bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-200 rounded-full px-6 py-3 slide-up shadow-lg hover:shadow-xl transition-all duration-300" style={{animationDelay: '0.5s'}}>
-              <span className="bg-gradient-to-r from-purple-700 to-pink-700 bg-clip-text text-transparent font-bold">🕌 {getArabicDate()}</span>
+            
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-30 blur-lg group-hover:opacity-50 transition-all duration-300" />
+              <div className="relative bg-black/70 backdrop-blur-lg border-2 border-purple-400/40 rounded-full px-8 py-4 shadow-2xl hover:border-purple-400/60 transition-all duration-300">
+                <span className="text-purple-300 font-bold text-lg">🕌 {getArabicDate()}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Enhanced Stats Grid with more colorful gradients */}
+        {/* Futuristic Stats Grid with holographic effects */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="slide-up hover:scale-105 transition-transform duration-300" style={{animationDelay: '0.6s'}}>
-            <div className="bg-gradient-to-br from-green-100 to-emerald-100 border-2 border-green-200 rounded-2xl p-1 shadow-xl">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300" />
+            <div className="relative bg-black/60 backdrop-blur-lg border-2 border-green-400/30 rounded-2xl p-1 shadow-2xl hover:border-green-400/50 transition-all duration-300">
               <StatCard
                 title="মোট আয়"
                 value={totalIncome}
@@ -77,8 +126,10 @@ const Dashboard: React.FC = () => {
               />
             </div>
           </div>
-          <div className="slide-up hover:scale-105 transition-transform duration-300" style={{animationDelay: '0.7s'}}>
-            <div className="bg-gradient-to-br from-red-100 to-pink-100 border-2 border-red-200 rounded-2xl p-1 shadow-xl">
+          
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300" />
+            <div className="relative bg-black/60 backdrop-blur-lg border-2 border-red-400/30 rounded-2xl p-1 shadow-2xl hover:border-red-400/50 transition-all duration-300">
               <StatCard
                 title="মোট খরচ"
                 value={totalExpenses}
@@ -88,8 +139,10 @@ const Dashboard: React.FC = () => {
               />
             </div>
           </div>
-          <div className="slide-up hover:scale-105 transition-transform duration-300" style={{animationDelay: '0.8s'}}>
-            <div className={`bg-gradient-to-br ${balance >= 0 ? 'from-blue-100 to-indigo-100 border-blue-200' : 'from-orange-100 to-red-100 border-orange-200'} border-2 rounded-2xl p-1 shadow-xl`}>
+          
+          <div className="relative group">
+            <div className={`absolute inset-0 bg-gradient-to-br ${balance >= 0 ? 'from-blue-500/20 to-indigo-500/20' : 'from-orange-500/20 to-red-500/20'} rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300`} />
+            <div className={`relative bg-black/60 backdrop-blur-lg border-2 ${balance >= 0 ? 'border-blue-400/30 hover:border-blue-400/50' : 'border-orange-400/30 hover:border-orange-400/50'} rounded-2xl p-1 shadow-2xl transition-all duration-300`}>
               <StatCard
                 title={balance >= 0 ? "অবশিষ্ট টাকা" : "অতিরিক্ত খরচ"}
                 value={Math.abs(balance)}
@@ -99,36 +152,65 @@ const Dashboard: React.FC = () => {
               />
             </div>
           </div>
-          <div className="slide-up hover:scale-105 transition-transform duration-300" style={{animationDelay: '0.9s'}}>
-            <div className="bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-purple-200 rounded-2xl p-1 shadow-xl">
+          
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300" />
+            <div className="relative bg-black/60 backdrop-blur-lg border-2 border-purple-400/30 rounded-2xl p-1 shadow-2xl hover:border-purple-400/50 transition-all duration-300">
               <StatCard
                 title="মোট দাতা"
                 value={totalDonors.toString()}
-                icon={DollarSign}
+                icon={Users}
                 color="green"
               />
             </div>
           </div>
         </div>
 
-        {/* Enhanced Content Grid with colorful borders */}
+        {/* Enhanced Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <div className="slide-up" style={{animationDelay: '1.0s'}}>
-            <div className="bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-indigo-200 rounded-2xl p-1 shadow-xl">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-cyan-500/10 rounded-2xl blur-xl" />
+            <div className="relative">
               <PrayerTimeCard />
             </div>
           </div>
-          <div className="slide-up" style={{animationDelay: '1.1s'}}>
-            <NoticeBoard />
+          
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 rounded-2xl blur-xl" />
+            <div className="relative bg-black/60 backdrop-blur-lg border-2 border-emerald-400/30 rounded-2xl">
+              <NoticeBoard />
+            </div>
           </div>
         </div>
 
-        {/* Floating Action Dots */}
-        <div className="fixed bottom-6 left-6 flex flex-col space-y-2">
-          <div className="w-3 h-3 bg-gradient-to-r from-red-400 to-pink-400 rounded-full animate-bounce"></div>
-          <div className="w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-          <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
-          <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full animate-bounce" style={{animationDelay: '0.6s'}}></div>
+        {/* Floating Action Indicators with neon effect */}
+        <div className="fixed bottom-6 right-6 flex flex-col space-y-3">
+          <div className="group relative">
+            <div className="absolute inset-0 bg-cyan-400/30 rounded-full blur-lg group-hover:bg-cyan-400/50 transition-all duration-300" />
+            <div className="relative w-4 h-4 bg-cyan-400 rounded-full animate-bounce shadow-lg" style={{ filter: 'drop-shadow(0 0 8px cyan)' }} />
+          </div>
+          <div className="group relative">
+            <div className="absolute inset-0 bg-purple-400/30 rounded-full blur-lg group-hover:bg-purple-400/50 transition-all duration-300" />
+            <div className="relative w-4 h-4 bg-purple-400 rounded-full animate-bounce shadow-lg" style={{animationDelay: '0.2s', filter: 'drop-shadow(0 0 8px purple)'}} />
+          </div>
+          <div className="group relative">
+            <div className="absolute inset-0 bg-green-400/30 rounded-full blur-lg group-hover:bg-green-400/50 transition-all duration-300" />
+            <div className="relative w-4 h-4 bg-green-400 rounded-full animate-bounce shadow-lg" style={{animationDelay: '0.4s', filter: 'drop-shadow(0 0 8px green)'}} />
+          </div>
+        </div>
+
+        {/* Performance metrics floating panel */}
+        <div className="fixed top-6 right-6 z-10">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-lg blur-lg group-hover:opacity-80 transition-all duration-300" />
+            <div className="relative bg-black/70 backdrop-blur-lg border border-cyan-400/30 rounded-lg p-3 shadow-xl">
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="w-4 h-4 text-cyan-400" />
+                <span className="text-cyan-300 text-xs font-medium">সিস্টেম সক্রিয়</span>
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

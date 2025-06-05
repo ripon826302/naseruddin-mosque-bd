@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Sparkles } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const PrayerTimeCard: React.FC = () => {
@@ -12,40 +12,40 @@ const PrayerTimeCard: React.FC = () => {
       time: settings.prayerTimes.fajr,
       nameArabic: 'الفجر',
       nameBangla: 'ফজর',
-      gradient: 'from-purple-500 to-indigo-500',
-      clockColor: 'text-purple-700'
+      neonColor: 'shadow-purple-500/50 border-purple-400 text-purple-300',
+      glowColor: 'shadow-purple-500/80'
     },
     {
       name: 'Dhuhr',
       time: settings.prayerTimes.dhuhr,
       nameArabic: 'الظهر',
       nameBangla: 'যোহর',
-      gradient: 'from-yellow-500 to-orange-500',
-      clockColor: 'text-orange-700'
+      neonColor: 'shadow-yellow-500/50 border-yellow-400 text-yellow-300',
+      glowColor: 'shadow-yellow-500/80'
     },
     {
       name: 'Asr',
       time: settings.prayerTimes.asr,
       nameArabic: 'العصر',
       nameBangla: 'আসর',
-      gradient: 'from-green-500 to-emerald-500',
-      clockColor: 'text-green-700'
+      neonColor: 'shadow-green-500/50 border-green-400 text-green-300',
+      glowColor: 'shadow-green-500/80'
     },
     {
       name: 'Maghrib',
       time: settings.prayerTimes.maghrib,
       nameArabic: 'المغرب',
       nameBangla: 'মাগরিব',
-      gradient: 'from-red-500 to-pink-500',
-      clockColor: 'text-red-700'
+      neonColor: 'shadow-red-500/50 border-red-400 text-red-300',
+      glowColor: 'shadow-red-500/80'
     },
     {
       name: 'Isha',
       time: settings.prayerTimes.isha,
       nameArabic: 'العشاء',
       nameBangla: 'এশা',
-      gradient: 'from-blue-500 to-indigo-500',
-      clockColor: 'text-blue-700'
+      neonColor: 'shadow-blue-500/50 border-blue-400 text-blue-300',
+      glowColor: 'shadow-blue-500/80'
     }
   ];
 
@@ -74,109 +74,169 @@ const PrayerTimeCard: React.FC = () => {
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+    return { hour: displayHour.toString().padStart(2, '0'), minutes, ampm };
   };
 
-  const ClockFace: React.FC<{ prayer: any, isNext: boolean }> = ({ prayer, isNext }) => {
-    const [hours, minutes] = prayer.time.split(':').map(Number);
-    const hourAngle = (hours % 12) * 30 + minutes * 0.5;
-    const minuteAngle = minutes * 6;
+  // 7-segment digit patterns
+  const segmentPatterns = {
+    '0': [1, 1, 1, 1, 1, 1, 0],
+    '1': [0, 1, 1, 0, 0, 0, 0],
+    '2': [1, 1, 0, 1, 1, 0, 1],
+    '3': [1, 1, 1, 1, 0, 0, 1],
+    '4': [0, 1, 1, 0, 0, 1, 1],
+    '5': [1, 0, 1, 1, 0, 1, 1],
+    '6': [1, 0, 1, 1, 1, 1, 1],
+    '7': [1, 1, 1, 0, 0, 0, 0],
+    '8': [1, 1, 1, 1, 1, 1, 1],
+    '9': [1, 1, 1, 1, 0, 1, 1]
+  };
 
+  const SevenSegmentDigit: React.FC<{ digit: string, color: string, isActive?: boolean }> = ({ digit, color, isActive = false }) => {
+    const pattern = segmentPatterns[digit] || [0, 0, 0, 0, 0, 0, 0];
+    const activeClass = isActive ? 'animate-pulse scale-110' : '';
+    
     return (
-      <div className={`relative w-32 h-32 ${isNext ? 'scale-110' : ''} transition-all duration-300`}>
-        {/* Clock Circle */}
-        <div className={`w-full h-full rounded-full border-4 ${isNext ? 'border-green-500 shadow-lg shadow-green-200' : 'border-gray-300'} bg-white relative`}>
-          {/* Hour markers */}
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-0.5 h-4 bg-gray-600"
-              style={{
-                top: '4px',
-                left: '50%',
-                transformOrigin: '50% 60px',
-                transform: `translateX(-50%) rotate(${i * 30}deg)`
-              }}
-            />
-          ))}
-          
-          {/* Hour hand */}
-          <div
-            className="absolute w-1 h-8 bg-gray-800 rounded-full"
-            style={{
-              top: '32px',
-              left: '50%',
-              transformOrigin: '50% 32px',
-              transform: `translateX(-50%) rotate(${hourAngle}deg)`
-            }}
-          />
-          
-          {/* Minute hand */}
-          <div
-            className="absolute w-0.5 h-12 bg-gray-600 rounded-full"
-            style={{
-              top: '16px',
-              left: '50%',
-              transformOrigin: '50% 48px',
-              transform: `translateX(-50%) rotate(${minuteAngle}deg)`
-            }}
-          />
-          
-          {/* Center dot */}
-          <div className="absolute w-2 h-2 bg-gray-800 rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      <div className={`relative w-16 h-24 ${activeClass} transition-all duration-300`}>
+        {/* Segment A (top) */}
+        <div className={`absolute top-0 left-2 w-10 h-2 ${pattern[0] ? `bg-current ${color}` : 'bg-gray-800/30'} 
+          transform skew-x-12 shadow-lg transition-all duration-300`} 
+          style={{ filter: pattern[0] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
+        
+        {/* Segment B (top right) */}
+        <div className={`absolute top-1 right-0 w-2 h-9 ${pattern[1] ? `bg-current ${color}` : 'bg-gray-800/30'} 
+          transform skew-y-12 shadow-lg transition-all duration-300`}
+          style={{ filter: pattern[1] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
+        
+        {/* Segment C (bottom right) */}
+        <div className={`absolute bottom-1 right-0 w-2 h-9 ${pattern[2] ? `bg-current ${color}` : 'bg-gray-800/30'} 
+          transform -skew-y-12 shadow-lg transition-all duration-300`}
+          style={{ filter: pattern[2] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
+        
+        {/* Segment D (bottom) */}
+        <div className={`absolute bottom-0 left-2 w-10 h-2 ${pattern[3] ? `bg-current ${color}` : 'bg-gray-800/30'} 
+          transform -skew-x-12 shadow-lg transition-all duration-300`}
+          style={{ filter: pattern[3] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
+        
+        {/* Segment E (bottom left) */}
+        <div className={`absolute bottom-1 left-0 w-2 h-9 ${pattern[4] ? `bg-current ${color}` : 'bg-gray-800/30'} 
+          transform skew-y-12 shadow-lg transition-all duration-300`}
+          style={{ filter: pattern[4] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
+        
+        {/* Segment F (top left) */}
+        <div className={`absolute top-1 left-0 w-2 h-9 ${pattern[5] ? `bg-current ${color}` : 'bg-gray-800/30'} 
+          transform -skew-y-12 shadow-lg transition-all duration-300`}
+          style={{ filter: pattern[5] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
+        
+        {/* Segment G (middle) */}
+        <div className={`absolute top-11 left-2 w-10 h-2 ${pattern[6] ? `bg-current ${color}` : 'bg-gray-800/30'} 
+          shadow-lg transition-all duration-300`}
+          style={{ filter: pattern[6] ? 'drop-shadow(0 0 8px currentColor)' : 'none' }} />
+      </div>
+    );
+  };
+
+  const LEDTimeDisplay: React.FC<{ prayer: any, isNext: boolean }> = ({ prayer, isNext }) => {
+    const { hour, minutes, ampm } = formatTime(prayer.time);
+    const color = isNext ? 'text-cyan-400' : prayer.neonColor.split(' ')[2];
+    
+    return (
+      <div className={`flex flex-col items-center p-6 rounded-2xl bg-black/90 border-2 backdrop-blur-lg
+        ${isNext ? 'border-cyan-400 shadow-cyan-400/50' : prayer.neonColor}
+        shadow-2xl transition-all duration-500 hover:scale-105 ${isNext ? 'animate-pulse' : ''}`}>
+        
+        {/* Prayer name in neon style */}
+        <div className={`text-center mb-4 ${isNext ? 'text-cyan-400' : color}`}>
+          <div className="text-2xl font-bold mb-1 filter drop-shadow-lg"
+            style={{ filter: `drop-shadow(0 0 10px currentColor)` }}>
+            {prayer.nameBangla}
+          </div>
+          <div className="text-lg font-arabic opacity-80">{prayer.nameArabic}</div>
         </div>
         
-        {/* Prayer name and time below clock */}
-        <div className="text-center mt-2">
-          <div className={`font-bold text-lg ${prayer.clockColor}`}>{prayer.nameBangla}</div>
-          <div className="text-2xl font-arabic text-gray-700">{prayer.nameArabic}</div>
-          <div className={`font-bold ${isNext ? 'text-green-600 text-lg' : 'text-gray-600'}`}>
-            {formatTime(prayer.time)}
+        {/* 7-segment time display */}
+        <div className="flex items-center space-x-2 mb-3">
+          <SevenSegmentDigit digit={hour[0]} color={color} isActive={isNext} />
+          <SevenSegmentDigit digit={hour[1]} color={color} isActive={isNext} />
+          
+          {/* Colon separator */}
+          <div className={`flex flex-col space-y-2 ${isNext ? 'text-cyan-400' : color}`}>
+            <div className="w-2 h-2 bg-current rounded-full shadow-lg"
+              style={{ filter: 'drop-shadow(0 0 6px currentColor)' }} />
+            <div className="w-2 h-2 bg-current rounded-full shadow-lg"
+              style={{ filter: 'drop-shadow(0 0 6px currentColor)' }} />
           </div>
+          
+          <SevenSegmentDigit digit={minutes[0]} color={color} isActive={isNext} />
+          <SevenSegmentDigit digit={minutes[1]} color={color} isActive={isNext} />
         </div>
+        
+        {/* AM/PM indicator */}
+        <div className={`text-sm font-bold ${isNext ? 'text-cyan-400' : color} opacity-80`}>
+          {ampm}
+        </div>
+        
+        {/* Next prayer indicator */}
+        {isNext && (
+          <div className="mt-3 px-3 py-1 bg-cyan-400/20 border border-cyan-400/40 rounded-full">
+            <span className="text-cyan-300 text-sm font-medium">পরবর্তী নামাজ</span>
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="mosque-card p-6">
-      {/* Header with Islamic pattern border */}
-      <div className="relative mb-8">
-        <div className="border-2 border-yellow-500 border-dashed p-4 bg-gradient-to-r from-green-800 to-emerald-800 text-white rounded-lg">
-          <h2 className="text-3xl font-bold text-center text-yellow-300 mb-2">নামাজের সময়সূচি</h2>
-          <p className="text-center text-yellow-200">{settings.name}</p>
-        </div>
-      </div>
+    <div className="relative overflow-hidden">
+      {/* Neon background effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl" />
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-green-900/20 rounded-2xl" />
       
-      {/* Prayer time clocks grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-8 justify-items-center">
-        {prayerTimes.map((prayer, index) => (
-          <div key={index} className="flex flex-col items-center">
-            <ClockFace 
+      <div className="relative mosque-card bg-black/60 border-2 border-cyan-400/30 backdrop-blur-lg">
+        {/* Animated header with sparkles */}
+        <div className="relative mb-8 p-6 bg-gradient-to-r from-purple-900/50 via-blue-900/50 to-green-900/50 rounded-lg border border-cyan-400/30">
+          <div className="absolute top-2 right-2">
+            <Sparkles className="w-6 h-6 text-cyan-400 animate-pulse" />
+          </div>
+          <div className="absolute top-2 left-2">
+            <Clock className="w-6 h-6 text-cyan-400 animate-bounce" />
+          </div>
+          
+          <h2 className="text-3xl font-bold text-center text-cyan-400 mb-2 filter drop-shadow-lg"
+            style={{ filter: 'drop-shadow(0 0 15px cyan)' }}>
+            নামাজের সময়সূচি
+          </h2>
+          <p className="text-center text-cyan-300/80">{settings.name}</p>
+          
+          {/* Animated border effect */}
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-cyan-500 to-green-500 animate-pulse" />
+        </div>
+        
+        {/* LED prayer time displays */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {prayerTimes.map((prayer, index) => (
+            <LEDTimeDisplay 
+              key={index} 
               prayer={prayer} 
               isNext={nextPrayer?.name === prayer.name}
             />
-            {nextPrayer?.name === prayer.name && (
-              <div className="mt-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                পরবর্তী নামাজ
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      
-      {/* Next prayer indicator */}
-      {nextPrayer && (
-        <div className="mt-8 p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl border-2 border-green-200 shadow-lg">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <p className="text-green-700 text-center font-bold">
-              পরবর্তী নামাজ: <span className="text-green-800">{nextPrayer.nameBangla}</span> - {formatTime(nextPrayer.time)}
-            </p>
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          </div>
+          ))}
         </div>
-      )}
+        
+        {/* Next prayer highlight banner */}
+        {nextPrayer && (
+          <div className="relative p-6 bg-gradient-to-r from-cyan-900/30 via-blue-900/30 to-purple-900/30 
+            rounded-2xl border-2 border-cyan-400/40 backdrop-blur-lg">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 to-purple-400/10 rounded-2xl animate-pulse" />
+            <div className="relative flex items-center justify-center space-x-4">
+              <div className="w-3 h-3 bg-cyan-400 rounded-full animate-ping" />
+              <p className="text-cyan-300 text-center font-bold text-lg filter drop-shadow-lg">
+                পরবর্তী নামাজ: <span className="text-cyan-400">{nextPrayer.nameBangla}</span> - {formatTime(nextPrayer.time).hour}:{formatTime(nextPrayer.time).minutes} {formatTime(nextPrayer.time).ampm}
+              </p>
+              <div className="w-3 h-3 bg-cyan-400 rounded-full animate-ping" />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
