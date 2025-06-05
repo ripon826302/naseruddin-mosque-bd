@@ -13,8 +13,7 @@ const PrayerTimeCard: React.FC = () => {
       nameArabic: 'الفجر',
       nameBangla: 'ফজর',
       gradient: 'from-purple-500 to-indigo-500',
-      bgGradient: 'from-purple-50 to-indigo-50',
-      borderColor: 'border-purple-200'
+      clockColor: 'text-purple-700'
     },
     {
       name: 'Dhuhr',
@@ -22,8 +21,7 @@ const PrayerTimeCard: React.FC = () => {
       nameArabic: 'الظهر',
       nameBangla: 'যোহর',
       gradient: 'from-yellow-500 to-orange-500',
-      bgGradient: 'from-yellow-50 to-orange-50',
-      borderColor: 'border-yellow-200'
+      clockColor: 'text-orange-700'
     },
     {
       name: 'Asr',
@@ -31,8 +29,7 @@ const PrayerTimeCard: React.FC = () => {
       nameArabic: 'العصر',
       nameBangla: 'আসর',
       gradient: 'from-green-500 to-emerald-500',
-      bgGradient: 'from-green-50 to-emerald-50',
-      borderColor: 'border-green-200'
+      clockColor: 'text-green-700'
     },
     {
       name: 'Maghrib',
@@ -40,8 +37,7 @@ const PrayerTimeCard: React.FC = () => {
       nameArabic: 'المغرب',
       nameBangla: 'মাগরিব',
       gradient: 'from-red-500 to-pink-500',
-      bgGradient: 'from-red-50 to-pink-50',
-      borderColor: 'border-red-200'
+      clockColor: 'text-red-700'
     },
     {
       name: 'Isha',
@@ -49,8 +45,7 @@ const PrayerTimeCard: React.FC = () => {
       nameArabic: 'العشاء',
       nameBangla: 'এশা',
       gradient: 'from-blue-500 to-indigo-500',
-      bgGradient: 'from-blue-50 to-indigo-50',
-      borderColor: 'border-blue-200'
+      clockColor: 'text-blue-700'
     }
   ];
 
@@ -58,20 +53,17 @@ const PrayerTimeCard: React.FC = () => {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
     
-    // Convert prayer times to minutes for comparison
     const prayerMinutes = prayerTimes.map(prayer => {
       const [hours, minutes] = prayer.time.split(':').map(Number);
       return { ...prayer, minutes: hours * 60 + minutes };
     });
     
-    // Find next prayer
     for (const prayer of prayerMinutes) {
       if (prayer.minutes > currentTime) {
         return prayer;
       }
     }
     
-    // If no prayer found today, return Fajr of next day
     return prayerTimes[0];
   };
 
@@ -85,66 +77,97 @@ const PrayerTimeCard: React.FC = () => {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  return (
-    <div className="mosque-card p-6 bg-gradient-to-br from-white via-green-50 to-emerald-50">
-      <div className="flex items-center mb-6">
-        <div className="p-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white mr-3">
-          <Clock size={24} />
+  const ClockFace: React.FC<{ prayer: any, isNext: boolean }> = ({ prayer, isNext }) => {
+    const [hours, minutes] = prayer.time.split(':').map(Number);
+    const hourAngle = (hours % 12) * 30 + minutes * 0.5;
+    const minuteAngle = minutes * 6;
+
+    return (
+      <div className={`relative w-32 h-32 ${isNext ? 'scale-110' : ''} transition-all duration-300`}>
+        {/* Clock Circle */}
+        <div className={`w-full h-full rounded-full border-4 ${isNext ? 'border-green-500 shadow-lg shadow-green-200' : 'border-gray-300'} bg-white relative`}>
+          {/* Hour markers */}
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-0.5 h-4 bg-gray-600"
+              style={{
+                top: '4px',
+                left: '50%',
+                transformOrigin: '50% 60px',
+                transform: `translateX(-50%) rotate(${i * 30}deg)`
+              }}
+            />
+          ))}
+          
+          {/* Hour hand */}
+          <div
+            className="absolute w-1 h-8 bg-gray-800 rounded-full"
+            style={{
+              top: '32px',
+              left: '50%',
+              transformOrigin: '50% 32px',
+              transform: `translateX(-50%) rotate(${hourAngle}deg)`
+            }}
+          />
+          
+          {/* Minute hand */}
+          <div
+            className="absolute w-0.5 h-12 bg-gray-600 rounded-full"
+            style={{
+              top: '16px',
+              left: '50%',
+              transformOrigin: '50% 48px',
+              transform: `translateX(-50%) rotate(${minuteAngle}deg)`
+            }}
+          />
+          
+          {/* Center dot */}
+          <div className="absolute w-2 h-2 bg-gray-800 rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
         </div>
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">নামাজের সময়</h3>
+        
+        {/* Prayer name and time below clock */}
+        <div className="text-center mt-2">
+          <div className={`font-bold text-lg ${prayer.clockColor}`}>{prayer.nameBangla}</div>
+          <div className="text-2xl font-arabic text-gray-700">{prayer.nameArabic}</div>
+          <div className={`font-bold ${isNext ? 'text-green-600 text-lg' : 'text-gray-600'}`}>
+            {formatTime(prayer.time)}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="mosque-card p-6">
+      {/* Header with Islamic pattern border */}
+      <div className="relative mb-8">
+        <div className="border-2 border-yellow-500 border-dashed p-4 bg-gradient-to-r from-green-800 to-emerald-800 text-white rounded-lg">
+          <h2 className="text-3xl font-bold text-center text-yellow-300 mb-2">নামাজের সময়সূচি</h2>
+          <p className="text-center text-yellow-200">{settings.name}</p>
+        </div>
       </div>
       
-      <div className="space-y-4">
+      {/* Prayer time clocks grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-8 justify-items-center">
         {prayerTimes.map((prayer, index) => (
-          <div
-            key={index}
-            className={`relative overflow-hidden rounded-2xl border-2 ${prayer.borderColor} transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${
-              nextPrayer?.name === prayer.name
-                ? 'ring-2 ring-green-400 ring-opacity-50 shadow-lg scale-[1.02]'
-                : ''
-            }`}
-          >
-            <div className={`bg-gradient-to-r ${prayer.bgGradient} p-4`}>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${prayer.gradient} flex items-center justify-center shadow-lg`}>
-                    <span className="text-white font-bold text-lg">{prayer.name.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <p className="font-bold text-gray-800 text-lg">{prayer.name}</p>
-                      <span className="text-2xl font-arabic text-gray-700">{prayer.nameArabic}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 font-medium">{prayer.nameBangla}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={`text-2xl font-bold ${
-                    nextPrayer?.name === prayer.name 
-                      ? 'text-green-700 animate-pulse' 
-                      : 'text-gray-700'
-                  }`}>
-                    {formatTime(prayer.time)}
-                  </div>
-                  {nextPrayer?.name === prayer.name && (
-                    <div className="text-xs text-green-600 font-medium">পরবর্তী নামাজ</div>
-                  )}
-                </div>
-              </div>
-            </div>
-            
+          <div key={index} className="flex flex-col items-center">
+            <ClockFace 
+              prayer={prayer} 
+              isNext={nextPrayer?.name === prayer.name}
+            />
             {nextPrayer?.name === prayer.name && (
-              <div className="absolute top-0 right-0 w-full h-full pointer-events-none">
-                <div className="absolute top-2 right-2 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
-                <div className="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full"></div>
+              <div className="mt-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                পরবর্তী নামাজ
               </div>
             )}
           </div>
         ))}
       </div>
       
+      {/* Next prayer indicator */}
       {nextPrayer && (
-        <div className="mt-6 p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl border-2 border-green-200 shadow-lg">
+        <div className="mt-8 p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl border-2 border-green-200 shadow-lg">
           <div className="flex items-center justify-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <p className="text-green-700 text-center font-bold">

@@ -16,7 +16,7 @@ interface DonorDetailsProps {
 }
 
 const DonorDetails: React.FC<DonorDetailsProps> = ({ donor, onClose }) => {
-  const { getMissingMonths, getDonorPaidMonths, income } = useMosqueStore();
+  const { getMissingMonths, getDonorPaidMonths, income, settings } = useMosqueStore();
   
   const missingMonths = getMissingMonths(donor.id);
   const paidMonths = getDonorPaidMonths(donor.id);
@@ -32,7 +32,41 @@ const DonorDetails: React.FC<DonorDetailsProps> = ({ donor, onClose }) => {
           <title>দাতার বিস্তারিত তথ্য - ${donor.name}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .mosque-header { 
+              text-align: center; 
+              margin-bottom: 30px; 
+              border: 3px solid #16a34a; 
+              padding: 20px; 
+              background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+              border-radius: 10px;
+            }
+            .mosque-name { 
+              font-size: 28px; 
+              font-weight: bold; 
+              color: #166534; 
+              margin-bottom: 8px;
+            }
+            .mosque-address { 
+              font-size: 16px; 
+              color: #15803d; 
+              margin-bottom: 15px;
+            }
+            .print-date { 
+              font-size: 14px; 
+              color: #374151; 
+            }
+            .donor-info { 
+              text-align: center; 
+              margin-bottom: 30px; 
+              border-bottom: 2px solid #16a34a; 
+              padding-bottom: 20px; 
+            }
+            .donor-name { 
+              font-size: 24px; 
+              font-weight: bold; 
+              color: #1f2937; 
+              margin-bottom: 10px;
+            }
             .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
             .info-item { margin-bottom: 10px; }
             .label { font-weight: bold; }
@@ -46,10 +80,15 @@ const DonorDetails: React.FC<DonorDetailsProps> = ({ donor, onClose }) => {
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>দাতার বিস্তারিত তথ্য</h1>
-            <h2>${donor.name}</h2>
-            <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
+          <div class="mosque-header">
+            <div class="mosque-name">${settings.name}</div>
+            <div class="mosque-address">${settings.address}</div>
+            <div class="print-date">প্রিন্ট তারিখ: ${new Date().toLocaleDateString('bn-BD')}</div>
+          </div>
+          
+          <div class="donor-info">
+            <div class="donor-name">দাতার বিস্তারিত তথ্য</div>
+            <div style="font-size: 20px; color: #1f2937;">${donor.name}</div>
           </div>
           
           <div class="info-grid">
@@ -248,7 +287,6 @@ const DonorDetails: React.FC<DonorDetailsProps> = ({ donor, onClose }) => {
             </Card>
           )}
 
-          {/* Missing Months */}
           {missingMonths.length > 0 && (
             <Card>
               <CardHeader>
