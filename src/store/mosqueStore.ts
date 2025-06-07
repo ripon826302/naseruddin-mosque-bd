@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Committee, Donor, Income, Expense, User } from '@/types/mosque';
@@ -15,6 +14,7 @@ interface MosqueSettings {
     asr: string;
     maghrib: string;
     isha: string;
+    jumma?: string; // Add jumma prayer time
   };
 }
 
@@ -85,7 +85,7 @@ interface MosqueStore {
   setupRealtimeSubscription: () => void;
 }
 
-// Default settings
+// Default settings with Jumma prayer
 const defaultSettings: MosqueSettings = {
   name: 'উত্তর জুরকাঠী নছের উদ্দিন জামে মসজিদ',
   address: 'উত্তর জুরকাঠী, নলছিটি, ঝালকাঠী',
@@ -96,7 +96,8 @@ const defaultSettings: MosqueSettings = {
     dhuhr: '12:30',
     asr: '16:15',
     maghrib: '18:45',
-    isha: '20:15'
+    isha: '20:15',
+    jumma: '13:30' // Add default Jumma time
   }
 };
 
