@@ -8,11 +8,10 @@ interface StatCardProps {
   value: number | string;
   icon: LucideIcon;
   color: 'green' | 'blue' | 'orange' | 'red';
-  trend?: string;
   isCurrency?: boolean;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, trend, isCurrency = false }) => {
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, isCurrency = false }) => {
   const colorClasses = {
     green: 'bg-green-50 border-green-200 text-green-800',
     blue: 'bg-blue-50 border-blue-200 text-blue-800',
@@ -35,9 +34,6 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, tr
           <p className="text-2xl font-bold">
             {isCurrency ? formatCurrency(Number(value)) : value}
           </p>
-          {trend && (
-            <p className="text-xs opacity-60 mt-1">{trend}</p>
-          )}
         </div>
         <div className={`p-3 rounded-xl ${iconColorClasses[color]} bg-white/50`}>
           <Icon size={24} />

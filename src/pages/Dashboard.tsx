@@ -4,8 +4,6 @@ import { useMosqueStore } from '@/store/mosqueStore';
 import PrayerTimeCard from '@/components/dashboard/PrayerTimeCard';
 import StatCard from '@/components/dashboard/StatCard';
 import NoticeBoard from '@/components/dashboard/NoticeBoard';
-import ScrollingNoticeBoard from '@/components/dashboard/ScrollingNoticeBoard';
-import DueAmountsCard from '@/components/dashboard/DueAmountsCard';
 import { Users, DollarSign, TrendingUp, Building } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -15,8 +13,7 @@ const Dashboard: React.FC = () => {
     getTotalExpenses, 
     getBalance,
     donors,
-    committee,
-    imam
+    committee
   } = useMosqueStore();
 
   const totalIncome = getTotalIncome();
@@ -29,43 +26,39 @@ const Dashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-red-400 mb-2">
+          <h1 className="text-4xl font-bold text-white mb-2">
             {settings.name}
           </h1>
           <p className="text-gray-400">{settings.address}</p>
         </div>
 
-        {/* Scrolling Notice Board */}
-        <ScrollingNoticeBoard />
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="মোট আয়"
-            value={`৳${totalIncome.toLocaleString()}`}
+            value={totalIncome}
             icon={DollarSign}
-            trend="+5.2%"
             color="green"
+            isCurrency
           />
           <StatCard
             title="মোট খরচ"
-            value={`৳${totalExpenses.toLocaleString()}`}
+            value={totalExpenses}
             icon={TrendingUp}
-            trend="+2.1%"
             color="red"
+            isCurrency
           />
           <StatCard
             title="ব্যালেন্স"
-            value={`৳${balance.toLocaleString()}`}
+            value={balance}
             icon={Building}
-            trend={balance >= 0 ? "+3.1%" : "-1.2%"}
             color={balance >= 0 ? "green" : "red"}
+            isCurrency
           />
           <StatCard
             title="সক্রিয় দাতা"
-            value={activeDonors.toString()}
+            value={activeDonors}
             icon={Users}
-            trend="+1"
             color="blue"
           />
         </div>
@@ -77,15 +70,10 @@ const Dashboard: React.FC = () => {
             <PrayerTimeCard />
           </div>
 
-          {/* Due Amounts */}
+          {/* Notice Board */}
           <div>
-            <DueAmountsCard />
+            <NoticeBoard />
           </div>
-        </div>
-
-        {/* Bottom Notice Board */}
-        <div className="mt-8">
-          <NoticeBoard />
         </div>
       </div>
     </div>

@@ -1,14 +1,10 @@
 
 import React from 'react';
-import { Clock, Sunrise, Sun, Sunset, Moon, Star, Calendar } from 'lucide-react';
+import { Clock, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const PrayerTimeCard: React.FC = () => {
   const { settings } = useMosqueStore();
-  
-  const today = new Date();
-  const isJummah = today.getDay() === 5; // Friday is 5
-  const isRamadan = settings.prayerTimes.ramadan_mode || false;
   
   const prayerTimes = [
     {
@@ -55,40 +51,8 @@ const PrayerTimeCard: React.FC = () => {
       color: 'from-purple-500 to-indigo-500',
       bgColor: 'bg-purple-500/20',
       borderColor: 'border-purple-400/30'
-    },
-    {
-      name: 'জুমআ',
-      nameArabic: 'الجمعة',
-      time: settings.prayerTimes.jumma || '13:30',
-      icon: Calendar,
-      color: 'from-green-500 to-emerald-500',
-      bgColor: 'bg-green-500/20',
-      borderColor: 'border-green-400/30'
     }
   ];
-
-  // Add Ramadan times if enabled
-  if (isRamadan) {
-    prayerTimes.unshift({
-      name: 'সাহরী',
-      nameArabic: 'السحور',
-      time: settings.prayerTimes.suhur || '04:30',
-      icon: Star,
-      color: 'from-cyan-500 to-blue-500',
-      bgColor: 'bg-cyan-500/20',
-      borderColor: 'border-cyan-400/30'
-    });
-    
-    prayerTimes.splice(5, 0, {
-      name: 'ইফতার',
-      nameArabic: 'الإفطار',
-      time: settings.prayerTimes.iftar || '18:30',
-      icon: Sunset,
-      color: 'from-amber-500 to-orange-500',
-      bgColor: 'bg-amber-500/20',
-      borderColor: 'border-amber-400/30'
-    });
-  }
 
   return (
     <div className="bg-gray-900/95 backdrop-blur-lg border border-gray-700/50 rounded-2xl p-6 shadow-2xl">
@@ -96,23 +60,9 @@ const PrayerTimeCard: React.FC = () => {
         <div className="bg-blue-500/20 p-3 rounded-full border border-blue-400/30">
           <Clock className="h-6 w-6 text-blue-300" />
         </div>
-        <div>
-          <h3 className="text-xl font-bold text-blue-300">
-            নামাজের সময়সূচি
-          </h3>
-          {isJummah && (
-            <div className="flex items-center space-x-2 mt-1">
-              <Calendar className="h-4 w-4 text-green-400" />
-              <span className="text-green-300 text-sm font-medium">আজ জুমআবার</span>
-            </div>
-          )}
-          {isRamadan && (
-            <div className="flex items-center space-x-2 mt-1">
-              <Star className="h-4 w-4 text-amber-400" />
-              <span className="text-amber-300 text-sm font-medium">রমজান মাস</span>
-            </div>
-          )}
-        </div>
+        <h3 className="text-xl font-bold text-blue-300">
+          নামাজের সময়সূচি
+        </h3>
       </div>
       
       <div className="space-y-3">
@@ -135,9 +85,6 @@ const PrayerTimeCard: React.FC = () => {
                     <div className="text-white font-bold text-xl">
                       {prayer.time}
                     </div>
-                    {prayer.name === 'জুমআ' && (
-                      <div className="text-green-300 text-xs">শুক্রবার বিশেষ</div>
-                    )}
                   </div>
                 </div>
               </div>

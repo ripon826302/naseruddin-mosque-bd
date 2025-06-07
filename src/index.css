@@ -71,25 +71,6 @@
   }
 }
 
-/* Custom animations */
-@keyframes marquee {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-}
-
-.digital-font {
-  font-family: 'Courier New', monospace;
-  text-shadow: 0 0 10px currentColor;
-}
-
 /* Scrollbar styles */
 ::-webkit-scrollbar {
   width: 8px;

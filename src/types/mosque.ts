@@ -72,22 +72,3 @@ export interface User {
   role: 'admin' | 'viewer';
   name: string;
 }
-
-export interface Imam {
-  id: string;
-  name: string;
-  phone: string;
-  address: string;
-  monthlySalary: number;
-  joinDate: string;
-  status: 'Active' | 'Inactive';
-}
-
-export interface SalaryHistory {
-  id: string;
-  imamId: string;
-  oldSalary: number;
-  newSalary: number;
-  changeDate: string;
-  reason?: string;
-}
