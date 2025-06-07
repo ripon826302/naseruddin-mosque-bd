@@ -51,6 +51,8 @@ interface MosqueStore {
   getTotalExpenses: () => number;
   getBalance: () => number;
   getMissingMonths: (donorId: string) => string[];
+  getDonorPaidMonths: (donorId: string) => string[];
+  changePassword: (newPassword: string) => void;
 }
 
 const useStore = create<MosqueStore>((set, get) => ({
@@ -335,6 +337,19 @@ const useStore = create<MosqueStore>((set, get) => ({
     }
     
     return missingMonths;
+  },
+
+  getDonorPaidMonths: (donorId: string) => {
+    const { income } = get();
+    return income
+      .filter(i => i.donorId === donorId && i.source === 'Monthly Donation')
+      .map(i => i.month || '')
+      .filter(month => month !== '');
+  },
+
+  changePassword: (newPassword: string) => {
+    // Simple password change - in a real app this would be more secure
+    console.log('Password changed to:', newPassword);
   }
 }));
 
