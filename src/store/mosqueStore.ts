@@ -1,6 +1,7 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Committee, Donor, Income, Expense, User } from '@/types/mosque';
+import { Committee, Donor, Income, Expense, User, Imam, SalaryHistory } from '@/types/mosque';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface MosqueSettings {
@@ -14,7 +15,10 @@ interface MosqueSettings {
     asr: string;
     maghrib: string;
     isha: string;
-    jumma?: string; // Add jumma prayer time
+    jumma?: string;
+    suhur?: string;
+    iftar?: string;
+    ramadan_mode?: boolean;
   };
 }
 
@@ -74,6 +78,16 @@ interface MosqueStore {
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   deleteExpense: (id: string) => void;
   
+  // Imam Management
+  imam: Imam[];
+  addImam: (imam: Omit<Imam, 'id'>) => void;
+  updateImam: (id: string, imam: Partial<Imam>) => void;
+  deleteImam: (id: string) => void;
+  
+  // Salary History
+  salaryHistory: SalaryHistory[];
+  addSalaryHistory: (history: Omit<SalaryHistory, 'id'>) => void;
+  
   // Calculations
   getTotalIncome: () => number;
   getTotalExpenses: () => number;
@@ -85,10 +99,10 @@ interface MosqueStore {
   setupRealtimeSubscription: () => void;
 }
 
-// Default settings with Jumma prayer
+// Default settings with all prayer times
 const defaultSettings: MosqueSettings = {
-  name: 'উত্তর জুরকাঠী নছের উদ্দিন জামে মসজিদ',
-  address: 'উত্তর জুরকাঠী, নলছিটি, ঝালকাঠী',
+  name: 'বায়তুল আমান জামে মসজিদ',
+  address: 'ঢাকা, বাংলাদেশ',
   phone: '01712345678',
   email: 'mosque@email.com',
   prayerTimes: {
@@ -97,7 +111,10 @@ const defaultSettings: MosqueSettings = {
     asr: '16:15',
     maghrib: '18:45',
     isha: '20:15',
-    jumma: '13:30' // Add default Jumma time
+    jumma: '13:30',
+    suhur: '04:30',
+    iftar: '18:30',
+    ramadan_mode: false
   }
 };
 
@@ -175,6 +192,18 @@ const demoNotices: Notice[] = [
   }
 ];
 
+const demoImam: Imam[] = [
+  {
+    id: '1',
+    name: 'মাওলানা আব্দুল করিম',
+    phone: '01712345678',
+    address: 'ঢাকা, বাংলাদেশ',
+    monthlySalary: 15000,
+    joinDate: '2024-01-01',
+    status: 'Active'
+  }
+];
+
 export const useMosqueStore = create<MosqueStore>()(
   persist(
     (set, get) => ({
@@ -184,7 +213,6 @@ export const useMosqueStore = create<MosqueStore>()(
         const updatedSettings = { ...get().settings, ...newSettings };
         set({ settings: updatedSettings });
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('mosque_settings').upsert({
@@ -218,7 +246,6 @@ export const useMosqueStore = create<MosqueStore>()(
           notices: [...state.notices, newNotice]
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('notices').insert({
@@ -241,7 +268,6 @@ export const useMosqueStore = create<MosqueStore>()(
           notices: state.notices.map(n => n.id === id ? { ...n, ...notice } : n)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('notices').update(notice).eq('id', id);
@@ -257,7 +283,6 @@ export const useMosqueStore = create<MosqueStore>()(
           notices: state.notices.filter(n => n.id !== id)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('notices').delete().eq('id', id);
@@ -269,7 +294,6 @@ export const useMosqueStore = create<MosqueStore>()(
         }
       },
       
-      // Auth - Start as viewer
       user: { id: 'viewer', username: 'viewer', role: 'viewer', name: 'দর্শক' },
       isAuthenticated: true,
       adminCredentials: { username: 'admin', password: 'admin123' },
@@ -302,7 +326,6 @@ export const useMosqueStore = create<MosqueStore>()(
           committee: [...state.committee, newMember]
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('committee').insert({
@@ -326,7 +349,6 @@ export const useMosqueStore = create<MosqueStore>()(
           committee: state.committee.map(m => m.id === id ? { ...m, ...member } : m)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('committee').update({
@@ -349,7 +371,6 @@ export const useMosqueStore = create<MosqueStore>()(
           committee: state.committee.filter(m => m.id !== id)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('committee').delete().eq('id', id);
@@ -368,7 +389,6 @@ export const useMosqueStore = create<MosqueStore>()(
           donors: [...state.donors, newDonor]
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('donors').insert({
@@ -393,7 +413,6 @@ export const useMosqueStore = create<MosqueStore>()(
           donors: state.donors.map(d => d.id === id ? { ...d, ...donor } : d)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('donors').update({
@@ -417,7 +436,6 @@ export const useMosqueStore = create<MosqueStore>()(
           donors: state.donors.filter(d => d.id !== id)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('donors').delete().eq('id', id);
@@ -471,7 +489,6 @@ export const useMosqueStore = create<MosqueStore>()(
           income: [...state.income, newIncome]
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('income').insert({
@@ -496,7 +513,6 @@ export const useMosqueStore = create<MosqueStore>()(
           income: state.income.filter(i => i.id !== id)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('income').delete().eq('id', id);
@@ -515,7 +531,6 @@ export const useMosqueStore = create<MosqueStore>()(
           expenses: [...state.expenses, newExpense]
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('expenses').insert({
@@ -538,12 +553,104 @@ export const useMosqueStore = create<MosqueStore>()(
           expenses: state.expenses.filter(e => e.id !== id)
         }));
         
-        // Sync to Supabase
         if (isSupabaseConfigured() && supabase) {
           try {
             const { error } = await supabase.from('expenses').delete().eq('id', id);
             if (error) throw error;
             console.log('Expense deleted from Supabase successfully');
+          } catch (error) {
+            console.log('Supabase sync failed, using local storage only:', error);
+          }
+        }
+      },
+      
+      // Imam Management
+      imam: demoImam,
+      addImam: async (imam) => {
+        const newImam = { ...imam, id: Date.now().toString() };
+        set((state) => ({
+          imam: [...state.imam, newImam]
+        }));
+        
+        if (isSupabaseConfigured() && supabase) {
+          try {
+            const { error } = await supabase.from('imam').insert({
+              id: newImam.id,
+              name: newImam.name,
+              phone: newImam.phone,
+              address: newImam.address,
+              monthly_salary: newImam.monthlySalary,
+              join_date: newImam.joinDate,
+              status: newImam.status
+            });
+            
+            if (error) throw error;
+            console.log('Imam synced to Supabase successfully');
+          } catch (error) {
+            console.log('Supabase sync failed, using local storage only:', error);
+          }
+        }
+      },
+      updateImam: async (id, imam) => {
+        set((state) => ({
+          imam: state.imam.map(i => i.id === id ? { ...i, ...imam } : i)
+        }));
+        
+        if (isSupabaseConfigured() && supabase) {
+          try {
+            const { error } = await supabase.from('imam').update({
+              name: imam.name,
+              phone: imam.phone,
+              address: imam.address,
+              monthly_salary: imam.monthlySalary,
+              join_date: imam.joinDate,
+              status: imam.status
+            }).eq('id', id);
+            
+            if (error) throw error;
+            console.log('Imam updated in Supabase successfully');
+          } catch (error) {
+            console.log('Supabase sync failed, using local storage only:', error);
+          }
+        }
+      },
+      deleteImam: async (id) => {
+        set((state) => ({
+          imam: state.imam.filter(i => i.id !== id)
+        }));
+        
+        if (isSupabaseConfigured() && supabase) {
+          try {
+            const { error } = await supabase.from('imam').delete().eq('id', id);
+            if (error) throw error;
+            console.log('Imam deleted from Supabase successfully');
+          } catch (error) {
+            console.log('Supabase sync failed, using local storage only:', error);
+          }
+        }
+      },
+      
+      // Salary History
+      salaryHistory: [],
+      addSalaryHistory: async (history) => {
+        const newHistory = { ...history, id: Date.now().toString() };
+        set((state) => ({
+          salaryHistory: [...state.salaryHistory, newHistory]
+        }));
+        
+        if (isSupabaseConfigured() && supabase) {
+          try {
+            const { error } = await supabase.from('salary_history').insert({
+              id: newHistory.id,
+              imam_id: newHistory.imamId,
+              old_salary: newHistory.oldSalary,
+              new_salary: newHistory.newSalary,
+              change_date: newHistory.changeDate,
+              reason: newHistory.reason
+            });
+            
+            if (error) throw error;
+            console.log('Salary history synced to Supabase successfully');
           } catch (error) {
             console.log('Supabase sync failed, using local storage only:', error);
           }
@@ -574,7 +681,6 @@ export const useMosqueStore = create<MosqueStore>()(
           console.log('Force syncing all data to Supabase...');
           const state = get();
           
-          // Sync all data to Supabase
           await Promise.all([
             supabase.from('mosque_settings').upsert({
               id: '1',
@@ -628,6 +734,17 @@ export const useMosqueStore = create<MosqueStore>()(
             ),
             supabase.from('notices').delete().neq('id', '').then(() => 
               supabase.from('notices').insert(state.notices)
+            ),
+            supabase.from('imam').delete().neq('id', '').then(() => 
+              supabase.from('imam').insert(state.imam.map(i => ({
+                id: i.id,
+                name: i.name,
+                phone: i.phone,
+                address: i.address,
+                monthly_salary: i.monthlySalary,
+                join_date: i.joinDate,
+                status: i.status
+              })))
             )
           ]);
           
@@ -646,17 +763,15 @@ export const useMosqueStore = create<MosqueStore>()(
         try {
           console.log('Loading data from Supabase...');
           
-          // Load all data from Supabase
-          const [donorsData, incomeData, expensesData, committeeData, noticesData, settingsData] = await Promise.all([
+          const [donorsData, incomeData, expensesData, committeeData, noticesData, settingsData, imamData] = await Promise.all([
             supabase.from('donors').select('*'),
             supabase.from('income').select('*'),
             supabase.from('expenses').select('*'),
             supabase.from('committee').select('*'),
             supabase.from('notices').select('*'),
-            supabase.from('mosque_settings').select('*').limit(1).single()
+            supabase.from('mosque_settings').select('*').limit(1).single(),
+            supabase.from('imam').select('*')
           ]);
-          
-          const state = get();
           
           if (donorsData.data && donorsData.data.length > 0) {
             const mappedDonors = donorsData.data.map(d => ({
@@ -723,6 +838,19 @@ export const useMosqueStore = create<MosqueStore>()(
             set({ settings: mappedSettings });
           }
           
+          if (imamData.data && imamData.data.length > 0) {
+            const mappedImam = imamData.data.map(i => ({
+              id: i.id,
+              name: i.name,
+              phone: i.phone,
+              address: i.address,
+              monthlySalary: i.monthly_salary,
+              joinDate: i.join_date,
+              status: i.status
+            }));
+            set({ imam: mappedImam });
+          }
+          
           console.log('Data loaded from Supabase successfully');
           
         } catch (error) {
@@ -738,8 +866,7 @@ export const useMosqueStore = create<MosqueStore>()(
         }
         
         try {
-          // Setup realtime subscriptions for all tables
-          const tables = ['donors', 'income', 'expenses', 'committee', 'notices', 'mosque_settings'];
+          const tables = ['donors', 'income', 'expenses', 'committee', 'notices', 'mosque_settings', 'imam'];
           
           tables.forEach(table => {
             supabase
@@ -748,7 +875,6 @@ export const useMosqueStore = create<MosqueStore>()(
                 { event: '*', schema: 'public', table }, 
                 (payload) => {
                   console.log(`${table} table changed:`, payload);
-                  // Reload data when any table changes
                   get().loadFromSupabase();
                 }
               )

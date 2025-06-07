@@ -8,6 +8,7 @@ const PrayerTimeCard: React.FC = () => {
   
   const today = new Date();
   const isJummah = today.getDay() === 5; // Friday is 5
+  const isRamadan = settings.prayerTimes.ramadan_mode || false;
   
   const prayerTimes = [
     {
@@ -54,33 +55,49 @@ const PrayerTimeCard: React.FC = () => {
       color: 'from-purple-500 to-indigo-500',
       bgColor: 'bg-purple-500/20',
       borderColor: 'border-purple-400/30'
-    }
-  ];
-
-  // Add Jumma prayer if it's Friday
-  if (isJummah && settings.prayerTimes.jumma) {
-    prayerTimes.splice(1, 0, {
+    },
+    {
       name: 'জুমআ',
       nameArabic: 'الجمعة',
-      time: settings.prayerTimes.jumma,
+      time: settings.prayerTimes.jumma || '13:30',
       icon: Calendar,
       color: 'from-green-500 to-emerald-500',
       bgColor: 'bg-green-500/20',
       borderColor: 'border-green-400/30'
+    }
+  ];
+
+  // Add Ramadan times if enabled
+  if (isRamadan) {
+    prayerTimes.unshift({
+      name: 'সাহরী',
+      nameArabic: 'السحور',
+      time: settings.prayerTimes.suhur || '04:30',
+      icon: Star,
+      color: 'from-cyan-500 to-blue-500',
+      bgColor: 'bg-cyan-500/20',
+      borderColor: 'border-cyan-400/30'
+    });
+    
+    prayerTimes.splice(5, 0, {
+      name: 'ইফতার',
+      nameArabic: 'الإفطار',
+      time: settings.prayerTimes.iftar || '18:30',
+      icon: Sunset,
+      color: 'from-amber-500 to-orange-500',
+      bgColor: 'bg-amber-500/20',
+      borderColor: 'border-amber-400/30'
     });
   }
 
   return (
-    <div className="bg-black/60 backdrop-blur-lg border-2 border-indigo-400/30 rounded-2xl p-6 shadow-2xl">
+    <div className="bg-gray-900/95 backdrop-blur-lg border border-gray-700/50 rounded-2xl p-6 shadow-2xl">
       <div className="flex items-center space-x-3 mb-6">
-        <div className="relative">
-          <div className="absolute inset-0 bg-indigo-400/30 rounded-full blur-lg animate-pulse" />
-          <div className="relative bg-indigo-500/20 p-3 rounded-full border border-indigo-400/30">
-            <Clock className="h-6 w-6 text-indigo-300" />
-          </div>
+        <div className="bg-blue-500/20 p-3 rounded-full border border-blue-400/30">
+          <Clock className="h-6 w-6 text-blue-300" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-indigo-300 digital-font" style={{filter: 'drop-shadow(0 0 10px indigo)'}}>
+          <h3 className="text-xl font-bold text-blue-300">
             নামাজের সময়সূচি
           </h3>
           {isJummah && (
@@ -89,23 +106,25 @@ const PrayerTimeCard: React.FC = () => {
               <span className="text-green-300 text-sm font-medium">আজ জুমআবার</span>
             </div>
           )}
+          {isRamadan && (
+            <div className="flex items-center space-x-2 mt-1">
+              <Star className="h-4 w-4 text-amber-400" />
+              <span className="text-amber-300 text-sm font-medium">রমজান মাস</span>
+            </div>
+          )}
         </div>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-3">
         {prayerTimes.map((prayer, index) => {
           const IconComponent = prayer.icon;
           return (
             <div key={index} className="relative group">
-              <div className={`absolute inset-0 bg-gradient-to-r ${prayer.color} opacity-10 rounded-xl blur-lg group-hover:opacity-20 transition-all duration-300`} />
-              <div className={`relative ${prayer.bgColor} backdrop-blur-lg border ${prayer.borderColor} rounded-xl p-4 hover:border-opacity-50 transition-all duration-300`}>
+              <div className={`${prayer.bgColor} backdrop-blur-lg border ${prayer.borderColor} rounded-xl p-4 hover:border-opacity-50 transition-all duration-300`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="relative">
-                      <div className={`absolute inset-0 bg-gradient-to-r ${prayer.color} opacity-30 rounded-full blur-lg`} />
-                      <div className={`relative ${prayer.bgColor} p-2 rounded-full border ${prayer.borderColor}`}>
-                        <IconComponent className="h-5 w-5 text-white" />
-                      </div>
+                    <div className={`${prayer.bgColor} p-2 rounded-full border ${prayer.borderColor}`}>
+                      <IconComponent className="h-5 w-5 text-white" />
                     </div>
                     <div>
                       <div className="text-white font-semibold text-lg">{prayer.name}</div>
@@ -113,7 +132,7 @@ const PrayerTimeCard: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-white font-bold text-xl digital-font" style={{filter: 'drop-shadow(0 0 5px currentColor)'}}>
+                    <div className="text-white font-bold text-xl">
                       {prayer.time}
                     </div>
                     {prayer.name === 'জুমআ' && (
@@ -125,13 +144,6 @@ const PrayerTimeCard: React.FC = () => {
             </div>
           );
         })}
-      </div>
-      
-      <div className="mt-6 p-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl border border-cyan-400/20">
-        <div className="flex items-center space-x-2">
-          <Star className="h-4 w-4 text-cyan-300 animate-pulse" />
-          <span className="text-cyan-300 text-sm">নামাজ আদায়ের জন্য প্রস্তুত থাকুন</span>
-        </div>
       </div>
     </div>
   );

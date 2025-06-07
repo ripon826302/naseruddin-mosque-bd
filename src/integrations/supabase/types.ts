@@ -102,6 +102,42 @@ export type Database = {
         }
         Relationships: []
       }
+      imam: {
+        Row: {
+          address: string
+          created_at: string | null
+          id: string
+          join_date: string
+          monthly_salary: number
+          name: string
+          phone: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          id?: string
+          join_date: string
+          monthly_salary: number
+          name: string
+          phone: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          id?: string
+          join_date?: string
+          monthly_salary?: number
+          name?: string
+          phone?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       income: {
         Row: {
           amount: number
@@ -202,6 +238,44 @@ export type Database = {
           type?: string
         }
         Relationships: []
+      }
+      salary_history: {
+        Row: {
+          change_date: string
+          created_at: string | null
+          id: string
+          imam_id: string | null
+          new_salary: number
+          old_salary: number
+          reason: string | null
+        }
+        Insert: {
+          change_date?: string
+          created_at?: string | null
+          id?: string
+          imam_id?: string | null
+          new_salary: number
+          old_salary: number
+          reason?: string | null
+        }
+        Update: {
+          change_date?: string
+          created_at?: string | null
+          id?: string
+          imam_id?: string | null
+          new_salary?: number
+          old_salary?: number
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_history_imam_id_fkey"
+            columns: ["imam_id"]
+            isOneToOne: false
+            referencedRelation: "imam"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
