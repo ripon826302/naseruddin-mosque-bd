@@ -4,7 +4,7 @@ import { AlertTriangle, Users, User } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const DueAmountsCard: React.FC = () => {
-  const { donors, income, imam } = useMosqueStore();
+  const { donors, income, expenses, imam } = useMosqueStore();
   
   // Calculate donor dues
   const donorDues = donors.filter(donor => {
@@ -40,11 +40,11 @@ const DueAmountsCard: React.FC = () => {
     return missingMonths;
   }
 
-  // Calculate imam salary dues (simplified - checking if current month salary is paid)
+  // Calculate imam salary dues by checking expenses instead of income
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const imamSalaryPaid = income.some(i => 
-    i.source === 'Imam Salary' && 
-    i.month === currentMonth
+  const imamSalaryPaid = expenses.some(e => 
+    e.type === 'Imam Salary' && 
+    e.month === currentMonth
   );
 
   const totalDonorDues = donorDues.reduce((sum, donor) => sum + donor.dueAmount, 0);
