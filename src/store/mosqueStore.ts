@@ -158,6 +158,24 @@ const useStore = create<MosqueStore>((set, get) => ({
       description: 'সাপ্তাহিক জুমার নামাজ',
       type: 'Prayer',
       location: 'মূল নামাজ ঘর'
+    },
+    {
+      id: '2',
+      title: 'মিলাদ মাহফিল',
+      date: '2024-01-25',
+      time: '20:00',
+      description: 'বার্ষিক মিলাদ মাহফিল অনুষ্ঠান',
+      type: 'Program',
+      location: 'মূল হল'
+    },
+    {
+      id: '3',
+      title: 'কুরআন তেলাওয়াত প্রতিযোগিতা',
+      date: '2024-02-01',
+      time: '16:00',
+      description: 'শিশুদের কুরআন তেলাওয়াত প্রতিযোগিতা',
+      type: 'Event',
+      location: 'উপরের হল'
     }
   ],
   notices: [

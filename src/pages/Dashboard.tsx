@@ -5,9 +5,15 @@ import PrayerTimeCard from '@/components/dashboard/PrayerTimeCard';
 import StatCard from '@/components/dashboard/StatCard';
 import ScrollingNoticeBoard from '@/components/dashboard/ScrollingNoticeBoard';
 import DueAmountsCard from '@/components/dashboard/DueAmountsCard';
-import { Users, DollarSign, TrendingUp, Building, UserCheck, AlertTriangle } from 'lucide-react';
+import QuickActions from '@/components/dashboard/QuickActions';
+import RecentActivity from '@/components/dashboard/RecentActivity';
+import { Users, DollarSign, TrendingUp, Building, UserCheck, AlertTriangle, Calendar, FileText } from 'lucide-react';
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  onPageChange?: (page: string) => void;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
   const { 
     settings, 
     getTotalIncome, 
@@ -15,6 +21,8 @@ const Dashboard: React.FC = () => {
     getBalance,
     donors,
     committee,
+    imams,
+    events,
     getDefaulters,
     getTotalDueAmount
   } = useMosqueStore();
@@ -25,6 +33,8 @@ const Dashboard: React.FC = () => {
   const activeDonors = donors.filter(d => d.status === 'Active').length;
   const defaultersCount = getDefaulters().length;
   const totalDue = getTotalDueAmount();
+  const upcomingEvents = events.filter(e => new Date(e.date) >= new Date()).length;
+  const totalImams = imams.filter(i => i.status === 'Active').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
@@ -35,36 +45,60 @@ const Dashboard: React.FC = () => {
             {settings.name}
           </h1>
           <p className="text-gray-400">{settings.address}</p>
+          <div className="mt-4 flex justify-center space-x-4 text-sm text-gray-500">
+            <span>📧 {settings.email}</span>
+            <span>📞 {settings.phone}</span>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
-          <StatCard
-            title="মোট আয়"
-            value={totalIncome}
-            icon={DollarSign}
-            color="green"
-            isCurrency
-            trend={12}
-            subtitle="এই মাসে"
-          />
-          <StatCard
-            title="মোট খরচ"
-            value={totalExpenses}
-            icon={TrendingUp}
-            color="red"
-            isCurrency
-            trend={-5}
-            subtitle="এই মাসে"
-          />
-          <StatCard
-            title="ব্যালেন্স"
-            value={balance}
-            icon={Building}
-            color={balance >= 0 ? "blue" : "red"}
-            isCurrency
-            subtitle="বর্তমান"
-          />
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-8">
+          <div className="xl:col-span-2">
+            <StatCard
+              title="মোট আয়"
+              value={totalIncome}
+              icon={DollarSign}
+              color="green"
+              isCurrency
+              trend={12}
+              subtitle="এই মাসে"
+            />
+          </div>
+          <div className="xl:col-span-2">
+            <StatCard
+              title="মোট খরচ"
+              value={totalExpenses}
+              icon={TrendingUp}
+              color="red"
+              isCurrency
+              trend={-5}
+              subtitle="এই মাসে"
+            />
+          </div>
+          <div className="xl:col-span-2">
+            <StatCard
+              title="ব্যালেন্স"
+              value={balance}
+              icon={Building}
+              color={balance >= 0 ? "blue" : "red"}
+              isCurrency
+              subtitle="বর্তমান"
+            />
+          </div>
+          <div className="xl:col-span-2">
+            <StatCard
+              title="বকেয়া পরিমাণ"
+              value={totalDue}
+              icon={AlertTriangle}
+              color="orange"
+              isCurrency
+              subtitle={`${defaultersCount} জন দেনাদার`}
+            />
+          </div>
+        </div>
+
+        {/* Secondary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="সক্রিয় দাতা"
             value={activeDonors}
@@ -80,29 +114,41 @@ const Dashboard: React.FC = () => {
             subtitle="সক্রিয় সদস্য"
           />
           <StatCard
-            title="বকেয়া পরিমাণ"
-            value={totalDue}
-            icon={AlertTriangle}
-            color="orange"
-            isCurrency
-            subtitle={`${defaultersCount} জন দেনাদার`}
+            title="ইমাম সংখ্যা"
+            value={totalImams}
+            icon={Users}
+            color="green"
+            subtitle="সক্রিয় ইমাম"
+          />
+          <StatCard
+            title="আসন্ন ইভেন্ট"
+            value={upcomingEvents}
+            icon={Calendar}
+            color="blue"
+            subtitle="পরবর্তী ৭ দিনে"
           />
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Prayer Times */}
-          <div className="lg:col-span-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Prayer Times */}
             <PrayerTimeCard />
+            
+            {/* Recent Activity */}
+            <RecentActivity />
           </div>
 
-          {/* Notice Board */}
-          <div className="lg:col-span-3">
+          {/* Right Column */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Quick Actions */}
+            <QuickActions onPageChange={onPageChange} />
+            
+            {/* Notice Board */}
             <ScrollingNoticeBoard />
-          </div>
-
-          {/* Due Amounts */}
-          <div className="lg:col-span-3">
+            
+            {/* Due Amounts */}
             <DueAmountsCard />
           </div>
         </div>
