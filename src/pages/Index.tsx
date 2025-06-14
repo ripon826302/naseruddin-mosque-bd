@@ -10,6 +10,7 @@ import DonorManagement from '@/pages/DonorManagement';
 import Reports from '@/pages/Reports';
 import NoticeBoard from '@/pages/NoticeBoard';
 import Settings from '@/pages/Settings';
+import ImamManagement from '@/pages/ImamManagement';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const Index = () => {
@@ -28,6 +29,8 @@ const Index = () => {
         return <ExpenseManagement />;
       case 'donors':
         return <DonorManagement />;
+      case 'imams':
+        return <ImamManagement />;
       case 'reports':
         return <Reports />;
       case 'notices':

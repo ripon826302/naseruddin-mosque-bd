@@ -59,6 +59,16 @@ export interface Event {
   location: string;
 }
 
+export interface Imam {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  monthlySalary: number;
+  status: 'Active' | 'Inactive';
+  joinDate: string;
+}
+
 export interface PrayerTime {
   name: string;
   time: string;

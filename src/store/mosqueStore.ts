@@ -1,6 +1,5 @@
-
 import { create } from 'zustand';
-import { Committee, Donor, Income, Expense, Event, User } from '@/types/mosque';
+import { Committee, Donor, Income, Expense, Event, User, Imam } from '@/types/mosque';
 
 interface MosqueStore {
   // State
@@ -11,6 +10,7 @@ interface MosqueStore {
   expenses: Expense[];
   events: Event[];
   notices: any[];
+  imams: Imam[];
   settings: {
     name: string;
     address: string;
@@ -46,6 +46,9 @@ interface MosqueStore {
   addNotice: (notice: any) => void;
   updateNotice: (id: string, updates: any) => void;
   deleteNotice: (id: string) => void;
+  addImam: (imam: Omit<Imam, 'id'>) => void;
+  updateImam: (id: string, updates: Partial<Imam>) => void;
+  deleteImam: (id: string) => void;
   updateSettings: (settings: Partial<MosqueStore['settings']>) => void;
   getTotalIncome: () => number;
   getTotalExpenses: () => number;
@@ -53,6 +56,8 @@ interface MosqueStore {
   getMissingMonths: (donorId: string) => string[];
   getDonorPaidMonths: (donorId: string) => string[];
   changePassword: (newPassword: string) => void;
+  getDefaulters: () => Donor[];
+  getTotalDueAmount: () => number;
 }
 
 const useStore = create<MosqueStore>((set, get) => ({
@@ -93,9 +98,19 @@ const useStore = create<MosqueStore>((set, get) => ({
       phone: '01723456789',
       address: 'চট্টগ্রাম, বাংলাদেশ',
       monthlyAmount: 500,
-      status: 'Active',
+      status: 'Defaulter',
       paymentHistory: [],
       startDate: '2024-02-01'
+    },
+    {
+      id: '3',
+      name: 'মোহাম্মদ হাসান',
+      phone: '01734567890',
+      address: 'সিলেট, বাংলাদেশ',
+      monthlyAmount: 800,
+      status: 'Defaulter',
+      paymentHistory: [],
+      startDate: '2024-01-15'
     }
   ],
   income: [
@@ -152,6 +167,31 @@ const useStore = create<MosqueStore>((set, get) => ({
       message: 'আগামী শুক্রবার মাসিক কমিটি সভা অনুষ্ঠিত হবে',
       type: 'info',
       date: '2024-01-15'
+    },
+    {
+      id: '2',
+      title: 'জুমার নামাজের সময় পরিবর্তন',
+      message: 'আগামীকাল থেকে জুমার নামাজ দুপুর ১:০০ টায় শুরু হবে',
+      type: 'warning',
+      date: '2024-01-16'
+    },
+    {
+      id: '3',
+      title: 'মহররম মাসের বিশেষ আয়োজন',
+      message: 'আশুরার দিন বিশেষ দোয়া ও আলোচনা অনুষ্ঠিত হবে',
+      type: 'info',
+      date: '2024-01-17'
+    }
+  ],
+  imams: [
+    {
+      id: '1',
+      name: 'মাওলানা আব্দুর রহমান',
+      phone: '01712345678',
+      address: 'ঢাকা, বাংলাদেশ',
+      monthlySalary: 15000,
+      status: 'Active',
+      joinDate: '2023-01-01'
     }
   ],
   settings: {
@@ -293,6 +333,25 @@ const useStore = create<MosqueStore>((set, get) => ({
     }));
   },
 
+  addImam: (imam) => {
+    const newImam = { ...imam, id: Date.now().toString() };
+    set((state) => ({ imams: [...state.imams, newImam] }));
+  },
+
+  updateImam: (id, updates) => {
+    set((state) => ({
+      imams: state.imams.map((imam) =>
+        imam.id === id ? { ...imam, ...updates } : imam
+      )
+    }));
+  },
+
+  deleteImam: (id) => {
+    set((state) => ({
+      imams: state.imams.filter((imam) => imam.id !== id)
+    }));
+  },
+
   updateSettings: (newSettings) => {
     set((state) => ({
       settings: { ...state.settings, ...newSettings }
@@ -348,8 +407,21 @@ const useStore = create<MosqueStore>((set, get) => ({
   },
 
   changePassword: (newPassword: string) => {
-    // Simple password change - in a real app this would be more secure
     console.log('Password changed to:', newPassword);
+  },
+
+  getDefaulters: () => {
+    const { donors } = get();
+    return donors.filter(donor => donor.status === 'Defaulter');
+  },
+
+  getTotalDueAmount: () => {
+    const { donors, getMissingMonths } = get();
+    const defaulters = donors.filter(donor => donor.status === 'Defaulter');
+    return defaulters.reduce((total, donor) => {
+      const missingMonths = getMissingMonths(donor.id);
+      return total + (missingMonths.length * donor.monthlyAmount);
+    }, 0);
   }
 }));
 
