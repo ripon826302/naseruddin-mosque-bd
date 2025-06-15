@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Home, Users, DollarSign, TrendingDown, Gift, Bell, Settings, LogOut, FileText, UserCheck, CreditCard, BarChart3 } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
@@ -11,9 +11,17 @@ interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, isOpen, setIsOpen }) => {
-  const { user, logout } = useMosqueStore();
+  const { user, logout, settings } = useMosqueStore();
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const isAdmin = user?.role === 'admin';
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const menuItems = [
     { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: Home, color: 'text-blue-600' },
@@ -49,12 +57,34 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, isOp
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0 lg:relative lg:shadow-none`}>
         
-        {/* Simple Header */}
-        <div className="p-6 bg-gradient-to-r from-green-600 to-green-700 text-white">
-          <h2 className="text-xl font-bold">মসজিদ ব্যবস্থাপনা</h2>
-          <p className="text-green-100 text-sm mt-2">
-            {user?.name ? `স্বাগতম, ${user.name}` : 'স্বাগতম'}
-          </p>
+        {/* Enhanced Header */}
+        <div className="p-6 bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 text-white relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
+            <div className="absolute bottom-0 right-0 w-24 h-24 bg-white rounded-full translate-x-12 translate-y-12"></div>
+          </div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-bold text-white">{settings.name || 'মসজিদ ব্যবস্থাপনা'}</h2>
+              <div className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                {currentTime.toLocaleDateString('bn-BD')}
+              </div>
+            </div>
+            
+            <div className="text-green-100 text-sm mb-2">
+              {user?.name ? `স্বাগতম, ${user.name}` : 'স্বাগতম'}
+            </div>
+            
+            <div className="text-xs text-green-200 bg-white/10 px-2 py-1 rounded inline-block">
+              {currentTime.toLocaleTimeString('bn-BD', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Menu Items */}
@@ -68,31 +98,31 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, isOp
                   onPageChange(item.id);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                   currentPage === item.id
-                    ? 'bg-green-50 text-green-700 border-l-4 border-green-600'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-green-600'
+                    ? 'bg-green-50 text-green-700 border-l-4 border-green-600 shadow-md'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-green-600 hover:shadow-sm'
                 }`}
               >
-                <Icon className={item.color} size={20} />
+                <Icon className={`${item.color} transition-all duration-200`} size={20} />
                 <span className="font-medium">{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Settings and Logout */}
-        <div className="p-4 border-t border-gray-200 space-y-2">
+        {/* Enhanced Settings and Logout */}
+        <div className="p-4 border-t border-gray-200 space-y-2 bg-gray-50">
           {isAdmin && (
             <button
               onClick={() => {
                 onPageChange('settings');
                 setIsOpen(false);
               }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                 currentPage === 'settings'
-                  ? 'bg-green-50 text-green-700'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-green-600'
+                  ? 'bg-green-50 text-green-700 shadow-md'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-green-600'
               }`}
             >
               <Settings className="text-gray-500" size={20} />
@@ -102,7 +132,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, isOp
           
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left text-red-600 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left text-red-600 hover:bg-red-50 transition-all duration-200 hover:shadow-sm"
           >
             <LogOut size={20} />
             <span className="font-medium">লগ আউট</span>
