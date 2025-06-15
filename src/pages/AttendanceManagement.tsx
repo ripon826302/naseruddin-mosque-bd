@@ -57,6 +57,14 @@ const AttendanceManagement: React.FC = () => {
     alert('উপস্থিতি সংরক্ষিত হয়েছে!');
   };
 
+  const getMemberRole = (member: any) => {
+    if (member.type === 'committee') {
+      return member.role;
+    } else {
+      return 'ইমাম';
+    }
+  };
+
   const presentCount = Object.values(attendance).filter(Boolean).length;
   const totalCount = allMembers.length;
 
@@ -213,7 +221,7 @@ const AttendanceManagement: React.FC = () => {
                     <div>
                       <h3 className="text-white font-semibold">{member.name}</h3>
                       <p className="text-gray-400 text-sm">
-                        {member.type === 'committee' ? member.role : 'ইমাম'}
+                        {getMemberRole(member)}
                       </p>
                       <p className="text-gray-500 text-xs">{member.phone}</p>
                     </div>
