@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -21,9 +22,11 @@ interface Donor {
   phone: string;
   address: string;
   monthlyAmount: number;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Inactive' | 'Defaulter';
   joinDate: string;
+  startDate: string;
   payments: Payment[];
+  paymentHistory: Payment[];
 }
 
 interface Payment {
@@ -53,6 +56,9 @@ interface Income {
   date: string;
   category: 'Donation' | 'Monthly Subscription' | 'Event' | 'Other';
   description?: string;
+  donorId?: string;
+  month?: string;
+  receiptNumber: string;
 }
 
 interface Expense {
@@ -61,7 +67,8 @@ interface Expense {
   amount: number;
   date: string;
   description: string;
-  type: 'Utility' | 'Maintenance' | 'Imam Salary' | 'Event' | 'Other';
+  type: 'Utility' | 'Maintenance' | 'Imam Salary' | 'Event' | 'Other' | 'Electricity Bill' | 'Others';
+  month?: string;
 }
 
 interface Imam {
@@ -80,9 +87,10 @@ interface Event {
   description: string;
   date: string;
   time: string;
-  type: 'Religious' | 'Educational' | 'Social' | 'Fundraising';
+  type: 'Religious' | 'Educational' | 'Social' | 'Fundraising' | 'Prayer' | 'Event' | 'Program';
   organizer: string;
   status: 'Planned' | 'Ongoing' | 'Completed' | 'Cancelled';
+  location: string;
 }
 
 interface AttendanceRecord {
@@ -113,7 +121,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'member';
+  role: 'admin' | 'member' | 'viewer';
 }
 
 interface MosqueStore {
@@ -156,6 +164,9 @@ interface MosqueStore {
   updateAttendance: (id: string, record: Partial<AttendanceRecord>) => void;
   deleteAttendance: (id: string) => void;
   setUser: (user: User | null) => void;
+  login: (username: string, password: string) => boolean;
+  logout: () => void;
+  changePassword: (oldPassword: string, newPassword: string) => boolean;
   
   // Computed values
   getTotalIncome: () => number;
@@ -164,6 +175,7 @@ interface MosqueStore {
   getDefaulters: () => Donor[];
   getMissingMonths: (donorId: string) => string[];
   getTotalDueAmount: () => number;
+  getDonorPaidMonths: (donorId: string) => string[];
 }
 
 const initialState = {
@@ -202,7 +214,7 @@ const initialState = {
   imams: [],
   events: [],
   attendance: [],
-  user: { id: '1', name: 'অ্যাডমিন', email: 'admin@mosque.org', role: 'admin' }
+  user: { id: '1', name: 'অ্যাডমিন', email: 'admin@mosque.org', role: 'admin' as const }
 };
 
 export const useMosqueStore = create<MosqueStore>()(
@@ -217,7 +229,12 @@ export const useMosqueStore = create<MosqueStore>()(
 
       addDonor: (donor) =>
         set((state) => ({
-          donors: [...state.donors, { ...donor, id: Date.now().toString() }]
+          donors: [...state.donors, { 
+            ...donor, 
+            id: Date.now().toString(),
+            payments: [],
+            paymentHistory: []
+          }]
         })),
 
       updateDonor: (id, donor) =>
@@ -311,7 +328,12 @@ export const useMosqueStore = create<MosqueStore>()(
 
       addEvent: (event) =>
         set((state) => ({
-          events: [...state.events, { ...event, id: Date.now().toString() }]
+          events: [...state.events, { 
+            ...event, 
+            id: Date.now().toString(),
+            organizer: event.organizer || 'মসজিদ কমিটি',
+            status: event.status || 'Planned'
+          }]
         })),
 
       updateEvent: (id, event) =>
@@ -341,6 +363,24 @@ export const useMosqueStore = create<MosqueStore>()(
 
       setUser: (user) => set({ user }),
 
+      login: (username: string, password: string) => {
+        if (username === 'admin' && password === 'admin123') {
+          set({ user: { id: '1', name: 'অ্যাডমিন', email: 'admin@mosque.org', role: 'admin' } });
+          return true;
+        }
+        return false;
+      },
+
+      logout: () => set({ user: { id: 'viewer', name: 'ভিউয়ার', email: '', role: 'viewer' } }),
+
+      changePassword: (oldPassword: string, newPassword: string) => {
+        // Simple implementation - in real app, this would verify old password
+        if (oldPassword === 'admin123') {
+          return true;
+        }
+        return false;
+      },
+
       getTotalIncome: () => {
         const { income } = get();
         return income.reduce((total, item) => total + item.amount, 0);
@@ -358,18 +398,7 @@ export const useMosqueStore = create<MosqueStore>()(
 
       getDefaulters: () => {
         const { donors } = get();
-        const currentDate = new Date();
-        const currentMonth = currentDate.getMonth();
-        const currentYear = currentDate.getFullYear();
-
-        return donors.filter(donor => {
-          const hasCurrentMonthPayment = donor.payments.some(payment => 
-            payment.month === currentMonth.toString() && 
-            payment.year === currentYear &&
-            payment.status === 'Paid'
-          );
-          return !hasCurrentMonthPayment && donor.status === 'Active';
-        });
+        return donors.filter(donor => donor.status === 'Defaulter');
       },
 
       getMissingMonths: (donorId: string) => {
@@ -400,6 +429,32 @@ export const useMosqueStore = create<MosqueStore>()(
         }
 
         return missingMonths;
+      },
+
+      getDonorPaidMonths: (donorId: string) => {
+        const { donors } = get();
+        const donor = donors.find(d => d.id === donorId);
+        if (!donor) return [];
+
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        
+        const paidMonths: string[] = [];
+        const monthNames = [
+          'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+          'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+        ];
+
+        donor.payments.forEach(payment => {
+          if (payment.year === currentYear && payment.status === 'Paid') {
+            const monthIndex = parseInt(payment.month);
+            if (monthIndex >= 0 && monthIndex < 12) {
+              paidMonths.push(monthNames[monthIndex]);
+            }
+          }
+        });
+
+        return paidMonths;
       },
 
       getTotalDueAmount: () => {
