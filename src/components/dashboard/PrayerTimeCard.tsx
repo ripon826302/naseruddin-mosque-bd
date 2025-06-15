@@ -7,10 +7,19 @@ import { useMosqueStore } from '@/store/mosqueStore';
 const PrayerTimeCard: React.FC = () => {
   const { settings } = useMosqueStore();
   
+  // Function to convert 24-hour format to 12-hour format
+  const convertTo12Hour = (time24: string) => {
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+  
   const prayerTimes = [
     { 
       name: 'ফজর', 
-      time: settings.prayerTimes.fajr, 
+      time: convertTo12Hour(settings.prayerTimes.fajr), 
       nameArabic: 'فجر', 
       nameBangla: 'ফজর',
       icon: Sunrise,
@@ -22,7 +31,7 @@ const PrayerTimeCard: React.FC = () => {
     },
     { 
       name: 'যোহর', 
-      time: settings.prayerTimes.dhuhr, 
+      time: convertTo12Hour(settings.prayerTimes.dhuhr), 
       nameArabic: 'ظهر', 
       nameBangla: 'যোহর',
       icon: Sun,
@@ -34,7 +43,7 @@ const PrayerTimeCard: React.FC = () => {
     },
     { 
       name: 'আসর', 
-      time: settings.prayerTimes.asr, 
+      time: convertTo12Hour(settings.prayerTimes.asr), 
       nameArabic: 'عصر', 
       nameBangla: 'আসর',
       icon: Sun,
@@ -46,7 +55,7 @@ const PrayerTimeCard: React.FC = () => {
     },
     { 
       name: 'মাগরিব', 
-      time: settings.prayerTimes.maghrib, 
+      time: convertTo12Hour(settings.prayerTimes.maghrib), 
       nameArabic: 'مغرب', 
       nameBangla: 'মাগরিব',
       icon: Sunset,
@@ -58,7 +67,7 @@ const PrayerTimeCard: React.FC = () => {
     },
     { 
       name: 'এশা', 
-      time: settings.prayerTimes.isha, 
+      time: convertTo12Hour(settings.prayerTimes.isha), 
       nameArabic: 'عشاء', 
       nameBangla: 'এশা',
       icon: Moon,
@@ -70,7 +79,7 @@ const PrayerTimeCard: React.FC = () => {
     },
     { 
       name: 'জুমআ', 
-      time: settings.prayerTimes.jumma, 
+      time: convertTo12Hour(settings.prayerTimes.jumma), 
       nameArabic: 'جمعة', 
       nameBangla: 'জুমআ',
       icon: Star,
@@ -155,7 +164,7 @@ const PrayerTimeCard: React.FC = () => {
                 </div>
                 <div className="text-white font-bold text-xl mb-2">সেহরি শেষ</div>
                 <div className="text-white font-bold text-3xl bg-black/30 backdrop-blur-sm rounded-xl py-3 border border-white/20">
-                  {settings.ramadanTimes.sehri}
+                  {convertTo12Hour(settings.ramadanTimes.sehri)}
                 </div>
               </div>
               <div className="bg-gradient-to-br from-orange-700 to-red-700 rounded-2xl p-6 text-center border-2 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
@@ -166,7 +175,7 @@ const PrayerTimeCard: React.FC = () => {
                 </div>
                 <div className="text-white font-bold text-xl mb-2">ইফতার</div>
                 <div className="text-white font-bold text-3xl bg-black/30 backdrop-blur-sm rounded-xl py-3 border border-white/20">
-                  {settings.ramadanTimes.iftar}
+                  {convertTo12Hour(settings.ramadanTimes.iftar)}
                 </div>
               </div>
             </div>
