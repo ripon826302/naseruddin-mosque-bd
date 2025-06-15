@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
-import { Menu, X, Home, Users, DollarSign, TrendingDown, Gift, Bell, Settings, LogOut, FileText, UserCheck, CreditCard, BarChart3, MapPin, Calendar, Globe } from 'lucide-react';
+import { X, Home, Users, DollarSign, TrendingDown, Gift, Bell, Settings, LogOut, FileText, UserCheck, CreditCard, BarChart3 } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
-import { getBengaliDate, getEnglishDate, getArabicDate } from '@/utils/dates';
 
 interface NavigationProps {
   currentPage: string;
   onPageChange: (page: string) => void;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { user, logout, settings } = useMosqueStore();
+const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, isOpen, setIsOpen }) => {
+  const { user, logout } = useMosqueStore();
   
   const isAdmin = user?.role === 'admin';
 
@@ -36,14 +36,6 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-green-600 text-white rounded-lg shadow-lg"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
-
       {/* Overlay */}
       {isOpen && (
         <div
@@ -57,31 +49,10 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0 lg:relative lg:shadow-none`}>
         
-        {/* Enhanced Header with Mosque Info */}
+        {/* Simple Header */}
         <div className="p-6 bg-gradient-to-r from-green-600 to-green-700 text-white">
-          <h2 className="text-xl font-bold mb-2">{settings.name}</h2>
-          <div className="flex items-center space-x-2 text-green-100 text-sm mb-3">
-            <MapPin size={16} />
-            <span>{settings.address}</span>
-          </div>
-          
-          {/* Date Information */}
-          <div className="space-y-1 text-xs text-green-100">
-            <div className="flex items-center space-x-2">
-              <span>🇧🇩</span>
-              <span>{getBengaliDate()}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span>🇺🇸</span>
-              <span>{getEnglishDate()}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span>🕌</span>
-              <span>{getArabicDate()}</span>
-            </div>
-          </div>
-          
-          <p className="text-green-100 text-sm mt-3">
+          <h2 className="text-xl font-bold">মসজিদ ব্যবস্থাপনা</h2>
+          <p className="text-green-100 text-sm mt-2">
             {user?.name ? `স্বাগতম, ${user.name}` : 'স্বাগতম'}
           </p>
         </div>

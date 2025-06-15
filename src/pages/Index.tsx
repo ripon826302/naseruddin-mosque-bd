@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/layout/Navigation';
 import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
@@ -17,7 +17,17 @@ import { useMosqueStore } from '@/store/mosqueStore';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const { user } = useMosqueStore();
+
+  useEffect(() => {
+    const handleToggleNav = () => {
+      setIsNavOpen(prev => !prev);
+    };
+
+    window.addEventListener('toggleNav', handleToggleNav);
+    return () => window.removeEventListener('toggleNav', handleToggleNav);
+  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -56,9 +66,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <Navigation currentPage={currentPage} onPageChange={setCurrentPage} />
+      <Navigation 
+        currentPage={currentPage} 
+        onPageChange={setCurrentPage}
+        isOpen={isNavOpen}
+        setIsOpen={setIsNavOpen}
+      />
       <div className="flex-1 lg:ml-0">
-        <div className="lg:hidden h-16"></div>
         <div className="min-h-screen">
           {renderPage()}
         </div>
