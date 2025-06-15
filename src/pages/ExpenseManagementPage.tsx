@@ -18,7 +18,8 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [formData, setFormData] = useState({
-    type: '',
+    type: '' as 'Utility' | 'Maintenance' | 'Imam Salary' | 'Imam Bonus' | 'Event' | 'Other' | 'Electricity Bill' | 'Others',
+    category: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -27,8 +28,7 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   });
 
   const expenseTypes = [
-    'Utility Bills', 'Maintenance', 'Salary', 'Construction', 'Cleaning', 
-    'Security', 'Events', 'Office Supplies', 'Food & Beverages', 'Other'
+    'Utility', 'Maintenance', 'Imam Salary', 'Imam Bonus', 'Event', 'Other', 'Electricity Bill', 'Others'
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -36,7 +36,8 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     
     const expenseData = {
       ...formData,
-      amount: parseInt(formData.amount)
+      amount: parseInt(formData.amount),
+      category: formData.category || formData.type
     };
 
     if (editingExpense) {
@@ -50,7 +51,8 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     }
     
     setFormData({
-      type: '',
+      type: '' as any,
+      category: '',
       amount: '',
       date: new Date().toISOString().split('T')[0],
       description: '',
@@ -63,6 +65,7 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     setEditingExpense(expenseItem);
     setFormData({
       type: expenseItem.type,
+      category: expenseItem.category || expenseItem.type,
       amount: expenseItem.amount.toString(),
       date: expenseItem.date,
       description: expenseItem.description || '',
@@ -109,7 +112,7 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="type">ব্যয়ের ধরন</Label>
-                    <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                    <Select value={formData.type} onValueChange={(value: any) => setFormData({...formData, type: value, category: value})}>
                       <SelectTrigger className="bg-gray-800 border-gray-600">
                         <SelectValue placeholder="ব্যয়ের ধরন নির্বাচন করুন" />
                       </SelectTrigger>
@@ -154,6 +157,7 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                       onChange={(e) => setFormData({...formData, description: e.target.value})}
                       placeholder="ব্যয়ের বিবরণ লিখুন"
                       className="bg-gray-800 border-gray-600 text-white"
+                      required
                     />
                   </div>
                   
@@ -281,7 +285,7 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="edit-type">ব্যয়ের ধরন</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                  <Select value={formData.type} onValueChange={(value: any) => setFormData({...formData, type: value, category: value})}>
                     <SelectTrigger className="bg-gray-800 border-gray-600">
                       <SelectValue placeholder="ব্যয়ের ধরন নির্বাচন করুন" />
                     </SelectTrigger>
@@ -324,6 +328,7 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     className="bg-gray-800 border-gray-600 text-white"
+                    required
                   />
                 </div>
                 

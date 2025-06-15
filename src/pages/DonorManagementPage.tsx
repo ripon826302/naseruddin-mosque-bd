@@ -22,8 +22,9 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     phone: '',
     address: '',
     monthlyAmount: '',
-    status: 'Active',
-    startDate: new Date().toISOString().split('T')[0]
+    status: 'Active' as 'Active' | 'Inactive' | 'Defaulter',
+    startDate: new Date().toISOString().split('T')[0],
+    joinDate: new Date().toISOString().split('T')[0]
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,7 +32,10 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     
     const donorData = {
       ...formData,
-      monthlyAmount: parseInt(formData.monthlyAmount)
+      monthlyAmount: parseInt(formData.monthlyAmount),
+      joinDate: formData.joinDate,
+      payments: [],
+      paymentHistory: []
     };
 
     if (editingDonor) {
@@ -50,7 +54,8 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
       address: '',
       monthlyAmount: '',
       status: 'Active',
-      startDate: new Date().toISOString().split('T')[0]
+      startDate: new Date().toISOString().split('T')[0],
+      joinDate: new Date().toISOString().split('T')[0]
     });
   };
 
@@ -62,7 +67,8 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
       address: donor.address,
       monthlyAmount: donor.monthlyAmount.toString(),
       status: donor.status,
-      startDate: donor.startDate
+      startDate: donor.startDate,
+      joinDate: donor.joinDate || donor.startDate
     });
   };
 
@@ -153,13 +159,14 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                   
                   <div>
                     <Label htmlFor="status">স্ট্যাটাস</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                    <Select value={formData.status} onValueChange={(value: 'Active' | 'Inactive' | 'Defaulter') => setFormData({...formData, status: value})}>
                       <SelectTrigger className="bg-gray-800 border-gray-600">
                         <SelectValue placeholder="স্ট্যাটাস নির্বাচন করুন" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
                         <SelectItem value="Active">সক্রিয়</SelectItem>
                         <SelectItem value="Inactive">নিষ্ক্রিয়</SelectItem>
+                        <SelectItem value="Defaulter">খেলাপি</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -223,14 +230,14 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-orange-600 to-red-600 text-white">
+          <Card className="bg-gradient-to-r from-red-600 to-orange-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm">নিষ্ক্রিয় দাতা</p>
-                  <p className="text-2xl font-bold">{donors.length - activeDonors.length}</p>
+                  <p className="text-red-100 text-sm">খেলাপি দাতা</p>
+                  <p className="text-2xl font-bold">{donors.filter(d => d.status === 'Defaulter').length}</p>
                 </div>
-                <Users className="h-8 w-8 text-orange-200" />
+                <Users className="h-8 w-8 text-red-200" />
               </div>
             </CardContent>
           </Card>
@@ -247,6 +254,8 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                 <div key={donor.id} className={`p-4 rounded-lg border-2 ${
                   donor.status === 'Active' 
                     ? 'bg-green-500/20 border-green-400/50' 
+                    : donor.status === 'Defaulter'
+                    ? 'bg-red-500/20 border-red-400/50'
                     : 'bg-gray-800/50 border-gray-600/50'
                 }`}>
                   <div className="flex items-center justify-between mb-4">
@@ -254,9 +263,11 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       donor.status === 'Active' 
                         ? 'bg-green-500 text-white' 
+                        : donor.status === 'Defaulter'
+                        ? 'bg-red-500 text-white'
                         : 'bg-gray-500 text-white'
                     }`}>
-                      {donor.status === 'Active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                      {donor.status === 'Active' ? 'সক্রিয়' : donor.status === 'Defaulter' ? 'খেলাপি' : 'নিষ্ক্রিয়'}
                     </span>
                   </div>
                   
@@ -270,7 +281,7 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                       <span>{donor.address}</span>
                     </div>
                     <div className="text-gray-300 text-sm">
-                      শুরু: {new Date(donor.startDate).toLocaleDateString('bn-BD')}
+                      যোগদান: {new Date(donor.startDate).toLocaleDateString('bn-BD')}
                     </div>
                   </div>
                   
@@ -362,13 +373,14 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                 
                 <div>
                   <Label htmlFor="edit-status">স্ট্যাটাস</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                  <Select value={formData.status} onValueChange={(value: 'Active' | 'Inactive' | 'Defaulter') => setFormData({...formData, status: value})}>
                     <SelectTrigger className="bg-gray-800 border-gray-600">
                       <SelectValue placeholder="স্ট্যাটাস নির্বাচন করুন" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
                       <SelectItem value="Active">সক্রিয়</SelectItem>
                       <SelectItem value="Inactive">নিষ্ক্রিয়</SelectItem>
+                      <SelectItem value="Defaulter">খেলাপি</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -22,7 +22,7 @@ const ImamManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     phone: '',
     address: '',
     monthlySalary: '',
-    status: 'Active',
+    status: 'Active' as 'Active' | 'Inactive',
     joinDate: new Date().toISOString().split('T')[0]
   });
 
@@ -153,7 +153,7 @@ const ImamManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                   
                   <div>
                     <Label htmlFor="status">স্ট্যাটাস</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                    <Select value={formData.status} onValueChange={(value: 'Active' | 'Inactive') => setFormData({...formData, status: value})}>
                       <SelectTrigger className="bg-gray-800 border-gray-600">
                         <SelectValue placeholder="স্ট্যাটাস নির্বাচন করুন" />
                       </SelectTrigger>
@@ -362,7 +362,7 @@ const ImamManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                 
                 <div>
                   <Label htmlFor="edit-status">স্ট্যাটাস</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                  <Select value={formData.status} onValueChange={(value: 'Active' | 'Inactive') => setFormData({...formData, status: value})}>
                     <SelectTrigger className="bg-gray-800 border-gray-600">
                       <SelectValue placeholder="স্ট্যাটাস নির্বাচন করুন" />
                     </SelectTrigger>

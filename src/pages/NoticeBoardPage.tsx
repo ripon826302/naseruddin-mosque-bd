@@ -20,12 +20,14 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   const [formData, setFormData] = useState({
     title: '',
     message: '',
-    type: 'General',
+    type: 'info' as 'info' | 'warning' | 'urgent',
     date: new Date().toISOString().split('T')[0]
   });
 
   const noticeTypes = [
-    'General', 'Prayer Time', 'Event', 'Emergency', 'Announcement', 'Religious'
+    { value: 'info', label: 'সাধারণ' },
+    { value: 'warning', label: 'সতর্কতা' },
+    { value: 'urgent', label: 'জরুরি' }
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,7 +46,7 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     setFormData({
       title: '',
       message: '',
-      type: 'General',
+      type: 'info',
       date: new Date().toISOString().split('T')[0]
     });
   };
@@ -68,18 +70,17 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
 
   const getNoticeIcon = (type: string) => {
     switch (type) {
-      case 'Emergency': return <AlertTriangle className="h-5 w-5 text-red-500" />;
-      case 'Event': return <Calendar className="h-5 w-5 text-blue-500" />;
-      default: return <Bell className="h-5 w-5 text-gray-500" />;
+      case 'urgent': return <AlertTriangle className="h-5 w-5 text-red-500" />;
+      case 'warning': return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+      default: return <Bell className="h-5 w-5 text-blue-500" />;
     }
   };
 
   const getNoticeColor = (type: string) => {
     switch (type) {
-      case 'Emergency': return 'border-red-500 bg-red-50';
-      case 'Event': return 'border-blue-500 bg-blue-50';
-      case 'Prayer Time': return 'border-green-500 bg-green-50';
-      default: return 'border-gray-300 bg-white';
+      case 'urgent': return 'border-red-500 bg-red-50';
+      case 'warning': return 'border-yellow-500 bg-yellow-50';
+      default: return 'border-blue-500 bg-blue-50';
     }
   };
 
@@ -136,13 +137,13 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="type">ধরন</Label>
-                      <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                      <Select value={formData.type} onValueChange={(value: 'info' | 'warning' | 'urgent') => setFormData({...formData, type: value})}>
                         <SelectTrigger className="bg-gray-800 border-gray-600">
                           <SelectValue placeholder="নোটিশের ধরন নির্বাচন করুন" />
                         </SelectTrigger>
                         <SelectContent className="bg-gray-800 border-gray-600">
                           {noticeTypes.map((type) => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                            <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -188,10 +189,22 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">ইভেন্ট নোটিশ</p>
-                  <p className="text-2xl font-bold">{notices.filter(n => n.type === 'Event').length}</p>
+                  <p className="text-blue-100 text-sm">সাধারণ নোটিশ</p>
+                  <p className="text-2xl font-bold">{notices.filter(n => n.type === 'info').length}</p>
                 </div>
-                <Calendar className="h-8 w-8 text-blue-200" />
+                <Bell className="h-8 w-8 text-blue-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-yellow-600 to-amber-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-yellow-100 text-sm">সতর্কতা নোটিশ</p>
+                  <p className="text-2xl font-bold">{notices.filter(n => n.type === 'warning').length}</p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-yellow-200" />
               </div>
             </CardContent>
           </Card>
@@ -201,21 +214,9 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-red-100 text-sm">জরুরি নোটিশ</p>
-                  <p className="text-2xl font-bold">{notices.filter(n => n.type === 'Emergency').length}</p>
+                  <p className="text-2xl font-bold">{notices.filter(n => n.type === 'urgent').length}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-sm">নামাজের সময়</p>
-                  <p className="text-2xl font-bold">{notices.filter(n => n.type === 'Prayer Time').length}</p>
-                </div>
-                <Bell className="h-8 w-8 text-green-200" />
               </div>
             </CardContent>
           </Card>
@@ -241,13 +242,13 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                         {getNoticeIcon(notice.type)}
                         <h3 className="text-xl font-semibold text-white">{notice.title}</h3>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          notice.type === 'Emergency' 
+                          notice.type === 'urgent' 
                             ? 'bg-red-500 text-white' 
-                            : notice.type === 'Event'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-500 text-white'
+                            : notice.type === 'warning'
+                            ? 'bg-yellow-500 text-white'
+                            : 'bg-blue-500 text-white'
                         }`}>
-                          {notice.type}
+                          {notice.type === 'urgent' ? 'জরুরি' : notice.type === 'warning' ? 'সতর্কতা' : 'সাধারণ'}
                         </span>
                       </div>
                       
@@ -321,13 +322,13 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="edit-type">ধরন</Label>
-                    <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                    <Select value={formData.type} onValueChange={(value: 'info' | 'warning' | 'urgent') => setFormData({...formData, type: value})}>
                       <SelectTrigger className="bg-gray-800 border-gray-600">
                         <SelectValue placeholder="নোটিশের ধরন নির্বাচন করুন" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
                         {noticeTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                          <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

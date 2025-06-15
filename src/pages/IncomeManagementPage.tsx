@@ -19,11 +19,13 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   const [editingIncome, setEditingIncome] = useState<any>(null);
   const [formData, setFormData] = useState({
     source: '',
+    category: 'Donation' as 'Donation' | 'Monthly Subscription' | 'Event' | 'Other',
     amount: '',
     date: new Date().toISOString().split('T')[0],
     receiptNumber: '',
     donorId: '',
-    month: new Date().toISOString().substring(0, 7)
+    month: new Date().toISOString().substring(0, 7),
+    description: ''
   });
 
   const sources = [
@@ -51,11 +53,13 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     
     setFormData({
       source: '',
+      category: 'Donation',
       amount: '',
       date: new Date().toISOString().split('T')[0],
       receiptNumber: '',
       donorId: '',
-      month: new Date().toISOString().substring(0, 7)
+      month: new Date().toISOString().substring(0, 7),
+      description: ''
     });
   };
 
@@ -63,11 +67,13 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     setEditingIncome(incomeItem);
     setFormData({
       source: incomeItem.source,
+      category: incomeItem.category || 'Donation',
       amount: incomeItem.amount.toString(),
       date: incomeItem.date,
       receiptNumber: incomeItem.receiptNumber || '',
       donorId: incomeItem.donorId || '',
-      month: incomeItem.month || incomeItem.date.substring(0, 7)
+      month: incomeItem.month || incomeItem.date.substring(0, 7),
+      description: incomeItem.description || ''
     });
   };
 
@@ -117,6 +123,21 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                         {sources.map((source) => (
                           <SelectItem key={source} value={source}>{source}</SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="category">ক্যাটেগরি</Label>
+                    <Select value={formData.category} onValueChange={(value: any) => setFormData({...formData, category: value})}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600">
+                        <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        <SelectItem value="Donation">দান</SelectItem>
+                        <SelectItem value="Monthly Subscription">মাসিক চাঁদা</SelectItem>
+                        <SelectItem value="Event">ইভেন্ট</SelectItem>
+                        <SelectItem value="Other">অন্যান্য</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
