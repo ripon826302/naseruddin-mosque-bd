@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Plus, Eye, Trash2, Edit, Sparkles } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Bell, Plus, Eye, Trash2, Edit, Sparkles, Settings } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 
@@ -16,7 +16,13 @@ const NoticeBoard: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     message: '',
-    type: 'info' as 'info' | 'warning' | 'urgent'
+    type: 'info' as 'info' | 'warning' | 'urgent',
+    isMarquee: false,
+    marqueeSettings: {
+      speed: 10,
+      fontSize: 16,
+      textColor: '#ffffff'
+    }
   });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -37,7 +43,13 @@ const NoticeBoard: React.FC = () => {
     setFormData({
       title: '',
       message: '',
-      type: 'info'
+      type: 'info',
+      isMarquee: false,
+      marqueeSettings: {
+        speed: 10,
+        fontSize: 16,
+        textColor: '#ffffff'
+      }
     });
   };
 
@@ -45,7 +57,13 @@ const NoticeBoard: React.FC = () => {
     setFormData({
       title: notice.title,
       message: notice.message,
-      type: notice.type
+      type: notice.type,
+      isMarquee: notice.isMarquee || false,
+      marqueeSettings: notice.marqueeSettings || {
+        speed: 10,
+        fontSize: 16,
+        textColor: '#ffffff'
+      }
     });
     setEditingId(notice.id);
   };
@@ -62,7 +80,13 @@ const NoticeBoard: React.FC = () => {
     setFormData({
       title: '',
       message: '',
-      type: 'info'
+      type: 'info',
+      isMarquee: false,
+      marqueeSettings: {
+        speed: 10,
+        fontSize: 16,
+        textColor: '#ffffff'
+      }
     });
   };
 
@@ -139,7 +163,15 @@ const NoticeBoard: React.FC = () => {
                           } shadow-2xl`}>
                             <div className="flex justify-between items-start">
                               <div className="space-y-3">
-                                <h3 className="font-bold text-xl text-cyan-300 digital-font">{notice.title}</h3>
+                                <div className="flex items-center space-x-3">
+                                  <h3 className="font-bold text-xl text-cyan-300 digital-font">{notice.title}</h3>
+                                  {notice.isMarquee && (
+                                    <span className="bg-purple-500/20 border border-purple-400/40 text-purple-300 px-2 py-1 rounded-full text-xs flex items-center space-x-1">
+                                      <Settings className="w-3 h-3" />
+                                      <span>মারকুই</span>
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-gray-300 leading-relaxed">{notice.message}</p>
                                 <div className="text-sm text-gray-400 space-y-1">
                                   <p className="flex items-center space-x-2">
@@ -232,6 +264,77 @@ const NoticeBoard: React.FC = () => {
                               <SelectItem value="urgent" className="text-red-300">জরুরি</SelectItem>
                             </SelectContent>
                           </Select>
+                        </div>
+
+                        {/* মারকুই অপশন */}
+                        <div className="space-y-4 p-4 bg-gray-800/30 rounded-lg border border-gray-600/30">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="isMarquee" className="text-purple-300 font-medium">মারকুই সক্রিয় করুন</Label>
+                            <Switch
+                              id="isMarquee"
+                              checked={formData.isMarquee}
+                              onCheckedChange={(checked) => setFormData({...formData, isMarquee: checked})}
+                            />
+                          </div>
+
+                          {formData.isMarquee && (
+                            <div className="space-y-4 pl-4 border-l-2 border-purple-400/30">
+                              <div>
+                                <Label htmlFor="speed" className="text-purple-300 font-medium">স্পিড (সেকেন্ড)</Label>
+                                <Input
+                                  id="speed"
+                                  type="number"
+                                  min="1"
+                                  max="60"
+                                  value={formData.marqueeSettings.speed}
+                                  onChange={(e) => setFormData({
+                                    ...formData,
+                                    marqueeSettings: {
+                                      ...formData.marqueeSettings,
+                                      speed: parseInt(e.target.value)
+                                    }
+                                  })}
+                                  className="mt-2 bg-black/40 border-purple-400/30 text-purple-100"
+                                />
+                              </div>
+
+                              <div>
+                                <Label htmlFor="fontSize" className="text-purple-300 font-medium">ফন্ট সাইজ (px)</Label>
+                                <Input
+                                  id="fontSize"
+                                  type="number"
+                                  min="12"
+                                  max="32"
+                                  value={formData.marqueeSettings.fontSize}
+                                  onChange={(e) => setFormData({
+                                    ...formData,
+                                    marqueeSettings: {
+                                      ...formData.marqueeSettings,
+                                      fontSize: parseInt(e.target.value)
+                                    }
+                                  })}
+                                  className="mt-2 bg-black/40 border-purple-400/30 text-purple-100"
+                                />
+                              </div>
+
+                              <div>
+                                <Label htmlFor="textColor" className="text-purple-300 font-medium">টেক্সট রং</Label>
+                                <Input
+                                  id="textColor"
+                                  type="color"
+                                  value={formData.marqueeSettings.textColor}
+                                  onChange={(e) => setFormData({
+                                    ...formData,
+                                    marqueeSettings: {
+                                      ...formData.marqueeSettings,
+                                      textColor: e.target.value
+                                    }
+                                  })}
+                                  className="mt-2 bg-black/40 border-purple-400/30 h-12"
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
                         
                         <div className="flex space-x-3 pt-4">

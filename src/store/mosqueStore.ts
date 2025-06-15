@@ -1,446 +1,420 @@
 import { create } from 'zustand';
-import { Committee, Donor, Income, Expense, Event, User, Imam } from '@/types/mosque';
+import { persist } from 'zustand/middleware';
+
+interface Notice {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'urgent';
+  date: string;
+  isMarquee?: boolean;
+  marqueeSettings?: {
+    speed: number;
+    fontSize: number;
+    textColor: string;
+  };
+}
+
+interface Donor {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  monthlyAmount: number;
+  status: 'Active' | 'Inactive';
+  joinDate: string;
+  payments: Payment[];
+}
+
+interface Payment {
+  id: string;
+  donorId: string;
+  amount: number;
+  month: string;
+  year: number;
+  date: string;
+  method: 'Cash' | 'Bank Transfer' | 'Mobile Banking';
+  status: 'Paid' | 'Pending' | 'Overdue';
+}
+
+interface CommitteeMember {
+  id: string;
+  name: string;
+  role: string;
+  phone: string;
+  email?: string;
+  joinDate: string;
+}
+
+interface Income {
+  id: string;
+  source: string;
+  amount: number;
+  date: string;
+  category: 'Donation' | 'Monthly Subscription' | 'Event' | 'Other';
+  description?: string;
+}
+
+interface Expense {
+  id: string;
+  category: string;
+  amount: number;
+  date: string;
+  description: string;
+  type: 'Utility' | 'Maintenance' | 'Imam Salary' | 'Event' | 'Other';
+}
+
+interface Imam {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  monthlySalary: number;
+  status: 'Active' | 'Inactive';
+  joinDate: string;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  type: 'Religious' | 'Educational' | 'Social' | 'Fundraising';
+  organizer: string;
+  status: 'Planned' | 'Ongoing' | 'Completed' | 'Cancelled';
+}
+
+interface AttendanceRecord {
+  id: string;
+  memberId: string;
+  memberName: string;
+  date: string;
+  prayerTime: 'Fajr' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha' | 'Jumma';
+  present: boolean;
+  notes?: string;
+}
+
+interface Settings {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  prayerTimes: {
+    fajr: string;
+    dhuhr: string;
+    asr: string;
+    maghrib: string;
+    isha: string;
+  };
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'member';
+}
 
 interface MosqueStore {
   // State
-  user: User | null;
-  committee: Committee[];
+  settings: Settings;
   donors: Donor[];
+  committee: CommitteeMember[];
   income: Income[];
   expenses: Expense[];
-  events: Event[];
-  notices: any[];
+  notices: Notice[];
   imams: Imam[];
-  settings: {
-    name: string;
-    address: string;
-    phone: string;
-    email: string;
-    prayerTimes: {
-      fajr: string;
-      dhuhr: string;
-      asr: string;
-      maghrib: string;
-      isha: string;
-    };
-  };
+  events: Event[];
+  attendance: AttendanceRecord[];
+  user: User | null;
 
   // Actions
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
-  addCommitteeMember: (member: Omit<Committee, 'id'>) => void;
-  updateCommitteeMember: (id: string, updates: Partial<Committee>) => void;
-  deleteCommitteeMember: (id: string) => void;
-  addDonor: (donor: Omit<Donor, 'id' | 'paymentHistory'>) => void;
-  updateDonor: (id: string, updates: Partial<Donor>) => void;
+  updateSettings: (settings: Partial<Settings>) => void;
+  addDonor: (donor: Omit<Donor, 'id'>) => void;
+  updateDonor: (id: string, donor: Partial<Donor>) => void;
   deleteDonor: (id: string) => void;
+  addCommitteeMember: (member: Omit<CommitteeMember, 'id'>) => void;
+  updateCommitteeMember: (id: string, member: Partial<CommitteeMember>) => void;
+  deleteCommitteeMember: (id: string) => void;
   addIncome: (income: Omit<Income, 'id'>) => void;
-  updateIncome: (id: string, updates: Partial<Income>) => void;
+  updateIncome: (id: string, income: Partial<Income>) => void;
   deleteIncome: (id: string) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
-  updateExpense: (id: string, updates: Partial<Expense>) => void;
+  updateExpense: (id: string, expense: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
-  addEvent: (event: Omit<Event, 'id'>) => void;
-  updateEvent: (id: string, updates: Partial<Event>) => void;
-  deleteEvent: (id: string) => void;
-  addNotice: (notice: any) => void;
-  updateNotice: (id: string, updates: any) => void;
+  addNotice: (notice: Omit<Notice, 'id' | 'date'>) => void;
+  updateNotice: (id: string, notice: Partial<Notice>) => void;
   deleteNotice: (id: string) => void;
   addImam: (imam: Omit<Imam, 'id'>) => void;
-  updateImam: (id: string, updates: Partial<Imam>) => void;
+  updateImam: (id: string, imam: Partial<Imam>) => void;
   deleteImam: (id: string) => void;
-  updateSettings: (settings: Partial<MosqueStore['settings']>) => void;
+  addEvent: (event: Omit<Event, 'id'>) => void;
+  updateEvent: (id: string, event: Partial<Event>) => void;
+  deleteEvent: (id: string) => void;
+  addAttendance: (record: Omit<AttendanceRecord, 'id'>) => void;
+  updateAttendance: (id: string, record: Partial<AttendanceRecord>) => void;
+  deleteAttendance: (id: string) => void;
+  setUser: (user: User | null) => void;
+  
+  // Computed values
   getTotalIncome: () => number;
   getTotalExpenses: () => number;
   getBalance: () => number;
-  getMissingMonths: (donorId: string) => string[];
-  getDonorPaidMonths: (donorId: string) => string[];
-  changePassword: (newPassword: string) => void;
   getDefaulters: () => Donor[];
+  getMissingMonths: (donorId: string) => string[];
   getTotalDueAmount: () => number;
 }
 
-const useStore = create<MosqueStore>((set, get) => ({
-  // Initial state
-  user: { id: '1', username: 'admin', role: 'admin', name: 'Admin User' },
-  committee: [
-    {
-      id: '1',
-      name: 'আব্দুল করিম',
-      role: 'সভাপতি',
-      phone: '01712345678',
-      email: 'president@mosque.com',
-      joinDate: '2023-01-01'
-    },
-    {
-      id: '2',
-      name: 'মোহাম্মদ রহিম',
-      role: 'সেক্রেটারি',
-      phone: '01723456789',
-      email: 'secretary@mosque.com',
-      joinDate: '2023-02-01'
+const initialState = {
+  settings: {
+    name: 'আল-আমিন জামে মসজিদ',
+    address: 'ঢাকা, বাংলাদেশ',
+    phone: '+880 1XXX-XXXXXX',
+    email: 'info@alaminmosque.org',
+    prayerTimes: {
+      fajr: '05:30',
+      dhuhr: '12:15',
+      asr: '16:30',
+      maghrib: '17:45',
+      isha: '19:00'
     }
-  ],
-  donors: [
-    {
-      id: '1',
-      name: 'আহমেদ আলী',
-      phone: '01712345678',
-      address: 'ঢাকা, বাংলাদেশ',
-      monthlyAmount: 1000,
-      status: 'Active',
-      paymentHistory: [],
-      startDate: '2024-01-01'
-    },
-    {
-      id: '2',
-      name: 'ফাতেমা খাতুন',
-      phone: '01723456789',
-      address: 'চট্টগ্রাম, বাংলাদেশ',
-      monthlyAmount: 500,
-      status: 'Defaulter',
-      paymentHistory: [],
-      startDate: '2024-02-01'
-    },
-    {
-      id: '3',
-      name: 'মোহাম্মদ হাসান',
-      phone: '01734567890',
-      address: 'সিলেট, বাংলাদেশ',
-      monthlyAmount: 800,
-      status: 'Defaulter',
-      paymentHistory: [],
-      startDate: '2024-01-15'
-    }
-  ],
-  income: [
-    {
-      id: '1',
-      date: '2024-01-15',
-      source: 'Monthly Donation',
-      amount: 50000,
-      donorId: '1',
-      month: 'January 2024',
-      receiptNumber: 'R001'
-    },
-    {
-      id: '2',
-      date: '2024-01-20',
-      source: 'Donation Box',
-      amount: 5000,
-      receiptNumber: 'R002'
-    }
-  ],
-  expenses: [
-    {
-      id: '1',
-      date: '2024-01-10',
-      type: 'Electricity Bill',
-      amount: 3000,
-      month: 'January 2024',
-      description: 'মাসিক বিদ্যুৎ বিল'
-    },
-    {
-      id: '2',
-      date: '2024-01-15',
-      type: 'Imam Salary',
-      amount: 15000,
-      month: 'January 2024',
-      description: 'ইমাম সাহেবের মাসিক বেতন'
-    }
-  ],
-  events: [
-    {
-      id: '1',
-      title: 'জুমার নামাজ',
-      date: '2024-01-19',
-      time: '13:30',
-      description: 'সাপ্তাহিক জুমার নামাজ',
-      type: 'Prayer',
-      location: 'মূল নামাজ ঘর'
-    },
-    {
-      id: '2',
-      title: 'মিলাদ মাহফিল',
-      date: '2024-01-25',
-      time: '20:00',
-      description: 'বার্ষিক মিলাদ মাহফিল অনুষ্ঠান',
-      type: 'Program',
-      location: 'মূল হল'
-    },
-    {
-      id: '3',
-      title: 'কুরআন তেলাওয়াত প্রতিযোগিতা',
-      date: '2024-02-01',
-      time: '16:00',
-      description: 'শিশুদের কুরআন তেলাওয়াত প্রতিযোগিতা',
-      type: 'Event',
-      location: 'উপরের হল'
-    }
-  ],
+  },
+  donors: [],
+  committee: [],
+  income: [],
+  expenses: [],
   notices: [
     {
       id: '1',
-      title: 'মাসিক সভা',
-      message: 'আগামী শুক্রবার মাসিক কমিটি সভা অনুষ্ঠিত হবে',
-      type: 'info',
-      date: '2024-01-15'
-    },
-    {
-      id: '2',
       title: 'জুমার নামাজের সময় পরিবর্তন',
-      message: 'আগামীকাল থেকে জুমার নামাজ দুপুর ১:০০ টায় শুরু হবে',
-      type: 'warning',
-      date: '2024-01-16'
-    },
-    {
-      id: '3',
-      title: 'মহররম মাসের বিশেষ আয়োজন',
-      message: 'আশুরার দিন বিশেষ দোয়া ও আলোচনা অনুষ্ঠিত হবে',
-      type: 'info',
-      date: '2024-01-17'
-    }
-  ],
-  imams: [
-    {
-      id: '1',
-      name: 'মাওলানা আব্দুর রহমান',
-      phone: '01712345678',
-      address: 'ঢাকা, বাংলাদেশ',
-      monthlySalary: 15000,
-      status: 'Active',
-      joinDate: '2023-01-01'
-    }
-  ],
-  settings: {
-    name: 'বায়তুল মোকাররম মসজিদ',
-    address: 'ঢাকা, বাংলাদেশ',
-    phone: '01712345678',
-    email: 'info@mosque.com',
-    prayerTimes: {
-      fajr: '05:30',
-      dhuhr: '12:30',
-      asr: '16:00',
-      maghrib: '18:00',
-      isha: '19:30'
-    }
-  },
-
-  // Actions
-  login: (username: string, password: string) => {
-    if (username === 'admin' && password === 'admin') {
-      set({ user: { id: '1', username: 'admin', role: 'admin', name: 'Admin User' } });
-      return true;
-    }
-    return false;
-  },
-
-  logout: () => set({ user: null }),
-
-  addCommitteeMember: (member) => {
-    const newMember = { ...member, id: Date.now().toString() };
-    set((state) => ({ committee: [...state.committee, newMember] }));
-  },
-
-  updateCommitteeMember: (id, updates) => {
-    set((state) => ({
-      committee: state.committee.map((member) =>
-        member.id === id ? { ...member, ...updates } : member
-      )
-    }));
-  },
-
-  deleteCommitteeMember: (id) => {
-    set((state) => ({
-      committee: state.committee.filter((member) => member.id !== id)
-    }));
-  },
-
-  addDonor: (donor) => {
-    const newDonor = { ...donor, id: Date.now().toString(), paymentHistory: [] };
-    set((state) => ({ donors: [...state.donors, newDonor] }));
-  },
-
-  updateDonor: (id, updates) => {
-    set((state) => ({
-      donors: state.donors.map((donor) =>
-        donor.id === id ? { ...donor, ...updates } : donor
-      )
-    }));
-  },
-
-  deleteDonor: (id) => {
-    set((state) => ({
-      donors: state.donors.filter((donor) => donor.id !== id)
-    }));
-  },
-
-  addIncome: (income) => {
-    const newIncome = { ...income, id: Date.now().toString() };
-    set((state) => ({ income: [...state.income, newIncome] }));
-  },
-
-  updateIncome: (id, updates) => {
-    set((state) => ({
-      income: state.income.map((item) =>
-        item.id === id ? { ...item, ...updates } : item
-      )
-    }));
-  },
-
-  deleteIncome: (id) => {
-    set((state) => ({
-      income: state.income.filter((item) => item.id !== id)
-    }));
-  },
-
-  addExpense: (expense) => {
-    const newExpense = { ...expense, id: Date.now().toString() };
-    set((state) => ({ expenses: [...state.expenses, newExpense] }));
-  },
-
-  updateExpense: (id, updates) => {
-    set((state) => ({
-      expenses: state.expenses.map((item) =>
-        item.id === id ? { ...item, ...updates } : item
-      )
-    }));
-  },
-
-  deleteExpense: (id) => {
-    set((state) => ({
-      expenses: state.expenses.filter((item) => item.id !== id)
-    }));
-  },
-
-  addEvent: (event) => {
-    const newEvent = { ...event, id: Date.now().toString() };
-    set((state) => ({ events: [...state.events, newEvent] }));
-  },
-
-  updateEvent: (id, updates) => {
-    set((state) => ({
-      events: state.events.map((event) =>
-        event.id === id ? { ...event, ...updates } : event
-      )
-    }));
-  },
-
-  deleteEvent: (id) => {
-    set((state) => ({
-      events: state.events.filter((event) => event.id !== id)
-    }));
-  },
-
-  addNotice: (notice) => {
-    const newNotice = { ...notice, id: Date.now().toString(), date: new Date().toISOString().split('T')[0] };
-    set((state) => ({ notices: [...state.notices, newNotice] }));
-  },
-
-  updateNotice: (id, updates) => {
-    set((state) => ({
-      notices: state.notices.map((notice) =>
-        notice.id === id ? { ...notice, ...updates } : notice
-      )
-    }));
-  },
-
-  deleteNotice: (id) => {
-    set((state) => ({
-      notices: state.notices.filter((notice) => notice.id !== id)
-    }));
-  },
-
-  addImam: (imam) => {
-    const newImam = { ...imam, id: Date.now().toString() };
-    set((state) => ({ imams: [...state.imams, newImam] }));
-  },
-
-  updateImam: (id, updates) => {
-    set((state) => ({
-      imams: state.imams.map((imam) =>
-        imam.id === id ? { ...imam, ...updates } : imam
-      )
-    }));
-  },
-
-  deleteImam: (id) => {
-    set((state) => ({
-      imams: state.imams.filter((imam) => imam.id !== id)
-    }));
-  },
-
-  updateSettings: (newSettings) => {
-    set((state) => ({
-      settings: { ...state.settings, ...newSettings }
-    }));
-  },
-
-  getTotalIncome: () => {
-    const { income } = get();
-    return income.reduce((total, item) => total + item.amount, 0);
-  },
-
-  getTotalExpenses: () => {
-    const { expenses } = get();
-    return expenses.reduce((total, item) => total + item.amount, 0);
-  },
-
-  getBalance: () => {
-    const { getTotalIncome, getTotalExpenses } = get();
-    return getTotalIncome() - getTotalExpenses();
-  },
-
-  getMissingMonths: (donorId: string) => {
-    const { donors, income } = get();
-    const donor = donors.find(d => d.id === donorId);
-    if (!donor) return [];
-    
-    const startDate = new Date(donor.startDate);
-    const currentDate = new Date();
-    const paidMonths = income
-      .filter(i => i.donorId === donorId && i.source === 'Monthly Donation')
-      .map(i => i.month || '');
-    
-    const missingMonths: string[] = [];
-    const date = new Date(startDate);
-    
-    while (date <= currentDate) {
-      const monthYear = `${date.toLocaleDateString('en-US', { month: 'long' })} ${date.getFullYear()}`;
-      if (!paidMonths.includes(monthYear)) {
-        missingMonths.push(monthYear);
+      message: 'আগামী সপ্তাহ থেকে জুমার নামাজের সময় দুপুর ১:০০ টায় অনুষ্ঠিত হবে।',
+      type: 'info' as const,
+      date: new Date().toISOString(),
+      isMarquee: true,
+      marqueeSettings: {
+        speed: 15,
+        fontSize: 18,
+        textColor: '#ffffff'
       }
-      date.setMonth(date.getMonth() + 1);
     }
-    
-    return missingMonths;
-  },
+  ],
+  imams: [],
+  events: [],
+  attendance: [],
+  user: { id: '1', name: 'অ্যাডমিন', email: 'admin@mosque.org', role: 'admin' }
+};
 
-  getDonorPaidMonths: (donorId: string) => {
-    const { income } = get();
-    return income
-      .filter(i => i.donorId === donorId && i.source === 'Monthly Donation')
-      .map(i => i.month || '')
-      .filter(month => month !== '');
-  },
+export const useMosqueStore = create<MosqueStore>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
-  changePassword: (newPassword: string) => {
-    console.log('Password changed to:', newPassword);
-  },
+      updateSettings: (settings) =>
+        set((state) => ({
+          settings: { ...state.settings, ...settings }
+        })),
 
-  getDefaulters: () => {
-    const { donors } = get();
-    return donors.filter(donor => donor.status === 'Defaulter');
-  },
+      addDonor: (donor) =>
+        set((state) => ({
+          donors: [...state.donors, { ...donor, id: Date.now().toString() }]
+        })),
 
-  getTotalDueAmount: () => {
-    const { donors, getMissingMonths } = get();
-    const defaulters = donors.filter(donor => donor.status === 'Defaulter');
-    return defaulters.reduce((total, donor) => {
-      const missingMonths = getMissingMonths(donor.id);
-      return total + (missingMonths.length * donor.monthlyAmount);
-    }, 0);
-  }
-}));
+      updateDonor: (id, donor) =>
+        set((state) => ({
+          donors: state.donors.map((d) => d.id === id ? { ...d, ...donor } : d)
+        })),
 
-export const useMosqueStore = useStore;
+      deleteDonor: (id) =>
+        set((state) => ({
+          donors: state.donors.filter((d) => d.id !== id)
+        })),
+
+      addCommitteeMember: (member) =>
+        set((state) => ({
+          committee: [...state.committee, { ...member, id: Date.now().toString() }]
+        })),
+
+      updateCommitteeMember: (id, member) =>
+        set((state) => ({
+          committee: state.committee.map((m) => m.id === id ? { ...m, ...member } : m)
+        })),
+
+      deleteCommitteeMember: (id) =>
+        set((state) => ({
+          committee: state.committee.filter((m) => m.id !== id)
+        })),
+
+      addIncome: (income) =>
+        set((state) => ({
+          income: [...state.income, { ...income, id: Date.now().toString() }]
+        })),
+
+      updateIncome: (id, income) =>
+        set((state) => ({
+          income: state.income.map((i) => i.id === id ? { ...i, ...income } : i)
+        })),
+
+      deleteIncome: (id) =>
+        set((state) => ({
+          income: state.income.filter((i) => i.id !== id)
+        })),
+
+      addExpense: (expense) =>
+        set((state) => ({
+          expenses: [...state.expenses, { ...expense, id: Date.now().toString() }]
+        })),
+
+      updateExpense: (id, expense) =>
+        set((state) => ({
+          expenses: state.expenses.map((e) => e.id === id ? { ...e, ...expense } : e)
+        })),
+
+      deleteExpense: (id) =>
+        set((state) => ({
+          expenses: state.expenses.filter((e) => e.id !== id)
+        })),
+
+      addNotice: (notice) =>
+        set((state) => ({
+          notices: [...state.notices, { 
+            ...notice, 
+            id: Date.now().toString(), 
+            date: new Date().toISOString() 
+          }]
+        })),
+
+      updateNotice: (id, notice) =>
+        set((state) => ({
+          notices: state.notices.map((n) => n.id === id ? { ...n, ...notice } : n)
+        })),
+
+      deleteNotice: (id) =>
+        set((state) => ({
+          notices: state.notices.filter((n) => n.id !== id)
+        })),
+
+      addImam: (imam) =>
+        set((state) => ({
+          imams: [...state.imams, { ...imam, id: Date.now().toString() }]
+        })),
+
+      updateImam: (id, imam) =>
+        set((state) => ({
+          imams: state.imams.map((i) => i.id === id ? { ...i, ...imam } : i)
+        })),
+
+      deleteImam: (id) =>
+        set((state) => ({
+          imams: state.imams.filter((i) => i.id !== id)
+        })),
+
+      addEvent: (event) =>
+        set((state) => ({
+          events: [...state.events, { ...event, id: Date.now().toString() }]
+        })),
+
+      updateEvent: (id, event) =>
+        set((state) => ({
+          events: state.events.map((e) => e.id === id ? { ...e, ...event } : e)
+        })),
+
+      deleteEvent: (id) =>
+        set((state) => ({
+          events: state.events.filter((e) => e.id !== id)
+        })),
+
+      addAttendance: (record) =>
+        set((state) => ({
+          attendance: [...state.attendance, { ...record, id: Date.now().toString() }]
+        })),
+
+      updateAttendance: (id, record) =>
+        set((state) => ({
+          attendance: state.attendance.map((a) => a.id === id ? { ...a, ...record } : a)
+        })),
+
+      deleteAttendance: (id) =>
+        set((state) => ({
+          attendance: state.attendance.filter((a) => a.id !== id)
+        })),
+
+      setUser: (user) => set({ user }),
+
+      getTotalIncome: () => {
+        const { income } = get();
+        return income.reduce((total, item) => total + item.amount, 0);
+      },
+
+      getTotalExpenses: () => {
+        const { expenses } = get();
+        return expenses.reduce((total, item) => total + item.amount, 0);
+      },
+
+      getBalance: () => {
+        const { getTotalIncome, getTotalExpenses } = get();
+        return getTotalIncome() - getTotalExpenses();
+      },
+
+      getDefaulters: () => {
+        const { donors } = get();
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+
+        return donors.filter(donor => {
+          const hasCurrentMonthPayment = donor.payments.some(payment => 
+            payment.month === currentMonth.toString() && 
+            payment.year === currentYear &&
+            payment.status === 'Paid'
+          );
+          return !hasCurrentMonthPayment && donor.status === 'Active';
+        });
+      },
+
+      getMissingMonths: (donorId: string) => {
+        const { donors } = get();
+        const donor = donors.find(d => d.id === donorId);
+        if (!donor) return [];
+
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth();
+        
+        const missingMonths: string[] = [];
+        const monthNames = [
+          'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+          'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+        ];
+
+        for (let month = 0; month <= currentMonth; month++) {
+          const hasPayment = donor.payments.some(payment => 
+            payment.month === month.toString() && 
+            payment.year === currentYear &&
+            payment.status === 'Paid'
+          );
+          
+          if (!hasPayment) {
+            missingMonths.push(monthNames[month]);
+          }
+        }
+
+        return missingMonths;
+      },
+
+      getTotalDueAmount: () => {
+        const { getDefaulters } = get();
+        const defaulters = getDefaulters();
+        
+        return defaulters.reduce((total, donor) => {
+          const { getMissingMonths } = get();
+          const missingMonths = getMissingMonths(donor.id);
+          return total + (missingMonths.length * donor.monthlyAmount);
+        }, 0);
+      }
+    }),
+    {
+      name: 'mosque-storage'
+    }
+  )
+);

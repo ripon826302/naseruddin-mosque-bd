@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import PrayerTimeCard from '@/components/dashboard/PrayerTimeCard';
@@ -7,7 +6,9 @@ import ScrollingNoticeBoard from '@/components/dashboard/ScrollingNoticeBoard';
 import DueAmountsCard from '@/components/dashboard/DueAmountsCard';
 import QuickActions from '@/components/dashboard/QuickActions';
 import RecentActivity from '@/components/dashboard/RecentActivity';
+import MarqueeNotices from '@/components/dashboard/MarqueeNotices';
 import { Users, DollarSign, TrendingUp, Building, UserCheck, AlertTriangle, Calendar, FileText } from 'lucide-react';
+import { getBengaliDate, getEnglishDate, getArabicDate } from '@/utils/dates';
 
 interface DashboardProps {
   onPageChange?: (page: string) => void;
@@ -39,17 +40,40 @@ const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            {settings.name}
-          </h1>
-          <p className="text-gray-400">{settings.address}</p>
-          <div className="mt-4 flex justify-center space-x-4 text-sm text-gray-500">
-            <span>📧 {settings.email}</span>
-            <span>📞 {settings.phone}</span>
+        {/* Enhanced Header with Dates */}
+        <div className="relative mb-8">
+          <div className="flex justify-between items-start">
+            {/* Left side - Mosque Info */}
+            <div className="text-left">
+              <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                {settings.name}
+              </h1>
+              <p className="text-gray-400 text-lg">{settings.address}</p>
+              <div className="mt-3 flex flex-col space-y-1 text-sm text-gray-500">
+                <span>📧 {settings.email}</span>
+                <span>📞 {settings.phone}</span>
+              </div>
+            </div>
+
+            {/* Right side - Dates */}
+            <div className="text-right bg-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-xl p-4 min-w-[280px]">
+              <div className="space-y-2">
+                <div className="text-green-300 font-semibold text-sm">
+                  🇧🇩 {getBengaliDate()}
+                </div>
+                <div className="text-blue-300 font-semibold text-sm">
+                  🇺🇸 {getEnglishDate()}
+                </div>
+                <div className="text-orange-300 font-semibold text-sm">
+                  🕌 {getArabicDate()}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Marquee Notices */}
+        <MarqueeNotices />
 
         {/* Enhanced Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-8">
