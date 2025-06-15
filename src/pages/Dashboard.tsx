@@ -45,8 +45,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
             <Menu size={24} />
           </button>
 
-          {/* Mosque Info */}
-          <div className="flex-1 lg:flex-none">
+          {/* Mosque Info and Date in same row */}
+          <div className="flex-1 flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">{settings.name}</h1>
@@ -56,15 +56,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Today's Date Information */}
-          <div className="hidden lg:block">
-            <div className="text-right text-white">
-              <p className="text-sm font-medium text-green-100 mb-1">আজকের তারিখ</p>
-              <p className="text-base">
-                {getBengaliDate()} • {getEnglishDate()} • {getArabicDate()}
-              </p>
+            {/* Today's Date Information - Next to mosque name */}
+            <div className="hidden lg:block">
+              <div className="text-right text-white">
+                <p className="text-sm font-medium text-green-100 mb-1">আজকের তারিখ</p>
+                <p className="text-base">
+                  {getBengaliDate()}<br />
+                  {getEnglishDate()}<br />
+                  {getArabicDate()}
+                </p>
+              </div>
             </div>
           </div>
         </div>
