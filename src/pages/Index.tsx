@@ -4,15 +4,17 @@ import Navigation from '@/components/layout/Navigation';
 import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
 import CommitteeMembers from '@/pages/CommitteeMembers';
-import IncomeManagement from '@/pages/IncomeManagement';
-import ExpenseManagement from '@/pages/ExpenseManagement';
-import DonorManagement from '@/pages/DonorManagement';
-import Reports from '@/pages/Reports';
-import NoticeBoard from '@/pages/NoticeBoard';
-import Settings from '@/pages/Settings';
-import ImamManagement from '@/pages/ImamManagement';
-import AdvancedReports from '@/pages/AdvancedReports';
-import PaymentTracking from '@/pages/PaymentTracking';
+import IncomeManagementPage from '@/pages/IncomeManagementPage';
+import ExpenseManagementPage from '@/pages/ExpenseManagementPage';
+import DonorManagementPage from '@/pages/DonorManagementPage';
+import ReportsPage from '@/pages/ReportsPage';
+import NoticeBoardPage from '@/pages/NoticeBoardPage';
+import SettingsPage from '@/pages/SettingsPage';
+import ImamManagementPage from '@/pages/ImamManagementPage';
+import AdvancedReportsPage from '@/pages/AdvancedReportsPage';
+import PaymentTrackingPage from '@/pages/PaymentTrackingPage';
+import AttendanceManagement from '@/pages/AttendanceManagement';
+import EventManagement from '@/pages/EventManagement';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const Index = () => {
@@ -36,31 +38,35 @@ const Index = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard currentPage={currentPage} onPageChange={setCurrentPage} isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />;
+        return <Dashboard onPageChange={setCurrentPage} />;
       case 'committee':
         return <CommitteeMembers onBack={handleBackToDashboard} />;
       case 'income':
-        return <IncomeManagement onBack={handleBackToDashboard} />;
+        return <IncomeManagementPage onBack={handleBackToDashboard} />;
       case 'expense':
-        return <ExpenseManagement onBack={handleBackToDashboard} />;
+        return <ExpenseManagementPage onBack={handleBackToDashboard} />;
       case 'donors':
-        return <DonorManagement onBack={handleBackToDashboard} />;
+        return <DonorManagementPage onBack={handleBackToDashboard} />;
       case 'imams':
-        return <ImamManagement onBack={handleBackToDashboard} />;
+        return <ImamManagementPage onBack={handleBackToDashboard} />;
       case 'reports':
-        return <Reports onBack={handleBackToDashboard} />;
+        return <ReportsPage onBack={handleBackToDashboard} />;
       case 'advanced-reports':
-        return <AdvancedReports onBack={handleBackToDashboard} />;
+        return <AdvancedReportsPage onBack={handleBackToDashboard} />;
       case 'payment-tracking':
-        return <PaymentTracking onBack={handleBackToDashboard} />;
+        return <PaymentTrackingPage onBack={handleBackToDashboard} />;
+      case 'attendance':
+        return <AttendanceManagement />;
+      case 'events':
+        return <EventManagement />;
       case 'notices':
-        return <NoticeBoard onBack={handleBackToDashboard} />;
+        return <NoticeBoardPage onBack={handleBackToDashboard} />;
       case 'settings':
-        return <Settings onBack={handleBackToDashboard} />;
+        return <SettingsPage onBack={handleBackToDashboard} />;
       case 'login':
         return <Login onLogin={() => setCurrentPage('dashboard')} />;
       default:
-        return <Dashboard currentPage={currentPage} onPageChange={setCurrentPage} isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />;
+        return <Dashboard onPageChange={setCurrentPage} />;
     }
   };
 

@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { Plus, Edit, Trash2, Calendar, Clock, MapPin, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import BackButton from '@/components/ui/BackButton';
+import { PageWithBackProps } from '@/types/pageProps';
 
-const EventManagement: React.FC = () => {
+const EventManagement: React.FC<PageWithBackProps> = ({ onBack }) => {
   const { events, addEvent, updateEvent, deleteEvent } = useMosqueStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
@@ -93,6 +94,8 @@ const EventManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
+        {onBack && <BackButton onBack={onBack} />}
+        
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
