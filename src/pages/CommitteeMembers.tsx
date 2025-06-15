@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,8 +10,13 @@ import { Users, Edit, Trash2, Plus, Phone, Mail } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 import { Committee } from '@/types/mosque';
+import BackButton from '@/components/ui/BackButton';
 
-const CommitteeMembers: React.FC = () => {
+interface CommitteeMembersProps {
+  onBack?: () => void;
+}
+
+const CommitteeMembers: React.FC<CommitteeMembersProps> = ({ onBack }) => {
   const { committee, addCommitteeMember, updateCommitteeMember, deleteCommitteeMember, user } = useMosqueStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Committee | null>(null);
@@ -73,6 +77,8 @@ const CommitteeMembers: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {onBack && <BackButton onBack={onBack} />}
+      
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Users className="text-green-600" size={32} />

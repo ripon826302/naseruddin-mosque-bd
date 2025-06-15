@@ -36,7 +36,7 @@ const Index = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard currentPage={currentPage} onPageChange={setCurrentPage} isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />;
       case 'committee':
         return <CommitteeMembers onBack={handleBackToDashboard} />;
       case 'income':
@@ -60,7 +60,7 @@ const Index = () => {
       case 'login':
         return <Login onLogin={() => setCurrentPage('dashboard')} />;
       default:
-        return <Dashboard />;
+        return <Dashboard currentPage={currentPage} onPageChange={setCurrentPage} isNavOpen={isNavOpen} setIsNavOpen={setIsNavOpen} />;
     }
   };
 
