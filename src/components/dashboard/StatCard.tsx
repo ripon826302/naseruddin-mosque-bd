@@ -41,21 +41,21 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div className={`bg-gradient-to-br ${colorClasses[color]} rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-xl ${iconBgClasses[color]} border backdrop-blur-sm`}>
-          <Icon size={24} className="text-white" />
+    <div className={`bg-gradient-to-br ${colorClasses[color]} rounded-xl p-3 lg:p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
+      <div className="flex items-center justify-between mb-2 lg:mb-3">
+        <div className={`p-2 lg:p-2.5 rounded-lg ${iconBgClasses[color]} border backdrop-blur-sm`}>
+          <Icon size={16} className="lg:w-5 lg:h-5 text-white" />
         </div>
         {trend !== undefined && (
-          <div className={`text-xs px-2 py-1 rounded-full ${trend >= 0 ? 'bg-white/20' : 'bg-red-500/30'}`}>
+          <div className={`text-xs px-1.5 py-0.5 lg:px-2 lg:py-1 rounded-full ${trend >= 0 ? 'bg-white/20' : 'bg-red-500/30'}`}>
             {trend >= 0 ? '+' : ''}{trend}%
           </div>
         )}
       </div>
       
       <div>
-        <p className="text-white/80 text-sm font-medium mb-1">{title}</p>
-        <p className="text-2xl font-bold mb-1">
+        <p className="text-white/80 text-xs lg:text-sm font-medium mb-1">{title}</p>
+        <p className="text-lg lg:text-xl font-bold mb-1">
           {isCurrency ? formatCurrency(Number(value)) : value}
         </p>
         {subtitle && (
