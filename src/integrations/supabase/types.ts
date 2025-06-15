@@ -80,7 +80,9 @@ export type Database = {
           amount: number
           created_at: string | null
           date: string
+          description: string | null
           id: string
+          imam_id: string | null
           month: string | null
           type: string
         }
@@ -88,7 +90,9 @@ export type Database = {
           amount: number
           created_at?: string | null
           date: string
+          description?: string | null
           id: string
+          imam_id?: string | null
           month?: string | null
           type: string
         }
@@ -96,11 +100,21 @@ export type Database = {
           amount?: number
           created_at?: string | null
           date?: string
+          description?: string | null
           id?: string
+          imam_id?: string | null
           month?: string | null
           type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_imam_id_fkey"
+            columns: ["imam_id"]
+            isOneToOne: false
+            referencedRelation: "imam"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       imam: {
         Row: {
@@ -188,6 +202,7 @@ export type Database = {
           name: string
           phone: string
           prayer_times: Json
+          ramadan_times: Json | null
           updated_at: string | null
         }
         Insert: {
@@ -198,6 +213,7 @@ export type Database = {
           name: string
           phone: string
           prayer_times: Json
+          ramadan_times?: Json | null
           updated_at?: string | null
         }
         Update: {
@@ -208,6 +224,7 @@ export type Database = {
           name?: string
           phone?: string
           prayer_times?: Json
+          ramadan_times?: Json | null
           updated_at?: string | null
         }
         Relationships: []

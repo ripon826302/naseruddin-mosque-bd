@@ -1,175 +1,71 @@
 
-import React, { useState, useEffect } from 'react';
-import { Clock, Sunrise, Sun, Sunset, Moon, Calendar } from 'lucide-react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, Moon, Sun } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 const PrayerTimeCard: React.FC = () => {
   const { settings } = useMosqueStore();
-  const [currentTime, setCurrentTime] = useState(new Date());
-  
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, []);
   
   const prayerTimes = [
-    {
-      name: 'ফজর',
-      nameArabic: 'الفجر',
-      time: settings.prayerTimes.fajr,
-      icon: Sunrise,
-      color: 'from-indigo-500 to-purple-500',
-      bgColor: 'bg-indigo-500/20',
-      borderColor: 'border-indigo-400/30',
-      glowColor: 'shadow-indigo-500/25'
-    },
-    {
-      name: 'যোহর',
-      nameArabic: 'الظهر',
-      time: settings.prayerTimes.dhuhr,
-      icon: Sun,
-      color: 'from-yellow-500 to-orange-500',
-      bgColor: 'bg-yellow-500/20',
-      borderColor: 'border-yellow-400/30',
-      glowColor: 'shadow-yellow-500/25'
-    },
-    {
-      name: 'আসর',
-      nameArabic: 'العصر',
-      time: settings.prayerTimes.asr,
-      icon: Sun,
-      color: 'from-orange-500 to-red-500',
-      bgColor: 'bg-orange-500/20',
-      borderColor: 'border-orange-400/30',
-      glowColor: 'shadow-orange-500/25'
-    },
-    {
-      name: 'মাগরিব',
-      nameArabic: 'المغرب',
-      time: settings.prayerTimes.maghrib,
-      icon: Sunset,
-      color: 'from-red-500 to-pink-500',
-      bgColor: 'bg-red-500/20',
-      borderColor: 'border-red-400/30',
-      glowColor: 'shadow-red-500/25'
-    },
-    {
-      name: 'এশা',
-      nameArabic: 'العشاء',
-      time: settings.prayerTimes.isha,
-      icon: Moon,
-      color: 'from-purple-500 to-indigo-500',
-      bgColor: 'bg-purple-500/20',
-      borderColor: 'border-purple-400/30',
-      glowColor: 'shadow-purple-500/25'
-    }
+    { name: 'ফজর', time: settings.prayerTimes.fajr, nameArabic: 'فجر', nameBangla: 'ফজর' },
+    { name: 'যোহর', time: settings.prayerTimes.dhuhr, nameArabic: 'ظهر', nameBangla: 'যোহর' },
+    { name: 'আসর', time: settings.prayerTimes.asr, nameArabic: 'عصر', nameBangla: 'আসর' },
+    { name: 'মাগরিব', time: settings.prayerTimes.maghrib, nameArabic: 'مغرب', nameBangla: 'মাগরিব' },
+    { name: 'এশা', time: settings.prayerTimes.isha, nameArabic: 'عشاء', nameBangla: 'এশা' },
+    { name: 'জুমআ', time: settings.prayerTimes.jumma, nameArabic: 'جمعة', nameBangla: 'জুমআ' }
   ];
 
-  const getCurrentPrayer = () => {
-    const currentTimeStr = currentTime.toTimeString().slice(0, 5);
-    const times = [
-      { name: 'ফজর', time: settings.prayerTimes.fajr },
-      { name: 'যোহর', time: settings.prayerTimes.dhuhr },
-      { name: 'আসর', time: settings.prayerTimes.asr },
-      { name: 'মাগরিব', time: settings.prayerTimes.maghrib },
-      { name: 'এশা', time: settings.prayerTimes.isha }
-    ];
-    
-    for (let i = 0; i < times.length; i++) {
-      if (currentTimeStr <= times[i].time) {
-        return times[i].name;
-      }
-    }
-    return 'ফজর'; // After Isha, next prayer is Fajr
-  };
-
-  const nextPrayer = getCurrentPrayer();
+  // Check if it's Ramadan (you can implement proper Ramadan date logic here)
+  const isRamadan = false; // This should be calculated based on actual Ramadan dates
 
   return (
-    <div className="bg-gray-900/95 backdrop-blur-lg border border-gray-700/50 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-300">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="bg-blue-500/20 p-3 rounded-full border border-blue-400/30">
-            <Clock className="h-6 w-6 text-blue-300" />
-          </div>
-          <h3 className="text-xl font-bold text-blue-300">
-            নামাজের সময়সূচি
-          </h3>
-        </div>
-        
-        <div className="text-right">
-          <div className="flex items-center space-x-2 text-gray-300 mb-1">
-            <Calendar className="h-4 w-4" />
-            <span className="text-sm">{currentTime.toLocaleDateString('bn-BD')}</span>
-          </div>
-          <div className="text-blue-300 text-lg font-mono">
-            {currentTime.toLocaleTimeString('bn-BD', { 
-              hour12: false,
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit'
-            })}
-          </div>
-        </div>
-      </div>
-      
-      <div className="space-y-3">
-        {prayerTimes.map((prayer, index) => {
-          const IconComponent = prayer.icon;
-          const isNext = prayer.name === nextPrayer;
-          
-          return (
-            <div key={index} className="relative group">
-              <div className={`${prayer.bgColor} backdrop-blur-lg border ${prayer.borderColor} rounded-xl p-4 hover:border-opacity-50 transition-all duration-300 ${
-                isNext ? `ring-2 ring-${prayer.color.split('-')[1]}-400/50 ${prayer.glowColor} shadow-lg` : ''
-              }`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className={`${prayer.bgColor} p-2 rounded-full border ${prayer.borderColor} ${
-                      isNext ? 'animate-pulse' : ''
-                    }`}>
-                      <IconComponent className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-white font-semibold text-lg flex items-center space-x-2">
-                        <span>{prayer.name}</span>
-                        {isNext && (
-                          <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
-                            পরবর্তী
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-gray-300 text-sm">{prayer.nameArabic}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-white font-bold text-xl font-mono ${
-                      isNext ? 'text-green-300' : ''
-                    }`}>
-                      {prayer.time}
-                    </div>
-                  </div>
-                </div>
+    <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center space-x-2 text-green-800">
+          <Clock className="text-green-600" size={24} />
+          <span>নামাজের সময়সূচি</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+          {prayerTimes.map((prayer, index) => (
+            <div
+              key={index}
+              className="bg-white/60 backdrop-blur-sm rounded-lg p-3 text-center border border-green-100 hover:shadow-md transition-shadow"
+            >
+              <div className="text-green-700 font-semibold text-sm lg:text-base mb-1">
+                {prayer.nameBangla}
+              </div>
+              <div className="text-xs text-green-600 mb-1">{prayer.nameArabic}</div>
+              <div className="text-green-900 font-bold text-sm lg:text-lg">
+                {prayer.time}
               </div>
             </div>
-          );
-        })}
-      </div>
-      
-      <div className="mt-6 pt-4 border-t border-gray-700/50">
-        <div className="text-center text-gray-400 text-sm">
-          আজকের তারিখ: {currentTime.toLocaleDateString('bn-BD', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
+          ))}
         </div>
-      </div>
-    </div>
+        
+        {/* Ramadan Times */}
+        {isRamadan && settings.ramadanTimes && (
+          <div className="mt-4 pt-4 border-t border-green-200">
+            <h4 className="text-green-800 font-semibold mb-3 flex items-center space-x-2">
+              <Moon className="text-orange-500" size={18} />
+              <span>রমজানের সময়সূচি</span>
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-orange-50 rounded-lg p-3 text-center border border-orange-200">
+                <div className="text-orange-700 font-semibold text-sm mb-1">সেহরি</div>
+                <div className="text-orange-900 font-bold text-lg">{settings.ramadanTimes.sehri}</div>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-3 text-center border border-orange-200">
+                <div className="text-orange-700 font-semibold text-sm mb-1">ইফতার</div>
+                <div className="text-orange-900 font-bold text-lg">{settings.ramadanTimes.iftar}</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

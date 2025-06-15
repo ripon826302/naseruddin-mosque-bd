@@ -12,17 +12,18 @@ import { toast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/dates';
 
 const ExpenseManagement: React.FC = () => {
-  const { expenses, addExpense, deleteExpense, user } = useMosqueStore();
+  const { expenses, addExpense, deleteExpense, user, imams } = useMosqueStore();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     type: '',
     amount: '',
     month: '',
-    description: ''
+    description: '',
+    imamId: ''
   });
 
   const isAdmin = user?.role === 'admin';
-  const expenseTypes = ['Imam Salary', 'Electricity Bill', 'Others'];
+  const expenseTypes = ['Imam Salary', 'Imam Bonus', 'Electricity Bill', 'Others'];
   const months = [
     'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
     'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
@@ -35,9 +36,10 @@ const ExpenseManagement: React.FC = () => {
       date: formData.date,
       amount: Number(formData.amount),
       type: formData.type as any,
-      category: formData.type as any, // Map type to category
+      category: formData.type as any,
       month: formData.month,
-      description: formData.description
+      description: formData.description,
+      imamId: formData.imamId || undefined
     };
     
     addExpense(expenseData);
@@ -48,7 +50,8 @@ const ExpenseManagement: React.FC = () => {
       type: '',
       amount: '',
       month: '',
-      description: ''
+      description: '',
+      imamId: ''
     });
   };
 
@@ -56,6 +59,29 @@ const ExpenseManagement: React.FC = () => {
     if (window.confirm('আপনি কি এই খরচের তথ্য মুছে ফেলতে চান?')) {
       deleteExpense(id);
       toast({ title: "সফল!", description: "খরচের তথ্য মুছে ফেলা হয়েছে।" });
+    }
+  };
+
+  const getImamName = (imamId?: string) => {
+    if (!imamId) return 'N/A';
+    const imam = imams.find(i => i.id === imamId);
+    return imam ? imam.name : 'N/A';
+  };
+
+  const handleTypeChange = (value: string) => {
+    setFormData({...formData, type: value});
+    
+    // Auto-fill salary amount if Imam Salary is selected and there's an active imam
+    if (value === 'Imam Salary' && imams.length > 0) {
+      const activeImam = imams.find(imam => imam.status === 'Active');
+      if (activeImam) {
+        setFormData(prev => ({
+          ...prev, 
+          type: value,
+          amount: activeImam.monthlySalary.toString(),
+          imamId: activeImam.id
+        }));
+      }
     }
   };
 
@@ -102,6 +128,7 @@ const ExpenseManagement: React.FC = () => {
                             <p>তারিখ: {new Date(expense.date).toLocaleDateString('bn-BD')}</p>
                             {expense.month && <p>মাস: {expense.month}</p>}
                             {expense.description && <p>বিবরণ: {expense.description}</p>}
+                            {expense.imamId && <p>ইমাম: {getImamName(expense.imamId)}</p>}
                           </div>
                         </div>
                         {isAdmin && (
@@ -159,7 +186,7 @@ const ExpenseManagement: React.FC = () => {
                   
                   <div>
                     <Label htmlFor="type">খরচের ধরন</Label>
-                    <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                    <Select value={formData.type} onValueChange={handleTypeChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="খরচের ধরন নির্বাচন করুন" />
                       </SelectTrigger>
@@ -170,6 +197,22 @@ const ExpenseManagement: React.FC = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {(formData.type === 'Imam Salary' || formData.type === 'Imam Bonus') && (
+                    <div>
+                      <Label htmlFor="imamId">ইমাম নির্বাচন করুন</Label>
+                      <Select value={formData.imamId} onValueChange={(value) => setFormData({...formData, imamId: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="ইমাম নির্বাচন করুন" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {imams.filter(imam => imam.status === 'Active').map((imam) => (
+                            <SelectItem key={imam.id} value={imam.id}>{imam.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   
                   {(formData.type === 'Imam Salary' || formData.type === 'Electricity Bill') && (
                     <div>
@@ -187,7 +230,7 @@ const ExpenseManagement: React.FC = () => {
                     </div>
                   )}
                   
-                  {formData.type === 'Others' && (
+                  {(formData.type === 'Others' || formData.type === 'Imam Bonus') && (
                     <div>
                       <Label htmlFor="description">বিবরণ</Label>
                       <Input

@@ -67,8 +67,9 @@ interface Expense {
   amount: number;
   date: string;
   description: string;
-  type: 'Utility' | 'Maintenance' | 'Imam Salary' | 'Event' | 'Other' | 'Electricity Bill' | 'Others';
+  type: 'Utility' | 'Maintenance' | 'Imam Salary' | 'Imam Bonus' | 'Event' | 'Other' | 'Electricity Bill' | 'Others';
   month?: string;
+  imamId?: string;
 }
 
 interface Imam {
@@ -114,6 +115,11 @@ interface Settings {
     asr: string;
     maghrib: string;
     isha: string;
+    jumma: string;
+  };
+  ramadanTimes?: {
+    sehri: string;
+    iftar: string;
   };
 }
 
@@ -189,7 +195,12 @@ const initialState = {
       dhuhr: '12:15',
       asr: '16:30',
       maghrib: '17:45',
-      isha: '19:00'
+      isha: '19:00',
+      jumma: '13:00'
+    },
+    ramadanTimes: {
+      sehri: '04:30',
+      iftar: '18:30'
     }
   },
   donors: [],

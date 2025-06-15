@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings as SettingsIcon, Building, Clock, Bell, Trash2, Lock } from 'lucide-react';
+import { Settings as SettingsIcon, Building, Clock, Bell, Trash2, Lock, Moon } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 
@@ -36,6 +35,11 @@ const Settings: React.FC = () => {
   const handlePrayerTimeUpdate = (prayer: string, time: string) => {
     const newPrayerTimes = { ...mosqueData.prayerTimes, [prayer]: time };
     setMosqueData({ ...mosqueData, prayerTimes: newPrayerTimes });
+  };
+
+  const handleRamadanTimeUpdate = (type: string, time: string) => {
+    const newRamadanTimes = { ...mosqueData.ramadanTimes, [type]: time };
+    setMosqueData({ ...mosqueData, ramadanTimes: newRamadanTimes });
   };
 
   const handleNoticeSubmit = (e: React.FormEvent) => {
@@ -178,70 +182,125 @@ const Settings: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="prayer">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-gray-800">নামাজের সময় সেট করুন</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="fajr">ফজর</Label>
-                    <Input
-                      id="fajr"
-                      type="time"
-                      value={mosqueData.prayerTimes.fajr}
-                      onChange={(e) => handlePrayerTimeUpdate('fajr', e.target.value)}
-                    />
+          <div className="space-y-6">
+            {/* Regular Prayer Times */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-gray-800 flex items-center space-x-2">
+                  <Clock size={20} />
+                  <span>নামাজের সময় সেট করুন</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="fajr">ফজর</Label>
+                      <Input
+                        id="fajr"
+                        type="time"
+                        value={mosqueData.prayerTimes.fajr}
+                        onChange={(e) => handlePrayerTimeUpdate('fajr', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="dhuhr">যোহর</Label>
+                      <Input
+                        id="dhuhr"
+                        type="time"
+                        value={mosqueData.prayerTimes.dhuhr}
+                        onChange={(e) => handlePrayerTimeUpdate('dhuhr', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="asr">আসর</Label>
+                      <Input
+                        id="asr"
+                        type="time"
+                        value={mosqueData.prayerTimes.asr}
+                        onChange={(e) => handlePrayerTimeUpdate('asr', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="maghrib">মাগরিব</Label>
+                      <Input
+                        id="maghrib"
+                        type="time"
+                        value={mosqueData.prayerTimes.maghrib}
+                        onChange={(e) => handlePrayerTimeUpdate('maghrib', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="isha">এশা</Label>
+                      <Input
+                        id="isha"
+                        type="time"
+                        value={mosqueData.prayerTimes.isha}
+                        onChange={(e) => handlePrayerTimeUpdate('isha', e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="jumma">জুমআ</Label>
+                      <Input
+                        id="jumma"
+                        type="time"
+                        value={mosqueData.prayerTimes.jumma}
+                        onChange={(e) => handlePrayerTimeUpdate('jumma', e.target.value)}
+                      />
+                    </div>
                   </div>
                   
-                  <div>
-                    <Label htmlFor="dhuhr">যোহর</Label>
-                    <Input
-                      id="dhuhr"
-                      type="time"
-                      value={mosqueData.prayerTimes.dhuhr}
-                      onChange={(e) => handlePrayerTimeUpdate('dhuhr', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="asr">আসর</Label>
-                    <Input
-                      id="asr"
-                      type="time"
-                      value={mosqueData.prayerTimes.asr}
-                      onChange={(e) => handlePrayerTimeUpdate('asr', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="maghrib">মাগরিব</Label>
-                    <Input
-                      id="maghrib"
-                      type="time"
-                      value={mosqueData.prayerTimes.maghrib}
-                      onChange={(e) => handlePrayerTimeUpdate('maghrib', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="isha">এশা</Label>
-                    <Input
-                      id="isha"
-                      type="time"
-                      value={mosqueData.prayerTimes.isha}
-                      onChange={(e) => handlePrayerTimeUpdate('isha', e.target.value)}
-                    />
-                  </div>
+                  <Button onClick={() => updateSettings(mosqueData)} className="w-full">
+                    নামাজের সময় আপডেট করুন
+                  </Button>
                 </div>
-                
-                <Button onClick={() => updateSettings(mosqueData)} className="w-full">
-                  নামাজের সময় আপডেট করুন
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Ramadan Times */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-gray-800 flex items-center space-x-2">
+                  <Moon size={20} className="text-orange-500" />
+                  <span>রমজানের সময়সূচি</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="sehri">সেহরির সময়</Label>
+                      <Input
+                        id="sehri"
+                        type="time"
+                        value={mosqueData.ramadanTimes?.sehri || '04:30'}
+                        onChange={(e) => handleRamadanTimeUpdate('sehri', e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="iftar">ইফতারের সময়</Label>
+                      <Input
+                        id="iftar"
+                        type="time"
+                        value={mosqueData.ramadanTimes?.iftar || '18:30'}
+                        onChange={(e) => handleRamadanTimeUpdate('iftar', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <Button onClick={() => updateSettings(mosqueData)} className="w-full">
+                    রমজানের সময়সূচি আপডেট করুন
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="notices">
