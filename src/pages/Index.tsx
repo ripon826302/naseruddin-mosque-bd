@@ -29,30 +29,34 @@ const Index = () => {
     return () => window.removeEventListener('toggleNav', handleToggleNav);
   }, []);
 
+  const handleBackToDashboard = () => {
+    setCurrentPage('dashboard');
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
       case 'committee':
-        return <CommitteeMembers />;
+        return <CommitteeMembers onBack={handleBackToDashboard} />;
       case 'income':
-        return <IncomeManagement />;
+        return <IncomeManagement onBack={handleBackToDashboard} />;
       case 'expense':
-        return <ExpenseManagement />;
+        return <ExpenseManagement onBack={handleBackToDashboard} />;
       case 'donors':
-        return <DonorManagement />;
+        return <DonorManagement onBack={handleBackToDashboard} />;
       case 'imams':
-        return <ImamManagement />;
+        return <ImamManagement onBack={handleBackToDashboard} />;
       case 'reports':
-        return <Reports />;
+        return <Reports onBack={handleBackToDashboard} />;
       case 'advanced-reports':
-        return <AdvancedReports />;
+        return <AdvancedReports onBack={handleBackToDashboard} />;
       case 'payment-tracking':
-        return <PaymentTracking />;
+        return <PaymentTracking onBack={handleBackToDashboard} />;
       case 'notices':
-        return <NoticeBoard />;
+        return <NoticeBoard onBack={handleBackToDashboard} />;
       case 'settings':
-        return <Settings />;
+        return <Settings onBack={handleBackToDashboard} />;
       case 'login':
         return <Login onLogin={() => setCurrentPage('dashboard')} />;
       default:
@@ -65,7 +69,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex w-full">
       <Navigation 
         currentPage={currentPage} 
         onPageChange={setCurrentPage}

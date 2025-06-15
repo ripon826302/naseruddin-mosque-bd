@@ -31,12 +31,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
-      {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4">
+      {/* Enhanced Page Header */}
+      <div className="bg-gradient-to-r from-green-600 to-green-700 shadow-lg border-b-2 border-green-800 px-4 lg:px-8 py-6">
         <div className="flex items-center justify-between">
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+            className="lg:hidden p-2 text-white hover:text-green-200 hover:bg-green-600 rounded-lg transition-colors"
             onClick={() => {
               const event = new CustomEvent('toggleNav');
               window.dispatchEvent(event);
@@ -47,24 +47,37 @@ const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
 
           {/* Mosque Info */}
           <div className="flex-1 lg:flex-none">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{settings.name}</h1>
-                <div className="flex items-center space-x-2 text-gray-600 text-sm">
-                  <MapPin size={14} />
+                <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">{settings.name}</h1>
+                <div className="flex items-center space-x-2 text-green-100 text-base">
+                  <MapPin size={16} />
                   <span>{settings.address}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Date Information - Single Line */}
+          {/* Today's Date Information */}
           <div className="hidden lg:block">
-            <div className="text-right">
-              <p className="text-sm text-gray-600">
+            <div className="text-right text-white">
+              <p className="text-sm font-medium text-green-100 mb-1">আজকের তারিখ</p>
+              <p className="text-base">
                 {getBengaliDate()} • {getEnglishDate()} • {getArabicDate()}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile Date - Show on smaller screens */}
+        <div className="lg:hidden mt-4 pt-4 border-t border-green-500">
+          <div className="text-center text-white">
+            <p className="text-sm font-medium text-green-100 mb-1">আজকের তারিখ</p>
+            <p className="text-sm">
+              {getBengaliDate()}<br />
+              {getEnglishDate()}<br />
+              {getArabicDate()}
+            </p>
           </div>
         </div>
       </div>
