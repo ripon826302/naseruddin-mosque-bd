@@ -32,9 +32,12 @@ const ExpenseManagement: React.FC = () => {
     e.preventDefault();
     
     const expenseData = {
-      ...formData,
+      date: formData.date,
       amount: Number(formData.amount),
-      type: formData.type as any
+      type: formData.type as any,
+      category: formData.type as any, // Map type to category
+      month: formData.month,
+      description: formData.description
     };
     
     addExpense(expenseData);

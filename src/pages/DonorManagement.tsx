@@ -10,15 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Plus, Phone, MapPin, Edit, Trash2, Eye, Calendar } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
-import { Donor } from '@/types/mosque';
 import { formatCurrency } from '@/utils/dates';
 import DonorDetails from '@/components/DonorDetails';
 
 const DonorManagement: React.FC = () => {
   const { donors, addDonor, updateDonor, deleteDonor, user, getMissingMonths } = useMosqueStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
-  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
+  const [editingDonor, setEditingDonor] = useState<any>(null);
+  const [selectedDonor, setSelectedDonor] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -34,8 +33,15 @@ const DonorManagement: React.FC = () => {
     e.preventDefault();
     
     const donorData = {
-      ...formData,
-      monthlyAmount: Number(formData.monthlyAmount)
+      name: formData.name,
+      phone: formData.phone,
+      address: formData.address,
+      monthlyAmount: Number(formData.monthlyAmount),
+      status: formData.status,
+      startDate: formData.startDate,
+      joinDate: formData.startDate, // Use startDate as joinDate
+      payments: [],
+      paymentHistory: []
     };
     
     if (editingDonor) {
@@ -58,7 +64,7 @@ const DonorManagement: React.FC = () => {
     });
   };
 
-  const handleEdit = (donor: Donor) => {
+  const handleEdit = (donor: any) => {
     setEditingDonor(donor);
     setFormData({
       name: donor.name,
@@ -256,7 +262,7 @@ const DonorManagement: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2 text-gray-600">
                   <Calendar size={16} />
-                  <span className="text-sm">শুরু: {new Date(donor.startDate).toLocaleDateString('bn-BD')}</span>
+                  <span className="text-sm">শুরু: {new Date(donor.startDate || donor.joinDate).toLocaleDateString('bn-BD')}</span>
                 </div>
                 <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-800 font-medium">

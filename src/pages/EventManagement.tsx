@@ -14,16 +14,23 @@ const EventManagement: React.FC = () => {
     date: '',
     time: '',
     description: '',
-    type: 'Event' as 'Prayer' | 'Event' | 'Program',
+    type: 'Event' as 'Religious' | 'Educational' | 'Social' | 'Fundraising' | 'Prayer' | 'Event' | 'Program',
     location: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const eventData = {
+      ...formData,
+      status: 'Planned' as const,
+      organizer: 'মসজিদ কমিটি'
+    };
+    
     if (editingEvent) {
-      updateEvent(editingEvent.id, formData);
+      updateEvent(editingEvent.id, eventData);
     } else {
-      addEvent(formData);
+      addEvent(eventData);
     }
     resetForm();
   };
@@ -56,8 +63,10 @@ const EventManagement: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'Prayer':
+      case 'Religious':
         return 'bg-green-500/20 text-green-400 border-green-400/30';
       case 'Program':
+      case 'Educational':
         return 'bg-blue-500/20 text-blue-400 border-blue-400/30';
       default:
         return 'bg-purple-500/20 text-purple-400 border-purple-400/30';
@@ -67,9 +76,15 @@ const EventManagement: React.FC = () => {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'Prayer':
-        return 'নামাজ';
+      case 'Religious':
+        return 'নামাজ/ধর্মীয়';
       case 'Program':
-        return 'অনুষ্ঠান';
+      case 'Educational':
+        return 'অনুষ্ঠান/শিক্ষামূলক';
+      case 'Social':
+        return 'সামাজিক';
+      case 'Fundraising':
+        return 'তহবিল সংগ্রহ';
       default:
         return 'ইভেন্ট';
     }
@@ -118,7 +133,7 @@ const EventManagement: React.FC = () => {
                 <div>
                   <p className="text-gray-400 text-sm">নামাজের সময়</p>
                   <p className="text-white text-2xl font-bold">
-                    {events.filter(e => e.type === 'Prayer').length}
+                    {events.filter(e => e.type === 'Prayer' || e.type === 'Religious').length}
                   </p>
                 </div>
               </div>
@@ -183,7 +198,7 @@ const EventManagement: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
                   <MapPin className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{event.location}</span>
+                  <span className="text-sm">{event.location || 'মসজিদ প্রাঙ্গণ'}</span>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed">{event.description}</p>
               </CardContent>
@@ -237,12 +252,14 @@ const EventManagement: React.FC = () => {
                   <label className="block text-gray-300 text-sm font-medium mb-2">ধরন</label>
                   <select
                     value={formData.type}
-                    onChange={(e) => setFormData({...formData, type: e.target.value as 'Prayer' | 'Event' | 'Program'})}
+                    onChange={(e) => setFormData({...formData, type: e.target.value as any})}
                     className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
                   >
                     <option value="Event">ইভেন্ট</option>
-                    <option value="Prayer">নামাজ</option>
-                    <option value="Program">অনুষ্ঠান</option>
+                    <option value="Religious">ধর্মীয়</option>
+                    <option value="Educational">শিক্ষামূলক</option>
+                    <option value="Social">সামাজিক</option>
+                    <option value="Fundraising">তহবিল সংগ্রহ</option>
                   </select>
                 </div>
                 
@@ -253,6 +270,7 @@ const EventManagement: React.FC = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({...formData, location: e.target.value})}
                     className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"
+                    placeholder="মসজিদ প্রাঙ্গণ"
                     required
                   />
                 </div>

@@ -45,10 +45,14 @@ const IncomeManagement: React.FC = () => {
     const receiptNumber = formData.receiptNumber || generateReceiptNumber();
     
     const incomeData = {
-      ...formData,
+      date: formData.date,
+      source: formData.source as any,
       amount: Number(formData.amount),
       receiptNumber,
-      source: formData.source as any
+      category: formData.source as any, // Map source to category
+      donorId: formData.donorId,
+      month: formData.month,
+      description: formData.description
     };
     
     addIncome(incomeData);

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,7 +70,7 @@ const Settings: React.FC = () => {
       });
       return;
     }
-    changePassword(passwordData.newPassword);
+    changePassword(passwordData.currentPassword, passwordData.newPassword);
     toast({ title: "সফল!", description: "পাসওয়ার্ড পরিবর্তন করা হয়েছে।" });
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
   };
@@ -345,6 +346,18 @@ const Settings: React.FC = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div>
+                  <Label htmlFor="currentPassword">বর্তমান পাসওয়ার্ড</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                    placeholder="বর্তমান পাসওয়ার্ড লিখুন"
+                    required
+                  />
+                </div>
+                
                 <div>
                   <Label htmlFor="newPassword">নতুন পাসওয়ার্ড</Label>
                   <Input
