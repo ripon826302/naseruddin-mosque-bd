@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +20,13 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     title: '',
     message: '',
     type: 'info' as 'info' | 'warning' | 'urgent',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    isMarquee: false,
+    marqueeSettings: {
+      speed: 10,
+      fontSize: 16,
+      textColor: '#ffffff',
+    }
   });
 
   const noticeTypes = [
@@ -47,7 +52,13 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
       title: '',
       message: '',
       type: 'info',
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      isMarquee: false,
+      marqueeSettings: {
+        speed: 10,
+        fontSize: 16,
+        textColor: '#ffffff',
+      }
     });
   };
 
@@ -57,7 +68,13 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
       title: notice.title,
       message: notice.message,
       type: notice.type,
-      date: notice.date
+      date: notice.date,
+      isMarquee: notice.isMarquee,
+      marqueeSettings: {
+        speed: notice.marqueeSettings.speed,
+        fontSize: notice.marqueeSettings.fontSize,
+        textColor: notice.marqueeSettings.textColor,
+      }
     });
   };
 
@@ -160,6 +177,85 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                         required
                       />
                     </div>
+                  </div>
+                  
+                  {/* Marquee Settings */}
+                  <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-600 mb-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label htmlFor="isMarquee" className="font-medium text-yellow-400">মারকুই নোটিশ বানাবেন?</Label>
+                      <input
+                        id="isMarquee"
+                        type="checkbox"
+                        checked={formData.isMarquee}
+                        onChange={e => setFormData({ ...formData, isMarquee: e.target.checked })}
+                        className="w-5 h-5 accent-yellow-500"
+                      />
+                    </div>
+                    {formData.isMarquee && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                        {/* Speed */}
+                        <div>
+                          <Label htmlFor="marquee-speed" className="text-yellow-400">স্পিড (সেকেন্ড)</Label>
+                          <input
+                            id="marquee-speed"
+                            type="number"
+                            min={3}
+                            max={60}
+                            value={formData.marqueeSettings.speed}
+                            onChange={e =>
+                              setFormData({
+                                ...formData,
+                                marqueeSettings: {
+                                  ...formData.marqueeSettings,
+                                  speed: parseInt(e.target.value) || 10,
+                                },
+                              })
+                            }
+                            className="w-full rounded bg-gray-900 border border-yellow-600 px-2 py-1 text-yellow-100 mt-1"
+                          />
+                        </div>
+                        {/* Font Size */}
+                        <div>
+                          <Label htmlFor="marquee-fontSize" className="text-yellow-400">ফন্ট সাইজ (px)</Label>
+                          <input
+                            id="marquee-fontSize"
+                            type="number"
+                            min={12}
+                            max={48}
+                            value={formData.marqueeSettings.fontSize}
+                            onChange={e =>
+                              setFormData({
+                                ...formData,
+                                marqueeSettings: {
+                                  ...formData.marqueeSettings,
+                                  fontSize: parseInt(e.target.value) || 16,
+                                },
+                              })
+                            }
+                            className="w-full rounded bg-gray-900 border border-yellow-600 px-2 py-1 text-yellow-100 mt-1"
+                          />
+                        </div>
+                        {/* Text Color */}
+                        <div>
+                          <Label htmlFor="marquee-textColor" className="text-yellow-400">লেখার রং</Label>
+                          <input
+                            id="marquee-textColor"
+                            type="color"
+                            value={formData.marqueeSettings.textColor}
+                            onChange={e =>
+                              setFormData({
+                                ...formData,
+                                marqueeSettings: {
+                                  ...formData.marqueeSettings,
+                                  textColor: e.target.value,
+                                },
+                              })
+                            }
+                            className="w-full h-10 p-1 rounded border border-yellow-600 bg-gray-900 mt-1"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   <Button type="submit" className="w-full bg-yellow-600 hover:bg-yellow-700">
@@ -345,6 +441,85 @@ const NoticeBoardPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                       required
                     />
                   </div>
+                </div>
+                
+                {/* Edit Marquee Settings */}
+                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-600 mb-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="edit-isMarquee" className="font-medium text-yellow-400">মারকুই নোটিশ বানাবেন?</Label>
+                    <input
+                      id="edit-isMarquee"
+                      type="checkbox"
+                      checked={formData.isMarquee}
+                      onChange={e => setFormData({ ...formData, isMarquee: e.target.checked })}
+                      className="w-5 h-5 accent-yellow-500"
+                    />
+                  </div>
+                  {formData.isMarquee && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                      {/* Speed */}
+                      <div>
+                        <Label htmlFor="edit-marquee-speed" className="text-yellow-400">স্পিড (সেকেন্ড)</Label>
+                        <input
+                          id="edit-marquee-speed"
+                          type="number"
+                          min={3}
+                          max={60}
+                          value={formData.marqueeSettings.speed}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              marqueeSettings: {
+                                ...formData.marqueeSettings,
+                                speed: parseInt(e.target.value) || 10,
+                              },
+                            })
+                          }
+                          className="w-full rounded bg-gray-900 border border-yellow-600 px-2 py-1 text-yellow-100 mt-1"
+                        />
+                      </div>
+                      {/* Font Size */}
+                      <div>
+                        <Label htmlFor="edit-marquee-fontSize" className="text-yellow-400">ফন্ট সাইজ (px)</Label>
+                        <input
+                          id="edit-marquee-fontSize"
+                          type="number"
+                          min={12}
+                          max={48}
+                          value={formData.marqueeSettings.fontSize}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              marqueeSettings: {
+                                ...formData.marqueeSettings,
+                                fontSize: parseInt(e.target.value) || 16,
+                              },
+                            })
+                          }
+                          className="w-full rounded bg-gray-900 border border-yellow-600 px-2 py-1 text-yellow-100 mt-1"
+                        />
+                      </div>
+                      {/* Text Color */}
+                      <div>
+                        <Label htmlFor="edit-marquee-textColor" className="text-yellow-400">লেখার রং</Label>
+                        <input
+                          id="edit-marquee-textColor"
+                          type="color"
+                          value={formData.marqueeSettings.textColor}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              marqueeSettings: {
+                                ...formData.marqueeSettings,
+                                textColor: e.target.value,
+                              },
+                            })
+                          }
+                          className="w-full h-10 p-1 rounded border border-yellow-600 bg-gray-900 mt-1"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex space-x-2">
