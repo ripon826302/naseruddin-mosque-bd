@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Menu, X, Home, Users, DollarSign, TrendingDown, Gift, Bell, Settings, LogOut, FileText, Calendar, UserCheck, CreditCard, BarChart3, Clock } from 'lucide-react';
+import { Menu, X, Home, Users, DollarSign, TrendingDown, Gift, Bell, Settings, LogOut, FileText, UserCheck, CreditCard, BarChart3 } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 interface NavigationProps {
@@ -21,10 +20,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
     { id: 'expense', label: 'ব্যয় ব্যবস্থাপনা', icon: TrendingDown, color: 'text-red-600' },
     { id: 'donors', label: 'দাতা ব্যবস্থাপনা', icon: Gift, color: 'text-purple-600' },
     { id: 'imams', label: 'ইমাম ব্যবস্থাপনা', icon: UserCheck, color: 'text-orange-600' },
-    { id: 'events', label: 'ইভেন্ট ব্যবস্থাপনা', icon: Calendar, color: 'text-indigo-600' },
     { id: 'reports', label: 'রিপোর্ট', icon: FileText, color: 'text-gray-600' },
     { id: 'advanced-reports', label: 'বিস্তারিত রিপোর্ট', icon: BarChart3, color: 'text-cyan-600' },
-    { id: 'attendance', label: 'উপস্থিতি', icon: Clock, color: 'text-teal-600' },
     { id: 'payment-tracking', label: 'পেমেন্ট ট্র্যাকিং', icon: CreditCard, color: 'text-pink-600' },
     { id: 'notices', label: 'নোটিশ বোর্ড', icon: Bell, color: 'text-yellow-600' }
   ];

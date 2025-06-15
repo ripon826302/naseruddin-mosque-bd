@@ -11,9 +11,7 @@ import Reports from '@/pages/Reports';
 import NoticeBoard from '@/pages/NoticeBoard';
 import Settings from '@/pages/Settings';
 import ImamManagement from '@/pages/ImamManagement';
-import EventManagement from '@/pages/EventManagement';
 import AdvancedReports from '@/pages/AdvancedReports';
-import AttendanceManagement from '@/pages/AttendanceManagement';
 import PaymentTracking from '@/pages/PaymentTracking';
 import { useMosqueStore } from '@/store/mosqueStore';
 
@@ -35,14 +33,10 @@ const Index = () => {
         return <DonorManagement />;
       case 'imams':
         return <ImamManagement />;
-      case 'events':
-        return <EventManagement />;
       case 'reports':
         return <Reports />;
       case 'advanced-reports':
         return <AdvancedReports />;
-      case 'attendance':
-        return <AttendanceManagement />;
       case 'payment-tracking':
         return <PaymentTracking />;
       case 'notices':
