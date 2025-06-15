@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
-import { Home, Users, DollarSign, CreditCard, FileText, Bell, Settings, LogOut, Menu, X, LogIn } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Menu, X, Home, Users, DollarSign, TrendingDown, Gift, Bell, Settings, LogOut, FileText, Calendar, UserCheck, CreditCard, BarChart3, Clock } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 
 interface NavigationProps {
@@ -10,145 +9,113 @@ interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { logout, user, settings } = useMosqueStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useMosqueStore();
+  
+  const isAdmin = user?.role === 'admin';
 
   const menuItems = [
-    { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: Home },
-    { id: 'committee', label: 'কমিটি', icon: Users },
-    { id: 'income', label: 'আয়', icon: DollarSign },
-    { id: 'expense', label: 'খরচ', icon: CreditCard },
-    { id: 'donors', label: 'দাতা', icon: Users },
-    { id: 'reports', label: 'রিপোর্ট', icon: FileText },
-    { id: 'notices', label: 'নোটিশ বোর্ড', icon: Bell },
+    { id: 'dashboard', label: 'ড্যাশবোর্ড', icon: Home, color: 'text-blue-600' },
+    { id: 'committee', label: 'কমিটি সদস্য', icon: Users, color: 'text-green-600' },
+    { id: 'income', label: 'আয় ব্যবস্থাপনা', icon: DollarSign, color: 'text-emerald-600' },
+    { id: 'expense', label: 'ব্যয় ব্যবস্থাপনা', icon: TrendingDown, color: 'text-red-600' },
+    { id: 'donors', label: 'দাতা ব্যবস্থাপনা', icon: Gift, color: 'text-purple-600' },
+    { id: 'imams', label: 'ইমাম ব্যবস্থাপনা', icon: UserCheck, color: 'text-orange-600' },
+    { id: 'events', label: 'ইভেন্ট ব্যবস্থাপনা', icon: Calendar, color: 'text-indigo-600' },
+    { id: 'reports', label: 'রিপোর্ট', icon: FileText, color: 'text-gray-600' },
+    { id: 'advanced-reports', label: 'বিস্তারিত রিপোর্ট', icon: BarChart3, color: 'text-cyan-600' },
+    { id: 'attendance', label: 'উপস্থিতি', icon: Clock, color: 'text-teal-600' },
+    { id: 'payment-tracking', label: 'পেমেন্ট ট্র্যাকিং', icon: CreditCard, color: 'text-pink-600' },
+    { id: 'notices', label: 'নোটিশ বোর্ড', icon: Bell, color: 'text-yellow-600' }
   ];
 
   const handleLogout = () => {
     logout();
-    onPageChange('dashboard');
-  };
-
-  const handleAdminLogin = () => {
     onPageChange('login');
-    setIsMobileMenuOpen(false);
+    setIsOpen(false);
   };
 
   return (
     <>
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-green-100 px-4 py-3 flex items-center justify-between z-40">
-        <h1 className="text-lg font-bold text-green-800 truncate">{settings.name}</h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="text-green-700"
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </Button>
-      </div>
+      {/* Mobile Menu Button */}
+      <button
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-green-600 text-white rounded-lg shadow-lg"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setIsMobileMenuOpen(false)} />
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsOpen(false)}
+        />
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full w-72 bg-white shadow-lg transform transition-transform duration-300 z-50 lg:translate-x-0 ${
-        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:relative lg:shadow-none lg:border-r lg:border-green-100`}>
+      {/* Navigation Sidebar */}
+      <div className={`fixed left-0 top-0 h-full w-72 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-40 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0 lg:relative lg:shadow-none`}>
         
         {/* Header */}
-        <div className="p-4 border-b border-green-100">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <div className="text-2xl">🕌</div>
-            </div>
-            <h1 className="text-lg font-bold text-green-800 mb-1 px-2 break-words">{settings.name}</h1>
-            <p className="text-sm text-green-600">ব্যবস্থাপনা সিস্টেম</p>
-          </div>
+        <div className="p-6 bg-gradient-to-r from-green-600 to-green-700 text-white">
+          <h2 className="text-xl font-bold">মসজিদ ব্যবস্থাপনা</h2>
+          <p className="text-green-100 text-sm mt-1">
+            {user?.name ? `স্বাগতম, ${user.name}` : 'স্বাগতম'}
+          </p>
         </div>
 
-        {/* User Info */}
-        {user && (
-          <div className="px-4 py-3 border-b border-green-50">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-green-700">
-                  {user?.name?.charAt(0) || 'U'}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{user?.name}</p>
-                <p className="text-xs text-green-600 capitalize">{user?.role}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Navigation Menu */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {/* Menu Items */}
+        <nav className="flex-1 p-4 space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPage === item.id;
-            
             return (
               <button
                 key={item.id}
                 onClick={() => {
                   onPageChange(item.id);
-                  setIsMobileMenuOpen(false);
+                  setIsOpen(false);
                 }}
-                className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-left transition-all duration-200 ${
-                  isActive
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  currentPage === item.id
+                    ? 'bg-green-50 text-green-700 border-l-4 border-green-600'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-green-600'
                 }`}
               >
-                <Icon size={18} />
-                <span className="font-medium text-sm">{item.label}</span>
+                <Icon className={item.color} size={20} />
+                <span className="font-medium">{item.label}</span>
               </button>
             );
           })}
+        </nav>
 
-          {/* Settings - Only for admin */}
-          {user?.role === 'admin' && (
+        {/* Settings and Logout */}
+        <div className="p-4 border-t border-gray-200 space-y-2">
+          {isAdmin && (
             <button
               onClick={() => {
                 onPageChange('settings');
-                setIsMobileMenuOpen(false);
+                setIsOpen(false);
               }}
-              className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-left transition-all duration-200 ${
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                 currentPage === 'settings'
-                  ? 'bg-green-50 text-green-700 border border-green-200'
-                  : 'text-gray-600 hover:bg-green-50 hover:text-green-700'
+                  ? 'bg-green-50 text-green-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-green-600'
               }`}
             >
-              <Settings size={18} />
-              <span className="font-medium text-sm">সেটিং</span>
+              <Settings className="text-gray-500" size={20} />
+              <span className="font-medium">সেটিংস</span>
             </button>
           )}
-        </nav>
-
-        {/* Bottom Actions */}
-        <div className="p-3 border-t border-green-100 space-y-2">
-          {user?.role === 'viewer' ? (
-            <button
-              onClick={handleAdminLogin}
-              className="w-full flex items-center space-x-3 px-3 py-3 text-green-600 hover:bg-green-50 rounded-xl transition-colors"
-            >
-              <LogIn size={18} />
-              <span className="font-medium text-sm">এডমিন লগইন</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center space-x-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-            >
-              <LogOut size={18} />
-              <span className="font-medium text-sm">লগআউট</span>
-            </button>
-          )}
+          
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut size={20} />
+            <span className="font-medium">লগ আউট</span>
+          </button>
         </div>
       </div>
     </>
