@@ -1,10 +1,10 @@
 
 import React from 'react';
-import Reports from '@/pages/Reports';
+import CompleteReports from '@/components/reports/CompleteReports';
 import { PageWithBackProps } from '@/types/pageProps';
 
 const ReportsPage: React.FC<PageWithBackProps> = ({ onBack }) => {
-  return <Reports />;
+  return <CompleteReports onBack={onBack} />;
 };
 
 export default ReportsPage;

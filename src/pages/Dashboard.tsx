@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useMosqueStore } from '@/store/mosqueStore';
+import { useRealtime } from '@/hooks/useRealtime';
 import PrayerTimeCard from '@/components/dashboard/PrayerTimeCard';
 import StatCard from '@/components/dashboard/StatCard';
 import ScrollingNoticeBoard from '@/components/dashboard/ScrollingNoticeBoard';
@@ -14,6 +15,9 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
+  // Enable realtime updates
+  useRealtime();
+  
   const { 
     getTotalIncome, 
     getTotalExpenses, 
