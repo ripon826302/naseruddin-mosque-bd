@@ -9,9 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DollarSign, Plus, Edit, Trash2, Calendar, TrendingUp } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
-import BackButton from '@/components/ui/BackButton';
 import { PageWithBackProps } from '@/types/pageProps';
 import { formatCurrency } from '@/utils/dates';
+import { generateReceiptNumber } from '@/utils/receiptGenerator';
+import { INCOME_SOURCES, MONTHS } from '@/constants/transactionTypes';
+import PageHeader from '@/components/common/PageHeader';
 
 const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   const { income, donors, addIncome, updateIncome, deleteIncome, user } = useMosqueStore();
@@ -19,26 +21,26 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   const [editingIncome, setEditingIncome] = useState<any>(null);
   const [formData, setFormData] = useState({
     source: '',
-    category: 'Donation' as 'Donation' | 'Monthly Subscription' | 'Event' | 'Other',
     amount: '',
     date: new Date().toISOString().split('T')[0],
     receiptNumber: '',
     donorId: '',
-    month: new Date().toISOString().substring(0, 7),
+    month: '',
     description: ''
   });
 
-  const sources = [
-    'Monthly Donation', 'Zakat', 'Sadaqah', 'Donation Box', 'Event Fund', 
-    'Construction Fund', 'Utility Fund', 'Other'
-  ];
+  const needsMonthField = (source: string) => {
+    return source === 'মাসিক চাঁদা';
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     const incomeData = {
       ...formData,
-      amount: parseInt(formData.amount)
+      amount: parseInt(formData.amount),
+      receiptNumber: formData.receiptNumber || generateReceiptNumber('income'),
+      category: 'Donation' as const
     };
 
     if (editingIncome) {
@@ -53,12 +55,11 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     
     setFormData({
       source: '',
-      category: 'Donation',
       amount: '',
       date: new Date().toISOString().split('T')[0],
       receiptNumber: '',
       donorId: '',
-      month: new Date().toISOString().substring(0, 7),
+      month: '',
       description: ''
     });
   };
@@ -67,12 +68,11 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     setEditingIncome(incomeItem);
     setFormData({
       source: incomeItem.source,
-      category: incomeItem.category || 'Donation',
       amount: incomeItem.amount.toString(),
       date: incomeItem.date,
       receiptNumber: incomeItem.receiptNumber || '',
       donorId: incomeItem.donorId || '',
-      month: incomeItem.month || incomeItem.date.substring(0, 7),
+      month: incomeItem.month || '',
       description: incomeItem.description || ''
     });
   };
@@ -92,7 +92,7 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 p-6">
       <div className="max-w-7xl mx-auto">
-        {onBack && <BackButton onBack={onBack} />}
+        <PageHeader title="আয় ব্যবস্থাপনা" onBack={onBack} />
         
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
@@ -115,32 +115,36 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="source">আয়ের উৎস</Label>
-                    <Select value={formData.source} onValueChange={(value) => setFormData({...formData, source: value})}>
+                    <Select 
+                      value={formData.source} 
+                      onValueChange={(value) => setFormData({...formData, source: value, month: needsMonthField(value) ? formData.month : ''})}
+                    >
                       <SelectTrigger className="bg-gray-800 border-gray-600">
                         <SelectValue placeholder="আয়ের উৎস নির্বাচন করুন" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
-                        {sources.map((source) => (
+                        {INCOME_SOURCES.map((source) => (
                           <SelectItem key={source} value={source}>{source}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="category">ক্যাটেগরি</Label>
-                    <Select value={formData.category} onValueChange={(value: any) => setFormData({...formData, category: value})}>
-                      <SelectTrigger className="bg-gray-800 border-gray-600">
-                        <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="Donation">দান</SelectItem>
-                        <SelectItem value="Monthly Subscription">মাসিক চাঁদা</SelectItem>
-                        <SelectItem value="Event">ইভেন্ট</SelectItem>
-                        <SelectItem value="Other">অন্যান্য</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {needsMonthField(formData.source) && (
+                    <div>
+                      <Label htmlFor="month">মাস</Label>
+                      <Select value={formData.month} onValueChange={(value) => setFormData({...formData, month: value})}>
+                        <SelectTrigger className="bg-gray-800 border-gray-600">
+                          <SelectValue placeholder="মাস নির্বাচন করুন" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          {MONTHS.map((month) => (
+                            <SelectItem key={month} value={month}>{month}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   
                   <div>
                     <Label htmlFor="amount">পরিমাণ (টাকা)</Label>
@@ -168,14 +172,13 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="receiptNumber">রসিদ নম্বর</Label>
+                    <Label htmlFor="receiptNumber">রসিদ নম্বর (অটো জেনারেট হবে)</Label>
                     <Input
                       id="receiptNumber"
                       value={formData.receiptNumber}
                       onChange={(e) => setFormData({...formData, receiptNumber: e.target.value})}
-                      placeholder="রসিদ নম্বর লিখুন"
+                      placeholder="খালি রাখলে অটো জেনারেট হবে"
                       className="bg-gray-800 border-gray-600 text-white"
-                      required
                     />
                   </div>
                   
@@ -303,17 +306,36 @@ const IncomeManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="edit-source">আয়ের উৎস</Label>
-                  <Select value={formData.source} onValueChange={(value) => setFormData({...formData, source: value})}>
+                  <Select 
+                    value={formData.source} 
+                    onValueChange={(value) => setFormData({...formData, source: value, month: needsMonthField(value) ? formData.month : ''})}
+                  >
                     <SelectTrigger className="bg-gray-800 border-gray-600">
                       <SelectValue placeholder="আয়ের উৎস নির্বাচন করুন" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
-                      {sources.map((source) => (
+                      {INCOME_SOURCES.map((source) => (
                         <SelectItem key={source} value={source}>{source}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
+                
+                {needsMonthField(formData.source) && (
+                  <div>
+                    <Label htmlFor="edit-month">মাস</Label>
+                    <Select value={formData.month} onValueChange={(value) => setFormData({...formData, month: value})}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600">
+                        <SelectValue placeholder="মাস নির্বাচন করুন" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        {MONTHS.map((month) => (
+                          <SelectItem key={month} value={month}>{month}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 
                 <div>
                   <Label htmlFor="edit-amount">পরিমাণ (টাকা)</Label>

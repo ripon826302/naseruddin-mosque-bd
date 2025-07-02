@@ -9,27 +9,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { TrendingDown, Plus, Edit, Trash2, Calendar, AlertTriangle } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
-import BackButton from '@/components/ui/BackButton';
 import { PageWithBackProps } from '@/types/pageProps';
 import { formatCurrency } from '@/utils/dates';
+import { generateReceiptNumber } from '@/utils/receiptGenerator';
+import { EXPENSE_TYPES, MONTHS } from '@/constants/transactionTypes';
+import PageHeader from '@/components/common/PageHeader';
 
 const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   const { expenses, imams, addExpense, updateExpense, deleteExpense, user } = useMosqueStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<any>(null);
   const [formData, setFormData] = useState({
-    type: '' as 'Utility' | 'Maintenance' | 'Imam Salary' | 'Imam Bonus' | 'Event' | 'Other' | 'Electricity Bill' | 'Others',
-    category: '',
+    type: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
     description: '',
     imamId: '',
-    month: new Date().toISOString().substring(0, 7)
+    month: ''
   });
 
-  const expenseTypes = [
-    'Utility', 'Maintenance', 'Imam Salary', 'Imam Bonus', 'Event', 'Other', 'Electricity Bill', 'Others'
-  ];
+  const needsMonthField = (type: string) => {
+    return type === 'ইমামের বেতন';
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +38,8 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     const expenseData = {
       ...formData,
       amount: parseInt(formData.amount),
-      category: formData.category || formData.type
+      category: formData.type,
+      type: formData.type as any
     };
 
     if (editingExpense) {
@@ -51,13 +53,12 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     }
     
     setFormData({
-      type: '' as any,
-      category: '',
+      type: '',
       amount: '',
       date: new Date().toISOString().split('T')[0],
       description: '',
       imamId: '',
-      month: new Date().toISOString().substring(0, 7)
+      month: ''
     });
   };
 
@@ -65,12 +66,11 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     setEditingExpense(expenseItem);
     setFormData({
       type: expenseItem.type,
-      category: expenseItem.category || expenseItem.type,
       amount: expenseItem.amount.toString(),
       date: expenseItem.date,
       description: expenseItem.description || '',
       imamId: expenseItem.imamId || '',
-      month: expenseItem.month || expenseItem.date.substring(0, 7)
+      month: expenseItem.month || ''
     });
   };
 
@@ -89,7 +89,7 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 p-6">
       <div className="max-w-7xl mx-auto">
-        {onBack && <BackButton onBack={onBack} />}
+        <PageHeader title="ব্যয় ব্যবস্থাপনা" onBack={onBack} />
         
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
@@ -112,17 +112,36 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="type">ব্যয়ের ধরন</Label>
-                    <Select value={formData.type} onValueChange={(value: any) => setFormData({...formData, type: value, category: value})}>
+                    <Select 
+                      value={formData.type} 
+                      onValueChange={(value) => setFormData({...formData, type: value, month: needsMonthField(value) ? formData.month : ''})}
+                    >
                       <SelectTrigger className="bg-gray-800 border-gray-600">
                         <SelectValue placeholder="ব্যয়ের ধরন নির্বাচন করুন" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-600">
-                        {expenseTypes.map((type) => (
+                        {EXPENSE_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {needsMonthField(formData.type) && (
+                    <div>
+                      <Label htmlFor="month">মাস</Label>
+                      <Select value={formData.month} onValueChange={(value) => setFormData({...formData, month: value})}>
+                        <SelectTrigger className="bg-gray-800 border-gray-600">
+                          <SelectValue placeholder="মাস নির্বাচন করুন" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          {MONTHS.map((month) => (
+                            <SelectItem key={month} value={month}>{month}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   
                   <div>
                     <Label htmlFor="amount">পরিমাণ (টাকা)</Label>
@@ -285,17 +304,36 @@ const ExpenseManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="edit-type">ব্যয়ের ধরন</Label>
-                  <Select value={formData.type} onValueChange={(value: any) => setFormData({...formData, type: value, category: value})}>
+                  <Select 
+                    value={formData.type} 
+                    onValueChange={(value) => setFormData({...formData, type: value, month: needsMonthField(value) ? formData.month : ''})}
+                  >
                     <SelectTrigger className="bg-gray-800 border-gray-600">
                       <SelectValue placeholder="ব্যয়ের ধরন নির্বাচন করুন" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-600">
-                      {expenseTypes.map((type) => (
+                      {EXPENSE_TYPES.map((type) => (
                         <SelectItem key={type} value={type}>{type}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
+                
+                {needsMonthField(formData.type) && (
+                  <div>
+                    <Label htmlFor="edit-month">মাস</Label>
+                    <Select value={formData.month} onValueChange={(value) => setFormData({...formData, month: value})}>
+                      <SelectTrigger className="bg-gray-800 border-gray-600">
+                        <SelectValue placeholder="মাস নির্বাচন করুন" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-600">
+                        {MONTHS.map((month) => (
+                          <SelectItem key={month} value={month}>{month}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 
                 <div>
                   <Label htmlFor="edit-amount">পরিমাণ (টাকা)</Label>
