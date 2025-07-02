@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Print, X } from 'lucide-react';
+import { Printer, X } from 'lucide-react';
 import { formatCurrency } from '@/utils/dates';
 
 interface Donor {
@@ -48,7 +48,7 @@ const DonorPreview: React.FC<DonorPreviewProps> = ({ donor, isOpen, onClose }) =
             দাতার বিবরণ
             <div className="flex space-x-2">
               <Button onClick={handlePrint} size="sm">
-                <Print size={16} className="mr-2" />
+                <Printer size={16} className="mr-2" />
                 প্রিন্ট করুন
               </Button>
               <Button variant="ghost" onClick={onClose} size="sm">

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useMosqueStore } from '@/store/mosqueStore';
-import { FileText, Print, Download, Users, DollarSign } from 'lucide-react';
+import { FileText, Printer, Download, Users, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/utils/dates';
 import PageHeader from '@/components/common/PageHeader';
 
@@ -265,7 +265,7 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
                 onClick={handlePrintAllDonors}
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
-                <Print className="mr-2" size={16} />
+                <Printer className="mr-2" size={16} />
                 সকল দাতার তালিকা প্রিন্ট করুন
               </Button>
             </CardContent>
@@ -287,7 +287,7 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
                 onClick={handlePrintAllCommittee}
                 className="w-full bg-purple-600 hover:bg-purple-700"
               >
-                <Print className="mr-2" size={16} />
+                <Printer className="mr-2" size={16} />
                 কমিটির তালিকা প্রিন্ট করুন
               </Button>
             </CardContent>
@@ -313,7 +313,7 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
                 onClick={handlePrintFinancialReport}
                 className="w-full bg-green-600 hover:bg-green-700"
               >
-                <Print className="mr-2" size={16} />
+                <Printer className="mr-2" size={16} />
                 আর্থিক রিপোর্ট প্রিন্ট করুন
               </Button>
             </CardContent>
