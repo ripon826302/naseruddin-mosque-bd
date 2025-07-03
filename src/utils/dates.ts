@@ -1,4 +1,10 @@
 
+// Bengali numerals conversion
+const toBengaliNumber = (num: number): string => {
+  const bengaliNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return num.toString().split('').map(digit => bengaliNumerals[parseInt(digit)]).join('');
+};
+
 export const getBengaliDate = (): string => {
   const now = new Date();
   const bengaliMonths = [
@@ -6,16 +12,41 @@ export const getBengaliDate = (): string => {
     'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
   ];
   
-  const bengaliDays = [
-    'রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'
+  const date = toBengaliNumber(now.getDate());
+  const month = bengaliMonths[now.getMonth()];
+  const year = toBengaliNumber(now.getFullYear());
+  
+  return `${date} ${month}, ${year}`;
+};
+
+export const getBengaliBanglaDate = (): string => {
+  // Simplified Bangla calendar - in real app use proper conversion
+  const now = new Date();
+  const bengaliMonths = [
+    'বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন',
+    'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র'
   ];
   
-  const day = bengaliDays[now.getDay()];
-  const date = now.getDate();
+  const date = toBengaliNumber(now.getDate());
   const month = bengaliMonths[now.getMonth()];
-  const year = now.getFullYear();
+  const year = toBengaliNumber(now.getFullYear() - 593); // Approximate conversion
   
-  return `${day}, ${date} ${month} ${year}`;
+  return `${date} ${month}, ${year}`;
+};
+
+export const getArabicHijriDate = (): string => {
+  // Simplified Hijri calendar - in real app use proper conversion
+  const now = new Date();
+  const hijriMonths = [
+    'মহরম', 'সফর', 'রবিউল আউয়াল', 'রবিউস সানি', 'জমাদিউল আউয়াল', 'জমাদিউস সানি',
+    'রজব', 'শাবান', 'রমজান', 'শাওয়াল', 'জিলকদ', 'জিলহজ'
+  ];
+  
+  const date = toBengaliNumber(now.getDate());
+  const month = hijriMonths[now.getMonth()];
+  const year = toBengaliNumber(now.getFullYear() - 579); // Approximate conversion
+  
+  return `${date} ${month}, ${year}`;
 };
 
 export const getEnglishDate = (): string => {

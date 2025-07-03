@@ -16,11 +16,20 @@ import PaymentTrackingPage from '@/pages/PaymentTrackingPage';
 import AttendanceManagement from '@/pages/AttendanceManagement';
 import EventManagement from '@/pages/EventManagement';
 import { useMosqueStore } from '@/store/mosqueStore';
+import { useSupabaseStore } from '@/hooks/useSupabaseStore';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const { user } = useMosqueStore();
+  const { user, logout } = useMosqueStore();
+  
+  // Initialize Supabase integration
+  useSupabaseStore();
+
+  // Auto-logout to viewer mode on initial load
+  useEffect(() => {
+    logout(); // This sets user to viewer mode
+  }, []);
 
   useEffect(() => {
     const handleToggleNav = () => {

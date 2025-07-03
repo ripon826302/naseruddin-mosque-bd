@@ -35,42 +35,44 @@ const MarqueeNotices: React.FC = () => {
     }
   };
 
+  // Show all notices in parallel (one after another horizontally)
   return (
-    <div className="mb-8">
-      {marqueeNotices.map((notice, index) => {
-        const IconComponent = getIcon(notice.type);
-        const colorClass = getTypeColor(notice.type);
-        
-        return (
-          <div
-            key={notice.id}
-            className={`relative overflow-hidden backdrop-blur-lg border rounded-xl p-4 mb-3 ${colorClass}`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <div className={`p-2 rounded-full border ${colorClass}`}>
-                  <IconComponent className="h-5 w-5" />
+    <div className="mb-8 overflow-hidden">
+      <div className="flex space-x-4 animate-marquee">
+        {marqueeNotices.map((notice, index) => {
+          const IconComponent = getIcon(notice.type);
+          const colorClass = getTypeColor(notice.type);
+          
+          return (
+            <div
+              key={notice.id}
+              className={`flex-shrink-0 backdrop-blur-lg border rounded-xl p-4 ${colorClass} min-w-[300px]`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <div className={`p-2 rounded-full border ${colorClass}`}>
+                    <IconComponent className="h-5 w-5" />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex-1 overflow-hidden">
-                <div 
-                  className="whitespace-nowrap animate-marquee"
-                  style={{
-                    fontSize: `${notice.marqueeSettings?.fontSize || 16}px`,
-                    color: notice.marqueeSettings?.textColor || 'inherit',
-                    animationDuration: `${notice.marqueeSettings?.speed || 10}s`
-                  }}
-                >
-                  <span className="font-bold">{notice.title}</span>
-                  <span className="mx-4">•</span>
-                  <span>{notice.message}</span>
+                
+                <div className="flex-1">
+                  <div 
+                    className="whitespace-nowrap"
+                    style={{
+                      fontSize: `${notice.marqueeSettings?.fontSize || 16}px`,
+                      color: notice.marqueeSettings?.textColor || 'inherit'
+                    }}
+                  >
+                    <span className="font-bold">{notice.title}</span>
+                    <span className="mx-2">•</span>
+                    <span>{notice.message}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };

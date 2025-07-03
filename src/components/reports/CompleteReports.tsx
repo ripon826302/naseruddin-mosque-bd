@@ -6,6 +6,7 @@ import { useMosqueStore } from '@/store/mosqueStore';
 import { FileText, Printer, Download, Users, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/utils/dates';
 import PageHeader from '@/components/common/PageHeader';
+import DetailedReports from './DetailedReports';
 
 interface CompleteReportsProps {
   onBack?: () => void;
@@ -19,10 +20,16 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
     expenses, 
     getTotalIncome, 
     getTotalExpenses, 
-    getBalance 
+    getBalance,
+    settings 
   } = useMosqueStore();
   
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
+  const [showDetailed, setShowDetailed] = useState(false);
+
+  if (showDetailed) {
+    return <DetailedReports onBack={() => setShowDetailed(false)} />;
+  }
 
   const handlePrintAllDonors = () => {
     const printWindow = window.open('', '_blank');
@@ -49,8 +56,9 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
       </head>
       <body>
         <div class="header">
-          <h1>সকল দাতার তালিকা</h1>
-          <h2>আল-আমিন জামে মসজিদ</h2>
+          <h1>${settings.name}</h1>
+          <p>${settings.address}</p>
+          <h2>সকল দাতার তালিকা</h2>
           <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
         </div>
         
@@ -117,8 +125,9 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
       </head>
       <body>
         <div class="header">
-          <h1>কমিটির সদস্যদের তালিকা</h1>
-          <h2>আল-আমিন জামে মসজিদ</h2>
+          <h1>${settings.name}</h1>
+          <p>${settings.address}</p>
+          <h2>কমিটির সদস্যদের তালিকা</h2>
           <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
         </div>
 
@@ -179,8 +188,9 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
       </head>
       <body>
         <div class="header">
-          <h1>আর্থিক রিপোর্ট</h1>
-          <h2>আল-আমিন জামে মসজিদ</h2>
+          <h1>${settings.name}</h1>
+          <p>${settings.address}</p>
+          <h2>আর্থিক রিপোর্ট</h2>
           <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
         </div>
 
@@ -246,6 +256,14 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 p-6">
       <div className="max-w-7xl mx-auto">
         <PageHeader title="সম্পূর্ণ রিপোর্ট" onBack={onBack} />
+        
+        {/* Detailed Report Button */}
+        <div className="mb-6 text-center">
+          <Button onClick={() => setShowDetailed(true)} className="bg-green-600 hover:bg-green-700 text-lg px-8 py-3">
+            <FileText size={20} className="mr-2" />
+            বিস্তারিত রিপোর্ট দেখুন
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Donors Report */}

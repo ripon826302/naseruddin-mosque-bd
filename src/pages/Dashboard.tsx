@@ -8,7 +8,7 @@ import ScrollingNoticeBoard from '@/components/dashboard/ScrollingNoticeBoard';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import MarqueeNotices from '@/components/dashboard/MarqueeNotices';
 import { Users, DollarSign, TrendingUp, Building, UserCheck, AlertTriangle, Menu, MapPin } from 'lucide-react';
-import { getBengaliDate, getEnglishDate, getArabicDate } from '@/utils/dates';
+import { getBengaliDate, getBengaliBanglaDate, getArabicHijriDate } from '@/utils/dates';
 
 interface DashboardProps {
   onPageChange?: (page: string) => void;
@@ -34,7 +34,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
   const extraExpense = balance < 0 ? Math.abs(balance) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 relative">
       {/* Enhanced Page Header */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 shadow-lg border-b-2 border-green-800 px-4 lg:px-8 py-6">
         <div className="flex items-center justify-between">
@@ -49,41 +49,44 @@ const Dashboard: React.FC<DashboardProps> = ({ onPageChange = () => {} }) => {
             <Menu size={24} />
           </button>
 
-          {/* Mosque Info and Date in same row */}
+          {/* Mosque Info centered with Date card on right */}
           <div className="flex-1 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div>
+            {/* Centered Mosque Info */}
+            <div className="flex-1 flex justify-center">
+              <div className="text-center">
                 <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">{settings.name}</h1>
-                <div className="flex items-center space-x-2 text-green-100 text-base">
+                <div className="flex items-center justify-center space-x-2 text-green-100 text-base">
                   <MapPin size={16} />
                   <span>{settings.address}</span>
                 </div>
               </div>
             </div>
 
-            {/* Today's Date Information - Next to mosque name */}
+            {/* Date Card on Right */}
             <div className="hidden lg:block">
-              <div className="text-right text-white">
-                <p className="text-sm font-medium text-green-100 mb-1">আজকের তারিখ</p>
-                <p className="text-base">
-                  {getBengaliDate()}<br />
-                  {getEnglishDate()}<br />
-                  {getArabicDate()}
-                </p>
+              <div className="bg-green-800/30 backdrop-blur-sm border border-green-600/50 rounded-lg p-3">
+                <p className="text-xs font-medium text-green-200 mb-1 text-center">আজকের তারিখ</p>
+                <div className="text-xs text-white space-y-1">
+                  <p>{getBengaliDate()}</p>
+                  <p>{getBengaliBanglaDate()}</p>
+                  <p>{getArabicHijriDate()}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Date - Show on smaller screens */}
+        {/* Mobile Date Card */}
         <div className="lg:hidden mt-4 pt-4 border-t border-green-500">
-          <div className="text-center text-white">
-            <p className="text-sm font-medium text-green-100 mb-1">আজকের তারিখ</p>
-            <p className="text-sm">
-              {getBengaliDate()}<br />
-              {getEnglishDate()}<br />
-              {getArabicDate()}
-            </p>
+          <div className="flex justify-center">
+            <div className="bg-green-800/30 backdrop-blur-sm border border-green-600/50 rounded-lg p-3">
+              <p className="text-xs font-medium text-green-200 mb-1 text-center">আজকের তারিখ</p>
+              <div className="text-xs text-white space-y-1 text-center">
+                <p>{getBengaliDate()}</p>
+                <p>{getBengaliBanglaDate()}</p>
+                <p>{getArabicHijriDate()}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
