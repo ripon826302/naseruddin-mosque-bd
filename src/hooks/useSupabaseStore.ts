@@ -28,7 +28,6 @@ export const useSupabaseStore = () => {
           store.clearDonors();
           donors.forEach(donor => {
             store.addDonor({
-              id: donor.id,
               name: donor.name,
               phone: donor.phone,
               address: donor.address,
@@ -55,7 +54,6 @@ export const useSupabaseStore = () => {
           store.clearIncome();
           income.forEach(inc => {
             store.addIncome({
-              id: inc.id,
               source: inc.source,
               amount: inc.amount,
               date: inc.date,
@@ -81,7 +79,6 @@ export const useSupabaseStore = () => {
           store.clearExpenses();
           expenses.forEach(exp => {
             store.addExpense({
-              id: exp.id,
               category: exp.type,
               amount: exp.amount,
               date: exp.date,
@@ -106,7 +103,6 @@ export const useSupabaseStore = () => {
           store.clearCommittee();
           committee.forEach(member => {
             store.addCommitteeMember({
-              id: member.id,
               name: member.name,
               role: member.role,
               phone: member.phone,
@@ -129,11 +125,9 @@ export const useSupabaseStore = () => {
           store.clearNotices();
           notices.forEach(notice => {
             store.addNotice({
-              id: notice.id,
               title: notice.title,
               message: notice.message,
-              type: notice.type as any,
-              date: notice.date
+              type: notice.type as any
             });
           });
         }
