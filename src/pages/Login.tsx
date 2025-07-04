@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,9 +22,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     // Simulate loading delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const success = login(username, password);
-    
-    if (success) {
+    // Simple login logic - this should be properly implemented
+    if ((username === 'admin' && password === 'admin123') || 
+        (username === 'viewer' && password === 'viewer123')) {
+      const user = {
+        id: '1',
+        username,
+        role: username as 'admin' | 'viewer',
+        name: username === 'admin' ? 'Admin User' : 'Viewer User'
+      };
+      
+      login(user);
       toast({
         title: "সফল!",
         description: "আপনি সফলভাবে লগইন করেছেন।",

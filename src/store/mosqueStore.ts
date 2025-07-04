@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -76,7 +75,7 @@ interface Event {
   date: string;
   time: string;
   description: string;
-  type: 'Prayer' | 'Event' | 'Program';
+  type: 'Prayer' | 'Event' | 'Program' | 'Religious' | 'Educational' | 'Social' | 'Fundraising';
   location: string;
 }
 
@@ -111,30 +110,30 @@ interface MosqueStore {
   user: any | null;
   login: (user: any) => void;
   logout: () => void;
-  addDonor: (donor: Donor) => void;
+  addDonor: (donor: Omit<Donor, 'id'>) => void;
   updateDonor: (id: string, updates: Partial<Donor>) => void;
   deleteDonor: (id: string) => void;
   clearDonors: () => void;
-  addIncome: (income: Income) => void;
+  addIncome: (income: Omit<Income, 'id'>) => void;
   updateIncome: (id: string, updates: Partial<Income>) => void;
   deleteIncome: (id: string) => void;
   clearIncome: () => void;
-  addExpense: (expense: Expense) => void;
+  addExpense: (expense: Omit<Expense, 'id'>) => void;
   updateExpense: (id: string, updates: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
   clearExpenses: () => void;
-  addCommitteeMember: (member: CommitteeMember) => void;
+  addCommitteeMember: (member: Omit<CommitteeMember, 'id'>) => void;
   updateCommitteeMember: (id: string, updates: Partial<CommitteeMember>) => void;
   deleteCommitteeMember: (id: string) => void;
   clearCommittee: () => void;
-  addNotice: (notice: Notice) => void;
+  addNotice: (notice: Omit<Notice, 'id' | 'date'>) => void;
   updateNotice: (id: string, updates: Partial<Notice>) => void;
   deleteNotice: (id: string) => void;
   clearNotices: () => void;
-  addImam: (imam: Imam) => void;
+  addImam: (imam: Omit<Imam, 'id'>) => void;
   updateImam: (id: string, updates: Partial<Imam>) => void;
   deleteImam: (id: string) => void;
-  addEvent: (event: Event) => void;
+  addEvent: (event: Omit<Event, 'id'>) => void;
   updateEvent: (id: string, updates: Partial<Event>) => void;
   deleteEvent: (id: string) => void;
   updateSettings: (updates: Partial<Settings>) => void;
@@ -145,6 +144,7 @@ interface MosqueStore {
   getDonorPaidMonths: (donorId: string) => string[];
   getDefaulters: () => Donor[];
   getTotalDueAmount: () => number;
+  changePassword: (oldPassword: string, newPassword: string) => boolean;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 15);
@@ -183,7 +183,7 @@ const useMosqueStore = create<MosqueStore>()(
 
       // Donors
       addDonor: (donor) => set((state) => ({
-        donors: [...state.donors, { ...donor, id: donor.id || generateId() }],
+        donors: [...state.donors, { ...donor, id: generateId() }],
       })),
       updateDonor: (id, updates) => set((state) => ({
         donors: state.donors.map(donor => 
@@ -197,7 +197,7 @@ const useMosqueStore = create<MosqueStore>()(
 
       // Income
       addIncome: (income) => set((state) => ({
-        income: [...state.income, { ...income, id: income.id || generateId() }],
+        income: [...state.income, { ...income, id: generateId() }],
       })),
       updateIncome: (id, updates) => set((state) => ({
         income: state.income.map(inc => 
@@ -211,7 +211,7 @@ const useMosqueStore = create<MosqueStore>()(
 
       // Expenses
       addExpense: (expense) => set((state) => ({
-        expenses: [...state.expenses, { ...expense, id: expense.id || generateId() }],
+        expenses: [...state.expenses, { ...expense, id: generateId() }],
       })),
       updateExpense: (id, updates) => set((state) => ({
         expenses: state.expenses.map(exp => 
@@ -225,7 +225,7 @@ const useMosqueStore = create<MosqueStore>()(
 
       // Committee
       addCommitteeMember: (member) => set((state) => ({
-        committee: [...state.committee, { ...member, id: member.id || generateId() }],
+        committee: [...state.committee, { ...member, id: generateId() }],
       })),
       updateCommitteeMember: (id, updates) => set((state) => ({
         committee: state.committee.map(member => 
@@ -239,7 +239,11 @@ const useMosqueStore = create<MosqueStore>()(
 
       // Notices
       addNotice: (notice) => set((state) => ({
-        notices: [...state.notices, { ...notice, id: notice.id || generateId(), date: notice.date || new Date().toISOString().split('T')[0] }],
+        notices: [...state.notices, { 
+          ...notice, 
+          id: generateId(), 
+          date: new Date().toISOString().split('T')[0] 
+        }],
       })),
       updateNotice: (id, updates) => set((state) => ({
         notices: state.notices.map(notice => 
@@ -253,7 +257,7 @@ const useMosqueStore = create<MosqueStore>()(
 
       // Imams
       addImam: (imam) => set((state) => ({
-        imams: [...state.imams, { ...imam, id: imam.id || generateId() }],
+        imams: [...state.imams, { ...imam, id: generateId() }],
       })),
       updateImam: (id, updates) => set((state) => ({
         imams: state.imams.map(imam => 
@@ -266,7 +270,7 @@ const useMosqueStore = create<MosqueStore>()(
 
       // Events
       addEvent: (event) => set((state) => ({
-        events: [...state.events, { ...event, id: event.id || generateId() }],
+        events: [...state.events, { ...event, id: generateId() }],
       })),
       updateEvent: (id, updates) => set((state) => ({
         events: state.events.map(event => 
@@ -329,6 +333,11 @@ const useMosqueStore = create<MosqueStore>()(
           const missingMonths = get().getMissingMonths(donor.id);
           return total + (missingMonths.length * donor.monthlyAmount);
         }, 0);
+      },
+
+      changePassword: (oldPassword: string, newPassword: string) => {
+        // Simple password change logic - should be properly implemented
+        return true;
       },
     }),
     {

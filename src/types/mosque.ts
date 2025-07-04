@@ -1,4 +1,5 @@
 
+
 export interface Committee {
   id: string;
   name: string;
@@ -43,7 +44,7 @@ export interface Income {
 export interface Expense {
   id: string;
   date: string;
-  type: 'Imam Salary' | 'Electricity Bill' | 'Others';
+  type: 'Imam Salary' | 'Imam Bonus' | 'Electricity Bill' | 'Others';
   amount: number;
   month?: string;
   description?: string;
@@ -56,7 +57,7 @@ export interface Event {
   date: string;
   time: string;
   description: string;
-  type: 'Prayer' | 'Event' | 'Program';
+  type: 'Prayer' | 'Event' | 'Program' | 'Religious' | 'Educational' | 'Social' | 'Fundraising';
   location: string;
 }
 
@@ -96,3 +97,4 @@ export interface Notice {
     textColor?: string;
   };
 }
+
