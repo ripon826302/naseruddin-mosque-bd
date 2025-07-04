@@ -1,6 +1,6 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Notice {
   id: string;
@@ -145,19 +145,19 @@ interface MosqueStore {
 
   // Actions
   updateSettings: (settings: Partial<Settings>) => void;
-  addDonor: (donor: Omit<Donor, 'id'>) => void;
+  addDonor: (donor: Omit<Donor, 'id'>) => Promise<void>;
   updateDonor: (id: string, donor: Partial<Donor>) => void;
   deleteDonor: (id: string) => void;
-  addCommitteeMember: (member: Omit<CommitteeMember, 'id'>) => void;
+  addCommitteeMember: (member: Omit<CommitteeMember, 'id'>) => Promise<void>;
   updateCommitteeMember: (id: string, member: Partial<CommitteeMember>) => void;
   deleteCommitteeMember: (id: string) => void;
-  addIncome: (income: Omit<Income, 'id'>) => void;
+  addIncome: (income: Omit<Income, 'id'>) => Promise<void>;
   updateIncome: (id: string, income: Partial<Income>) => void;
   deleteIncome: (id: string) => void;
-  addExpense: (expense: Omit<Expense, 'id'>) => void;
+  addExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
   updateExpense: (id: string, expense: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
-  addNotice: (notice: Omit<Notice, 'id' | 'date'>) => void;
+  addNotice: (notice: Omit<Notice, 'id' | 'date'>) => Promise<void>;
   updateNotice: (id: string, notice: Partial<Notice>) => void;
   deleteNotice: (id: string) => void;
   addImam: (imam: Omit<Imam, 'id'>) => void;
@@ -238,15 +238,37 @@ export const useMosqueStore = create<MosqueStore>()(
           settings: { ...state.settings, ...settings }
         })),
 
-      addDonor: (donor) =>
+      addDonor: async (donor) => {
+        const newDonor = { 
+          ...donor, 
+          id: Date.now().toString(),
+          payments: [],
+          paymentHistory: []
+        };
+        
+        // Add to local state
         set((state) => ({
-          donors: [...state.donors, { 
-            ...donor, 
-            id: Date.now().toString(),
-            payments: [],
-            paymentHistory: []
-          }]
-        })),
+          donors: [...state.donors, newDonor]
+        }));
+
+        // Save to Supabase if user is admin
+        const { user } = get();
+        if (user?.role === 'admin') {
+          try {
+            await supabase.from('donors').insert({
+              id: newDonor.id,
+              name: newDonor.name,
+              phone: newDonor.phone,
+              address: newDonor.address,
+              monthly_amount: newDonor.monthlyAmount,
+              status: newDonor.status,
+              start_date: newDonor.startDate
+            });
+          } catch (error) {
+            console.error('Error saving donor to Supabase:', error);
+          }
+        }
+      },
 
       updateDonor: (id, donor) =>
         set((state) => ({
@@ -258,10 +280,30 @@ export const useMosqueStore = create<MosqueStore>()(
           donors: state.donors.filter((d) => d.id !== id)
         })),
 
-      addCommitteeMember: (member) =>
+      addCommitteeMember: async (member) => {
+        const newMember = { ...member, id: Date.now().toString() };
+        
         set((state) => ({
-          committee: [...state.committee, { ...member, id: Date.now().toString() }]
-        })),
+          committee: [...state.committee, newMember]
+        }));
+
+        // Save to Supabase if user is admin
+        const { user } = get();
+        if (user?.role === 'admin') {
+          try {
+            await supabase.from('committee').insert({
+              id: newMember.id,
+              name: newMember.name,
+              role: newMember.role,
+              phone: newMember.phone,
+              email: newMember.email,
+              join_date: newMember.joinDate
+            });
+          } catch (error) {
+            console.error('Error saving committee member to Supabase:', error);
+          }
+        }
+      },
 
       updateCommitteeMember: (id, member) =>
         set((state) => ({
@@ -273,10 +315,31 @@ export const useMosqueStore = create<MosqueStore>()(
           committee: state.committee.filter((m) => m.id !== id)
         })),
 
-      addIncome: (income) =>
+      addIncome: async (income) => {
+        const newIncome = { ...income, id: Date.now().toString() };
+        
         set((state) => ({
-          income: [...state.income, { ...income, id: Date.now().toString() }]
-        })),
+          income: [...state.income, newIncome]
+        }));
+
+        // Save to Supabase if user is admin
+        const { user } = get();
+        if (user?.role === 'admin') {
+          try {
+            await supabase.from('income').insert({
+              id: newIncome.id,
+              source: newIncome.source,
+              amount: newIncome.amount,
+              date: newIncome.date,
+              receipt_number: newIncome.receiptNumber,
+              donor_id: newIncome.donorId,
+              month: newIncome.month
+            });
+          } catch (error) {
+            console.error('Error saving income to Supabase:', error);
+          }
+        }
+      },
 
       updateIncome: (id, income) =>
         set((state) => ({
@@ -288,10 +351,31 @@ export const useMosqueStore = create<MosqueStore>()(
           income: state.income.filter((i) => i.id !== id)
         })),
 
-      addExpense: (expense) =>
+      addExpense: async (expense) => {
+        const newExpense = { ...expense, id: Date.now().toString() };
+        
         set((state) => ({
-          expenses: [...state.expenses, { ...expense, id: Date.now().toString() }]
-        })),
+          expenses: [...state.expenses, newExpense]
+        }));
+
+        // Save to Supabase if user is admin
+        const { user } = get();
+        if (user?.role === 'admin') {
+          try {
+            await supabase.from('expenses').insert({
+              id: newExpense.id,
+              type: newExpense.type,
+              amount: newExpense.amount,
+              date: newExpense.date,
+              description: newExpense.description,
+              month: newExpense.month,
+              imam_id: newExpense.imamId
+            });
+          } catch (error) {
+            console.error('Error saving expense to Supabase:', error);
+          }
+        }
+      },
 
       updateExpense: (id, expense) =>
         set((state) => ({
@@ -303,14 +387,33 @@ export const useMosqueStore = create<MosqueStore>()(
           expenses: state.expenses.filter((e) => e.id !== id)
         })),
 
-      addNotice: (notice) =>
+      addNotice: async (notice) => {
+        const newNotice = { 
+          ...notice, 
+          id: Date.now().toString(), 
+          date: new Date().toISOString() 
+        };
+        
         set((state) => ({
-          notices: [...state.notices, { 
-            ...notice, 
-            id: Date.now().toString(), 
-            date: new Date().toISOString() 
-          }]
-        })),
+          notices: [...state.notices, newNotice]
+        }));
+
+        // Save to Supabase if user is admin
+        const { user } = get();
+        if (user?.role === 'admin') {
+          try {
+            await supabase.from('notices').insert({
+              id: newNotice.id,
+              title: newNotice.title,
+              message: newNotice.message,
+              type: newNotice.type,
+              date: newNotice.date
+            });
+          } catch (error) {
+            console.error('Error saving notice to Supabase:', error);
+          }
+        }
+      },
 
       updateNotice: (id, notice) =>
         set((state) => ({

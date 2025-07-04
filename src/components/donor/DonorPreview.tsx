@@ -1,154 +1,213 @@
 
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Printer, X } from 'lucide-react';
+import { Printer, X, User, Phone, MapPin, DollarSign } from 'lucide-react';
+import { useMosqueStore } from '@/store/mosqueStore';
 import { formatCurrency } from '@/utils/dates';
 
-interface Donor {
-  id: string;
-  name: string;
-  phone: string;
-  address: string;
-  monthlyAmount: number;
-  status: string;
-  startDate: string;
-  payments: Array<{
-    id: string;
-    amount: number;
-    date: string;
-    month: string;
-    year: number;
-    status: string;
-  }>;
-}
-
 interface DonorPreviewProps {
-  donor: Donor | null;
-  isOpen: boolean;
+  donorId: string;
   onClose: () => void;
 }
 
-const DonorPreview: React.FC<DonorPreviewProps> = ({ donor, isOpen, onClose }) => {
+const DonorPreview: React.FC<DonorPreviewProps> = ({ donorId, onClose }) => {
+  const { donors, income, settings } = useMosqueStore();
+  
+  const donor = donors.find(d => d.id === donorId);
+  const donorIncome = income.filter(i => i.donorId === donorId);
+  
+  if (!donor) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <Card className="w-full max-w-md m-4">
+          <CardContent className="p-6 text-center">
+            <p className="text-red-600">দাতার তথ্য পাওয়া যায়নি</p>
+            <Button onClick={onClose} className="mt-4">বন্ধ করুন</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const totalDonated = donorIncome.reduce((sum, item) => sum + item.amount, 0);
+
   const handlePrint = () => {
-    window.print();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>দাতার বিবরণ - ${donor.name}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .donor-info { margin: 20px 0; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+          th { background-color: #f5f5f5; }
+          .summary { margin: 20px 0; padding: 15px; border: 2px solid #000; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>${settings.name}</h1>
+          <p>${settings.address}</p>
+          <h2>দাতার বিবরণ</h2>
+          <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
+        </div>
+
+        <div class="donor-info">
+          <h3>দাতার তথ্য</h3>
+          <p><strong>নাম:</strong> ${donor.name}</p>
+          <p><strong>ফোন:</strong> ${donor.phone}</p>
+          <p><strong>ঠিকানা:</strong> ${donor.address}</p>
+          <p><strong>মাসিক চাঁদা:</strong> ${formatCurrency(donor.monthlyAmount)}</p>
+          <p><strong>অবস্থা:</strong> ${donor.status === 'Active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</p>
+        </div>
+
+        <div class="summary">
+          <p><strong>মোট দান:</strong> ${formatCurrency(totalDonated)}</p>
+          <p><strong>দানের সংখ্যা:</strong> ${donorIncome.length}</p>
+        </div>
+
+        <h3>দানের বিবরণ</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>তারিখ</th>
+              <th>উৎস</th>
+              <th>পরিমাণ</th>
+              <th>রশিদ নং</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${donorIncome.map(item => `
+              <tr>
+                <td>${new Date(item.date).toLocaleDateString('bn-BD')}</td>
+                <td>${item.source}</td>
+                <td>${formatCurrency(item.amount)}</td>
+                <td>${item.receiptNumber}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.print();
   };
 
-  if (!donor) return null;
-
-  const totalDonated = donor.payments
-    .filter(p => p.status === 'Paid')
-    .reduce((sum, p) => sum + p.amount, 0);
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-white text-black print:shadow-none">
-        <DialogHeader className="print:hidden">
-          <DialogTitle className="flex items-center justify-between">
-            দাতার বিবরণ
-            <div className="flex space-x-2">
-              <Button onClick={handlePrint} size="sm">
-                <Printer size={16} className="mr-2" />
-                প্রিন্ট করুন
-              </Button>
-              <Button variant="ghost" onClick={onClose} size="sm">
-                <X size={16} />
-              </Button>
-            </div>
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6 print:text-black">
-          {/* Header for Print */}
-          <div className="hidden print:block text-center border-b-2 border-black pb-4 mb-6">
-            <h1 className="text-2xl font-bold">দাতার বিবরণ</h1>
-            <p className="text-lg">আল-আমিন জামে মসজিদ</p>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl text-green-700">দাতার বিবরণ</CardTitle>
+          <div className="flex space-x-2">
+            <Button onClick={handlePrint} variant="outline" size="sm">
+              <Printer className="h-4 w-4 mr-2" />
+              প্রিন্ট করুন
+            </Button>
+            <Button onClick={onClose} variant="outline" size="sm">
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
           {/* Donor Information */}
-          <div className="grid grid-cols-2 gap-4 p-4 border rounded-lg print:border-black">
-            <div>
-              <h3 className="font-semibold text-lg mb-2">দাতার তথ্য</h3>
-              <p><strong>নাম:</strong> {donor.name}</p>
-              <p><strong>ফোন:</strong> {donor.phone}</p>
-              <p><strong>ঠিকানা:</strong> {donor.address}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-blue-600" />
+                <span className="font-medium">নাম:</span>
+                <span>{donor.name}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Phone className="h-5 w-5 text-green-600" />
+                <span className="font-medium">ফোন:</span>
+                <span>{donor.phone}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-5 w-5 text-red-600" />
+                <span className="font-medium">ঠিকানা:</span>
+                <span>{donor.address}</span>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-2">দানের তথ্য</h3>
-              <p><strong>মাসিক চাঁদা:</strong> {formatCurrency(donor.monthlyAmount)}</p>
-              <p><strong>মোট দান:</strong> {formatCurrency(totalDonated)}</p>
-              <p><strong>যোগদানের তারিখ:</strong> {new Date(donor.startDate).toLocaleDateString('bn-BD')}</p>
-              <p><strong>অবস্থা:</strong> {donor.status === 'Active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</p>
+            
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <DollarSign className="h-5 w-5 text-purple-600" />
+                <span className="font-medium">মাসিক চাঁদা:</span>
+                <span className="text-green-600 font-semibold">{formatCurrency(donor.monthlyAmount)}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">অবস্থা:</span>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  donor.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {donor.status === 'Active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Payment History */}
+          {/* Summary */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-lg mb-3">সারসংক্ষেপ</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">মোট দান</p>
+                <p className="text-xl font-bold text-green-600">{formatCurrency(totalDonated)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">দানের সংখ্যা</p>
+                <p className="text-xl font-bold text-blue-600">{donorIncome.length}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Donations Table */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">দানের ইতিহাস</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300 print:border-black">
-                <thead>
-                  <tr className="bg-gray-100 print:bg-gray-200">
-                    <th className="border border-gray-300 print:border-black p-2 text-left">তারিখ</th>
-                    <th className="border border-gray-300 print:border-black p-2 text-left">মাস</th>
-                    <th className="border border-gray-300 print:border-black p-2 text-right">পরিমাণ</th>
-                    <th className="border border-gray-300 print:border-black p-2 text-left">অবস্থা</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {donor.payments.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="border border-gray-300 print:border-black p-4 text-center">
-                        কোন দানের রেকর্ড নেই
-                      </td>
+            <h3 className="font-semibold text-lg mb-3">দানের বিবরণ</h3>
+            {donorIncome.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 p-2 text-left">তারিখ</th>
+                      <th className="border border-gray-300 p-2 text-left">উৎস</th>
+                      <th className="border border-gray-300 p-2 text-left">পরিমাণ</th>
+                      <th className="border border-gray-300 p-2 text-left">রশিদ নং</th>
                     </tr>
-                  ) : (
-                    donor.payments.map((payment) => (
-                      <tr key={payment.id}>
-                        <td className="border border-gray-300 print:border-black p-2">
-                          {new Date(payment.date).toLocaleDateString('bn-BD')}
+                  </thead>
+                  <tbody>
+                    {donorIncome.map((item, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="border border-gray-300 p-2">
+                          {new Date(item.date).toLocaleDateString('bn-BD')}
                         </td>
-                        <td className="border border-gray-300 print:border-black p-2">
-                          {payment.month}
+                        <td className="border border-gray-300 p-2">{item.source}</td>
+                        <td className="border border-gray-300 p-2 text-green-600 font-semibold">
+                          {formatCurrency(item.amount)}
                         </td>
-                        <td className="border border-gray-300 print:border-black p-2 text-right">
-                          {formatCurrency(payment.amount)}
-                        </td>
-                        <td className="border border-gray-300 print:border-black p-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            payment.status === 'Paid' 
-                              ? 'bg-green-100 text-green-800 print:bg-transparent print:border print:border-green-800' 
-                              : 'bg-red-100 text-red-800 print:bg-transparent print:border print:border-red-800'
-                          }`}>
-                            {payment.status === 'Paid' ? 'পরিশোধিত' : 'বকেয়া'}
-                          </span>
-                        </td>
+                        <td className="border border-gray-300 p-2">{item.receiptNumber}</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-gray-50 print:bg-gray-100 font-semibold">
-                    <td colSpan={2} className="border border-gray-300 print:border-black p-2">
-                      মোট
-                    </td>
-                    <td className="border border-gray-300 print:border-black p-2 text-right">
-                      {formatCurrency(totalDonated)}
-                    </td>
-                    <td className="border border-gray-300 print:border-black p-2"></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">কোন দানের তথ্য পাওয়া যায়নি</p>
+            )}
           </div>
-
-          {/* Print Footer */}
-          <div className="hidden print:block text-center mt-8 pt-4 border-t border-black">
-            <p>প্রিন্ট তারিখ: {new Date().toLocaleDateString('bn-BD')}</p>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
