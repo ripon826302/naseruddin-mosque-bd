@@ -1,5 +1,4 @@
 
-
 export interface Committee {
   id: string;
   name: string;
@@ -97,4 +96,3 @@ export interface Notice {
     textColor?: string;
   };
 }
-

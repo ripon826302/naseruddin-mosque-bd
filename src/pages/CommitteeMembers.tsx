@@ -42,7 +42,7 @@ const CommitteeMembers: React.FC<CommitteeMembersProps> = ({ onBack }) => {
       setEditingMember(null);
     } else {
       // addCommitteeMember will generate the ID automatically
-      addCommitteeMember(formData as any);
+      addCommitteeMember(formData);
       toast({ title: "সফল!", description: "নতুন কমিটির সদস্য যোগ করা হয়েছে।" });
       setIsAddDialogOpen(false);
     }
