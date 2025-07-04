@@ -47,6 +47,7 @@ export interface Expense {
   amount: number;
   month?: string;
   description?: string;
+  imamId?: string;
 }
 
 export interface Event {
@@ -81,4 +82,17 @@ export interface User {
   username: string;
   role: 'admin' | 'viewer';
   name: string;
+}
+
+export interface Notice {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  date: string;
+  isMarquee?: boolean;
+  marqueeSettings?: {
+    fontSize?: number;
+    textColor?: string;
+  };
 }

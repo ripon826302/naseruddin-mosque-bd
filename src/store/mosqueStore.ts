@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -7,7 +8,7 @@ interface Donor {
   phone: string;
   address: string;
   monthlyAmount: number;
-  status: 'Active' | 'Inactive' | 'Pending';
+  status: 'Active' | 'Inactive' | 'Defaulter';
   joinDate: string;
   startDate: string;
   payments: any[];
@@ -52,6 +53,31 @@ interface Notice {
   message: string;
   type: string;
   date: string;
+  isMarquee?: boolean;
+  marqueeSettings?: {
+    fontSize?: number;
+    textColor?: string;
+  };
+}
+
+interface Imam {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  monthlySalary: number;
+  status: 'Active' | 'Inactive';
+  joinDate: string;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  description: string;
+  type: 'Prayer' | 'Event' | 'Program';
+  location: string;
 }
 
 interface Settings {
@@ -59,6 +85,18 @@ interface Settings {
   address: string;
   phone: string;
   email: string;
+  prayerTimes: {
+    fajr: string;
+    dhuhr: string;
+    asr: string;
+    maghrib: string;
+    isha: string;
+    jumma: string;
+  };
+  ramadanTimes?: {
+    sehri: string;
+    iftar: string;
+  };
 }
 
 interface MosqueStore {
@@ -67,6 +105,8 @@ interface MosqueStore {
   expenses: Expense[];
   committee: CommitteeMember[];
   notices: Notice[];
+  imams: Imam[];
+  events: Event[];
   settings: Settings;
   user: any | null;
   login: (user: any) => void;
@@ -91,10 +131,20 @@ interface MosqueStore {
   updateNotice: (id: string, updates: Partial<Notice>) => void;
   deleteNotice: (id: string) => void;
   clearNotices: () => void;
+  addImam: (imam: Imam) => void;
+  updateImam: (id: string, updates: Partial<Imam>) => void;
+  deleteImam: (id: string) => void;
+  addEvent: (event: Event) => void;
+  updateEvent: (id: string, updates: Partial<Event>) => void;
+  deleteEvent: (id: string) => void;
   updateSettings: (updates: Partial<Settings>) => void;
   getTotalIncome: () => number;
   getTotalExpenses: () => number;
   getBalance: () => number;
+  getMissingMonths: (donorId: string) => string[];
+  getDonorPaidMonths: (donorId: string) => string[];
+  getDefaulters: () => Donor[];
+  getTotalDueAmount: () => number;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 15);
@@ -107,11 +157,25 @@ const useMosqueStore = create<MosqueStore>()(
       expenses: [],
       committee: [],
       notices: [],
+      imams: [],
+      events: [],
       settings: {
         name: 'মসজিদ কমিটি',
         address: 'example ঠিকানা',
         phone: '017XXXXXXXXX',
         email: 'example@gmail.com',
+        prayerTimes: {
+          fajr: '05:00',
+          dhuhr: '12:00',
+          asr: '15:30',
+          maghrib: '18:00',
+          isha: '19:30',
+          jumma: '13:00'
+        },
+        ramadanTimes: {
+          sehri: '04:30',
+          iftar: '18:30'
+        }
       },
       user: null,
       login: (user) => set({ user }),
@@ -187,10 +251,38 @@ const useMosqueStore = create<MosqueStore>()(
       })),
       clearNotices: () => set({ notices: [] }),
 
+      // Imams
+      addImam: (imam) => set((state) => ({
+        imams: [...state.imams, { ...imam, id: imam.id || generateId() }],
+      })),
+      updateImam: (id, updates) => set((state) => ({
+        imams: state.imams.map(imam => 
+          imam.id === id ? { ...imam, ...updates } : imam
+        ),
+      })),
+      deleteImam: (id) => set((state) => ({
+        imams: state.imams.filter(imam => imam.id !== id),
+      })),
+
+      // Events
+      addEvent: (event) => set((state) => ({
+        events: [...state.events, { ...event, id: event.id || generateId() }],
+      })),
+      updateEvent: (id, updates) => set((state) => ({
+        events: state.events.map(event => 
+          event.id === id ? { ...event, ...updates } : event
+        ),
+      })),
+      deleteEvent: (id) => set((state) => ({
+        events: state.events.filter(event => event.id !== id),
+      })),
+
       // Settings
       updateSettings: (updates) => set((state) => ({
         settings: { ...state.settings, ...updates },
       })),
+
+      // Calculations
       getTotalIncome: () => {
         return get().income.reduce((sum, inc) => sum + inc.amount, 0);
       },
@@ -199,6 +291,44 @@ const useMosqueStore = create<MosqueStore>()(
       },
       getBalance: () => {
         return get().getTotalIncome() - get().getTotalExpenses();
+      },
+
+      // Donor-related calculations
+      getMissingMonths: (donorId: string) => {
+        const donor = get().donors.find(d => d.id === donorId);
+        if (!donor) return [];
+        
+        const paidMonths = get().income
+          .filter(inc => inc.donorId === donorId && inc.month)
+          .map(inc => inc.month);
+        
+        const months = [
+          'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+          'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+        ];
+        
+        return months.filter(month => !paidMonths.includes(month));
+      },
+
+      getDonorPaidMonths: (donorId: string) => {
+        return get().income
+          .filter(inc => inc.donorId === donorId && inc.month)
+          .map(inc => inc.month || '');
+      },
+
+      getDefaulters: () => {
+        return get().donors.filter(donor => {
+          const missingMonths = get().getMissingMonths(donor.id);
+          return missingMonths.length > 0 || donor.status === 'Defaulter';
+        });
+      },
+
+      getTotalDueAmount: () => {
+        const defaulters = get().getDefaulters();
+        return defaulters.reduce((total, donor) => {
+          const missingMonths = get().getMissingMonths(donor.id);
+          return total + (missingMonths.length * donor.monthlyAmount);
+        }, 0);
       },
     }),
     {

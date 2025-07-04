@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -92,7 +91,7 @@ const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
                   <td>${donor.address}</td>
                   <td>${formatCurrency(donor.monthlyAmount)}</td>
                   <td>${formatCurrency(totalDonation)}</td>
-                  <td>${donor.status === 'Active' ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</td>
+                  <td>${donor.status === 'Active' ? 'সক্রিয়' : donor.status === 'Defaulter' ? 'বকেয়াদার' : 'নিষ্ক্রিয়'}</td>
                 </tr>
               `;
             }).join('')}
