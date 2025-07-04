@@ -1,20 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { supabase } from '@/integrations/supabase/client';
-
-interface Notice {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'urgent';
-  date: string;
-  isMarquee?: boolean;
-  marqueeSettings?: {
-    speed: number;
-    fontSize: number;
-    textColor: string;
-  };
-}
 
 interface Donor {
   id: string;
@@ -22,31 +7,11 @@ interface Donor {
   phone: string;
   address: string;
   monthlyAmount: number;
-  status: 'Active' | 'Inactive' | 'Defaulter';
+  status: 'Active' | 'Inactive' | 'Pending';
   joinDate: string;
   startDate: string;
-  payments: Payment[];
-  paymentHistory: Payment[];
-}
-
-interface Payment {
-  id: string;
-  donorId: string;
-  amount: number;
-  month: string;
-  year: number;
-  date: string;
-  method: 'Cash' | 'Bank Transfer' | 'Mobile Banking';
-  status: 'Paid' | 'Pending' | 'Overdue';
-}
-
-interface CommitteeMember {
-  id: string;
-  name: string;
-  role: string;
-  phone: string;
-  email?: string;
-  joinDate: string;
+  payments: any[];
+  paymentHistory: any[];
 }
 
 interface Income {
@@ -54,8 +19,8 @@ interface Income {
   source: string;
   amount: number;
   date: string;
-  category: 'Donation' | 'Monthly Subscription' | 'Event' | 'Other';
-  description?: string;
+  category: string;
+  description: string;
   donorId?: string;
   month?: string;
   receiptNumber: string;
@@ -67,41 +32,26 @@ interface Expense {
   amount: number;
   date: string;
   description: string;
-  type: 'Utility' | 'Maintenance' | 'Imam Salary' | 'Imam Bonus' | 'Event' | 'Other' | 'Electricity Bill' | 'Others';
+  type: string;
   month?: string;
   imamId?: string;
 }
 
-interface Imam {
+interface CommitteeMember {
   id: string;
   name: string;
+  role: string;
   phone: string;
-  address: string;
-  monthlySalary: number;
-  status: 'Active' | 'Inactive';
+  email?: string;
   joinDate: string;
 }
 
-interface Event {
+interface Notice {
   id: string;
   title: string;
-  description: string;
+  message: string;
+  type: string;
   date: string;
-  time: string;
-  type: 'Religious' | 'Educational' | 'Social' | 'Fundraising' | 'Prayer' | 'Event' | 'Program';
-  organizer: string;
-  status: 'Planned' | 'Ongoing' | 'Completed' | 'Cancelled';
-  location: string;
-}
-
-interface AttendanceRecord {
-  id: string;
-  memberId: string;
-  memberName: string;
-  date: string;
-  prayerTime: 'Fajr' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha' | 'Jumma';
-  present: boolean;
-  notes?: string;
 }
 
 interface Settings {
@@ -109,481 +59,153 @@ interface Settings {
   address: string;
   phone: string;
   email: string;
-  prayerTimes: {
-    fajr: string;
-    dhuhr: string;
-    asr: string;
-    maghrib: string;
-    isha: string;
-    jumma: string;
-  };
-  ramadanTimes?: {
-    sehri: string;
-    iftar: string;
-  };
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'member' | 'viewer';
 }
 
 interface MosqueStore {
-  // State
-  settings: Settings;
   donors: Donor[];
-  committee: CommitteeMember[];
   income: Income[];
   expenses: Expense[];
+  committee: CommitteeMember[];
   notices: Notice[];
-  imams: Imam[];
-  events: Event[];
-  attendance: AttendanceRecord[];
-  user: User | null;
-
-  // Actions
-  updateSettings: (settings: Partial<Settings>) => void;
-  addDonor: (donor: Omit<Donor, 'id'>) => Promise<void>;
-  updateDonor: (id: string, donor: Partial<Donor>) => void;
-  deleteDonor: (id: string) => void;
-  addCommitteeMember: (member: Omit<CommitteeMember, 'id'>) => Promise<void>;
-  updateCommitteeMember: (id: string, member: Partial<CommitteeMember>) => void;
-  deleteCommitteeMember: (id: string) => void;
-  addIncome: (income: Omit<Income, 'id'>) => Promise<void>;
-  updateIncome: (id: string, income: Partial<Income>) => void;
-  deleteIncome: (id: string) => void;
-  addExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
-  updateExpense: (id: string, expense: Partial<Expense>) => void;
-  deleteExpense: (id: string) => void;
-  addNotice: (notice: Omit<Notice, 'id' | 'date'>) => Promise<void>;
-  updateNotice: (id: string, notice: Partial<Notice>) => void;
-  deleteNotice: (id: string) => void;
-  addImam: (imam: Omit<Imam, 'id'>) => void;
-  updateImam: (id: string, imam: Partial<Imam>) => void;
-  deleteImam: (id: string) => void;
-  addEvent: (event: Omit<Event, 'id'>) => void;
-  updateEvent: (id: string, event: Partial<Event>) => void;
-  deleteEvent: (id: string) => void;
-  addAttendance: (record: Omit<AttendanceRecord, 'id'>) => void;
-  updateAttendance: (id: string, record: Partial<AttendanceRecord>) => void;
-  deleteAttendance: (id: string) => void;
-  setUser: (user: User | null) => void;
-  login: (username: string, password: string) => boolean;
+  settings: Settings;
+  user: any | null;
+  login: (user: any) => void;
   logout: () => void;
-  changePassword: (oldPassword: string, newPassword: string) => boolean;
-  
-  // Computed values
+  addDonor: (donor: Donor) => void;
+  updateDonor: (id: string, updates: Partial<Donor>) => void;
+  deleteDonor: (id: string) => void;
+  clearDonors: () => void;
+  addIncome: (income: Income) => void;
+  updateIncome: (id: string, updates: Partial<Income>) => void;
+  deleteIncome: (id: string) => void;
+  clearIncome: () => void;
+  addExpense: (expense: Expense) => void;
+  updateExpense: (id: string, updates: Partial<Expense>) => void;
+  deleteExpense: (id: string) => void;
+  clearExpenses: () => void;
+  addCommitteeMember: (member: CommitteeMember) => void;
+  updateCommitteeMember: (id: string, updates: Partial<CommitteeMember>) => void;
+  deleteCommitteeMember: (id: string) => void;
+  clearCommittee: () => void;
+  addNotice: (notice: Notice) => void;
+  updateNotice: (id: string, updates: Partial<Notice>) => void;
+  deleteNotice: (id: string) => void;
+  clearNotices: () => void;
+  updateSettings: (updates: Partial<Settings>) => void;
   getTotalIncome: () => number;
   getTotalExpenses: () => number;
   getBalance: () => number;
-  getDefaulters: () => Donor[];
-  getMissingMonths: (donorId: string) => string[];
-  getTotalDueAmount: () => number;
-  getDonorPaidMonths: (donorId: string) => string[];
 }
 
-const initialState = {
-  settings: {
-    name: 'আল-আমিন জামে মসজিদ',
-    address: 'ঢাকা, বাংলাদেশ',
-    phone: '+880 1XXX-XXXXXX',
-    email: 'info@alaminmosque.org',
-    prayerTimes: {
-      fajr: '05:30',
-      dhuhr: '12:15',
-      asr: '16:30',
-      maghrib: '17:45',
-      isha: '19:00',
-      jumma: '13:00'
-    },
-    ramadanTimes: {
-      sehri: '04:30',
-      iftar: '18:30'
-    }
-  },
-  donors: [],
-  committee: [],
-  income: [],
-  expenses: [],
-  notices: [
-    {
-      id: '1',
-      title: 'জুমার নামাজের সময় পরিবর্তন',
-      message: 'আগামী সপ্তাহ থেকে জুমার নামাজের সময় দুপুর ১:০০ টায় অনুষ্ঠিত হবে।',
-      type: 'info' as const,
-      date: new Date().toISOString(),
-      isMarquee: true,
-      marqueeSettings: {
-        speed: 15,
-        fontSize: 18,
-        textColor: '#ffffff'
-      }
-    }
-  ],
-  imams: [],
-  events: [],
-  attendance: [],
-  user: { id: '1', name: 'অ্যাডমিন', email: 'admin@mosque.org', role: 'admin' as const }
-};
+const generateId = () => Math.random().toString(36).substring(2, 15);
 
-export const useMosqueStore = create<MosqueStore>()(
+const useMosqueStore = create<MosqueStore>()(
   persist(
     (set, get) => ({
-      ...initialState,
-
-      updateSettings: (settings) =>
-        set((state) => ({
-          settings: { ...state.settings, ...settings }
-        })),
-
-      addDonor: async (donor) => {
-        const newDonor = { 
-          ...donor, 
-          id: Date.now().toString(),
-          payments: [],
-          paymentHistory: []
-        };
-        
-        // Add to local state
-        set((state) => ({
-          donors: [...state.donors, newDonor]
-        }));
-
-        // Save to Supabase if user is admin
-        const { user } = get();
-        if (user?.role === 'admin') {
-          try {
-            await supabase.from('donors').insert({
-              id: newDonor.id,
-              name: newDonor.name,
-              phone: newDonor.phone,
-              address: newDonor.address,
-              monthly_amount: newDonor.monthlyAmount,
-              status: newDonor.status,
-              start_date: newDonor.startDate
-            });
-          } catch (error) {
-            console.error('Error saving donor to Supabase:', error);
-          }
-        }
+      donors: [],
+      income: [],
+      expenses: [],
+      committee: [],
+      notices: [],
+      settings: {
+        name: 'মসজিদ কমিটি',
+        address: 'example ঠিকানা',
+        phone: '017XXXXXXXXX',
+        email: 'example@gmail.com',
       },
+      user: null,
+      login: (user) => set({ user }),
+      logout: () => set({ user: null }),
 
-      updateDonor: (id, donor) =>
-        set((state) => ({
-          donors: state.donors.map((d) => d.id === id ? { ...d, ...donor } : d)
-        })),
+      // Donors
+      addDonor: (donor) => set((state) => ({
+        donors: [...state.donors, { ...donor, id: donor.id || generateId() }],
+      })),
+      updateDonor: (id, updates) => set((state) => ({
+        donors: state.donors.map(donor => 
+          donor.id === id ? { ...donor, ...updates } : donor
+        ),
+      })),
+      deleteDonor: (id) => set((state) => ({
+        donors: state.donors.filter(donor => donor.id !== id),
+      })),
+      clearDonors: () => set({ donors: [] }),
 
-      deleteDonor: (id) =>
-        set((state) => ({
-          donors: state.donors.filter((d) => d.id !== id)
-        })),
+      // Income
+      addIncome: (income) => set((state) => ({
+        income: [...state.income, { ...income, id: income.id || generateId() }],
+      })),
+      updateIncome: (id, updates) => set((state) => ({
+        income: state.income.map(inc => 
+          inc.id === id ? { ...inc, ...updates } : inc
+        ),
+      })),
+      deleteIncome: (id) => set((state) => ({
+        income: state.income.filter(inc => inc.id !== id),
+      })),
+      clearIncome: () => set({ income: [] }),
 
-      addCommitteeMember: async (member) => {
-        const newMember = { ...member, id: Date.now().toString() };
-        
-        set((state) => ({
-          committee: [...state.committee, newMember]
-        }));
+      // Expenses
+      addExpense: (expense) => set((state) => ({
+        expenses: [...state.expenses, { ...expense, id: expense.id || generateId() }],
+      })),
+      updateExpense: (id, updates) => set((state) => ({
+        expenses: state.expenses.map(exp => 
+          exp.id === id ? { ...exp, ...updates } : exp
+        ),
+      })),
+      deleteExpense: (id) => set((state) => ({
+        expenses: state.expenses.filter(exp => exp.id !== id),
+      })),
+      clearExpenses: () => set({ expenses: [] }),
 
-        // Save to Supabase if user is admin
-        const { user } = get();
-        if (user?.role === 'admin') {
-          try {
-            await supabase.from('committee').insert({
-              id: newMember.id,
-              name: newMember.name,
-              role: newMember.role,
-              phone: newMember.phone,
-              email: newMember.email,
-              join_date: newMember.joinDate
-            });
-          } catch (error) {
-            console.error('Error saving committee member to Supabase:', error);
-          }
-        }
-      },
+      // Committee
+      addCommitteeMember: (member) => set((state) => ({
+        committee: [...state.committee, { ...member, id: member.id || generateId() }],
+      })),
+      updateCommitteeMember: (id, updates) => set((state) => ({
+        committee: state.committee.map(member => 
+          member.id === id ? { ...member, ...updates } : member
+        ),
+      })),
+      deleteCommitteeMember: (id) => set((state) => ({
+        committee: state.committee.filter(member => member.id !== id),
+      })),
+      clearCommittee: () => set({ committee: [] }),
 
-      updateCommitteeMember: (id, member) =>
-        set((state) => ({
-          committee: state.committee.map((m) => m.id === id ? { ...m, ...member } : m)
-        })),
+      // Notices
+      addNotice: (notice) => set((state) => ({
+        notices: [...state.notices, { ...notice, id: notice.id || generateId(), date: notice.date || new Date().toISOString().split('T')[0] }],
+      })),
+      updateNotice: (id, updates) => set((state) => ({
+        notices: state.notices.map(notice => 
+          notice.id === id ? { ...notice, ...updates } : notice
+        ),
+      })),
+      deleteNotice: (id) => set((state) => ({
+        notices: state.notices.filter(notice => notice.id !== id),
+      })),
+      clearNotices: () => set({ notices: [] }),
 
-      deleteCommitteeMember: (id) =>
-        set((state) => ({
-          committee: state.committee.filter((m) => m.id !== id)
-        })),
-
-      addIncome: async (income) => {
-        const newIncome = { ...income, id: Date.now().toString() };
-        
-        set((state) => ({
-          income: [...state.income, newIncome]
-        }));
-
-        // Save to Supabase if user is admin
-        const { user } = get();
-        if (user?.role === 'admin') {
-          try {
-            await supabase.from('income').insert({
-              id: newIncome.id,
-              source: newIncome.source,
-              amount: newIncome.amount,
-              date: newIncome.date,
-              receipt_number: newIncome.receiptNumber,
-              donor_id: newIncome.donorId,
-              month: newIncome.month
-            });
-          } catch (error) {
-            console.error('Error saving income to Supabase:', error);
-          }
-        }
-      },
-
-      updateIncome: (id, income) =>
-        set((state) => ({
-          income: state.income.map((i) => i.id === id ? { ...i, ...income } : i)
-        })),
-
-      deleteIncome: (id) =>
-        set((state) => ({
-          income: state.income.filter((i) => i.id !== id)
-        })),
-
-      addExpense: async (expense) => {
-        const newExpense = { ...expense, id: Date.now().toString() };
-        
-        set((state) => ({
-          expenses: [...state.expenses, newExpense]
-        }));
-
-        // Save to Supabase if user is admin
-        const { user } = get();
-        if (user?.role === 'admin') {
-          try {
-            await supabase.from('expenses').insert({
-              id: newExpense.id,
-              type: newExpense.type,
-              amount: newExpense.amount,
-              date: newExpense.date,
-              description: newExpense.description,
-              month: newExpense.month,
-              imam_id: newExpense.imamId
-            });
-          } catch (error) {
-            console.error('Error saving expense to Supabase:', error);
-          }
-        }
-      },
-
-      updateExpense: (id, expense) =>
-        set((state) => ({
-          expenses: state.expenses.map((e) => e.id === id ? { ...e, ...expense } : e)
-        })),
-
-      deleteExpense: (id) =>
-        set((state) => ({
-          expenses: state.expenses.filter((e) => e.id !== id)
-        })),
-
-      addNotice: async (notice) => {
-        const newNotice = { 
-          ...notice, 
-          id: Date.now().toString(), 
-          date: new Date().toISOString() 
-        };
-        
-        set((state) => ({
-          notices: [...state.notices, newNotice]
-        }));
-
-        // Save to Supabase if user is admin
-        const { user } = get();
-        if (user?.role === 'admin') {
-          try {
-            await supabase.from('notices').insert({
-              id: newNotice.id,
-              title: newNotice.title,
-              message: newNotice.message,
-              type: newNotice.type,
-              date: newNotice.date
-            });
-          } catch (error) {
-            console.error('Error saving notice to Supabase:', error);
-          }
-        }
-      },
-
-      updateNotice: (id, notice) =>
-        set((state) => ({
-          notices: state.notices.map((n) => n.id === id ? { ...n, ...notice } : n)
-        })),
-
-      deleteNotice: (id) =>
-        set((state) => ({
-          notices: state.notices.filter((n) => n.id !== id)
-        })),
-
-      addImam: (imam) =>
-        set((state) => ({
-          imams: [...state.imams, { ...imam, id: Date.now().toString() }]
-        })),
-
-      updateImam: (id, imam) =>
-        set((state) => ({
-          imams: state.imams.map((i) => i.id === id ? { ...i, ...imam } : i)
-        })),
-
-      deleteImam: (id) =>
-        set((state) => ({
-          imams: state.imams.filter((i) => i.id !== id)
-        })),
-
-      addEvent: (event) =>
-        set((state) => ({
-          events: [...state.events, { 
-            ...event, 
-            id: Date.now().toString(),
-            organizer: event.organizer || 'মসজিদ কমিটি',
-            status: event.status || 'Planned'
-          }]
-        })),
-
-      updateEvent: (id, event) =>
-        set((state) => ({
-          events: state.events.map((e) => e.id === id ? { ...e, ...event } : e)
-        })),
-
-      deleteEvent: (id) =>
-        set((state) => ({
-          events: state.events.filter((e) => e.id !== id)
-        })),
-
-      addAttendance: (record) =>
-        set((state) => ({
-          attendance: [...state.attendance, { ...record, id: Date.now().toString() }]
-        })),
-
-      updateAttendance: (id, record) =>
-        set((state) => ({
-          attendance: state.attendance.map((a) => a.id === id ? { ...a, ...record } : a)
-        })),
-
-      deleteAttendance: (id) =>
-        set((state) => ({
-          attendance: state.attendance.filter((a) => a.id !== id)
-        })),
-
-      setUser: (user) => set({ user }),
-
-      login: (username: string, password: string) => {
-        if (username === 'admin' && password === 'admin123') {
-          set({ user: { id: '1', name: 'অ্যাডমিন', email: 'admin@mosque.org', role: 'admin' } });
-          return true;
-        }
-        return false;
-      },
-
-      logout: () => set({ user: { id: 'viewer', name: 'ভিউয়ার', email: '', role: 'viewer' } }),
-
-      changePassword: (oldPassword: string, newPassword: string) => {
-        // Simple implementation - in real app, this would verify old password
-        if (oldPassword === 'admin123') {
-          return true;
-        }
-        return false;
-      },
-
+      // Settings
+      updateSettings: (updates) => set((state) => ({
+        settings: { ...state.settings, ...updates },
+      })),
       getTotalIncome: () => {
-        const { income } = get();
-        return income.reduce((total, item) => total + item.amount, 0);
+        return get().income.reduce((sum, inc) => sum + inc.amount, 0);
       },
-
       getTotalExpenses: () => {
-        const { expenses } = get();
-        return expenses.reduce((total, item) => total + item.amount, 0);
+        return get().expenses.reduce((sum, exp) => sum + exp.amount, 0);
       },
-
       getBalance: () => {
-        const { getTotalIncome, getTotalExpenses } = get();
-        return getTotalIncome() - getTotalExpenses();
+        return get().getTotalIncome() - get().getTotalExpenses();
       },
-
-      getDefaulters: () => {
-        const { donors } = get();
-        return donors.filter(donor => donor.status === 'Defaulter');
-      },
-
-      getMissingMonths: (donorId: string) => {
-        const { donors } = get();
-        const donor = donors.find(d => d.id === donorId);
-        if (!donor) return [];
-
-        const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth();
-        
-        const missingMonths: string[] = [];
-        const monthNames = [
-          'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-          'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
-        ];
-
-        for (let month = 0; month <= currentMonth; month++) {
-          const hasPayment = donor.payments.some(payment => 
-            payment.month === month.toString() && 
-            payment.year === currentYear &&
-            payment.status === 'Paid'
-          );
-          
-          if (!hasPayment) {
-            missingMonths.push(monthNames[month]);
-          }
-        }
-
-        return missingMonths;
-      },
-
-      getDonorPaidMonths: (donorId: string) => {
-        const { donors } = get();
-        const donor = donors.find(d => d.id === donorId);
-        if (!donor) return [];
-
-        const currentDate = new Date();
-        const currentYear = currentDate.getFullYear();
-        
-        const paidMonths: string[] = [];
-        const monthNames = [
-          'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-          'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
-        ];
-
-        donor.payments.forEach(payment => {
-          if (payment.year === currentYear && payment.status === 'Paid') {
-            const monthIndex = parseInt(payment.month);
-            if (monthIndex >= 0 && monthIndex < 12) {
-              paidMonths.push(monthNames[monthIndex]);
-            }
-          }
-        });
-
-        return paidMonths;
-      },
-
-      getTotalDueAmount: () => {
-        const { getDefaulters } = get();
-        const defaulters = getDefaulters();
-        
-        return defaulters.reduce((total, donor) => {
-          const { getMissingMonths } = get();
-          const missingMonths = getMissingMonths(donor.id);
-          return total + (missingMonths.length * donor.monthlyAmount);
-        }, 0);
-      }
     }),
     {
-      name: 'mosque-storage'
+      name: 'mosque-storage',
+      version: 1,
     }
   )
 );
+
+export { useMosqueStore };

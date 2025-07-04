@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
@@ -8,7 +8,12 @@ export const useSupabaseData = () => {
   const store = useMosqueStore();
 
   // Save donor to Supabase
-  const saveDonorToSupabase = async (donor: any) => {
+  const saveDonorToSupabase = useCallback(async (donor: any) => {
+    if (!supabase) {
+      console.error('Supabase client not available');
+      return;
+    }
+
     try {
       const { error } = await supabase.from('donors').insert({
         id: donor.id,
@@ -20,7 +25,10 @@ export const useSupabaseData = () => {
         start_date: donor.startDate
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Donor save error:', error);
+        throw error;
+      }
       
       toast({
         title: "সফল!",
@@ -34,10 +42,15 @@ export const useSupabaseData = () => {
         variant: "destructive",
       });
     }
-  };
+  }, []);
 
   // Save income to Supabase
-  const saveIncomeToSupabase = async (income: any) => {
+  const saveIncomeToSupabase = useCallback(async (income: any) => {
+    if (!supabase) {
+      console.error('Supabase client not available');
+      return;
+    }
+
     try {
       const { error } = await supabase.from('income').insert({
         id: income.id,
@@ -49,7 +62,10 @@ export const useSupabaseData = () => {
         month: income.month
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Income save error:', error);
+        throw error;
+      }
       
       toast({
         title: "সফল!",
@@ -63,10 +79,15 @@ export const useSupabaseData = () => {
         variant: "destructive",
       });
     }
-  };
+  }, []);
 
   // Save expense to Supabase
-  const saveExpenseToSupabase = async (expense: any) => {
+  const saveExpenseToSupabase = useCallback(async (expense: any) => {
+    if (!supabase) {
+      console.error('Supabase client not available');
+      return;
+    }
+
     try {
       const { error } = await supabase.from('expenses').insert({
         id: expense.id,
@@ -78,7 +99,10 @@ export const useSupabaseData = () => {
         imam_id: expense.imamId
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Expense save error:', error);
+        throw error;
+      }
       
       toast({
         title: "সফল!",
@@ -92,10 +116,15 @@ export const useSupabaseData = () => {
         variant: "destructive",
       });
     }
-  };
+  }, []);
 
   // Save committee member to Supabase
-  const saveCommitteeToSupabase = async (member: any) => {
+  const saveCommitteeToSupabase = useCallback(async (member: any) => {
+    if (!supabase) {
+      console.error('Supabase client not available');
+      return;
+    }
+
     try {
       const { error } = await supabase.from('committee').insert({
         id: member.id,
@@ -106,7 +135,10 @@ export const useSupabaseData = () => {
         join_date: member.joinDate
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Committee save error:', error);
+        throw error;
+      }
       
       toast({
         title: "সফল!",
@@ -120,10 +152,15 @@ export const useSupabaseData = () => {
         variant: "destructive",
       });
     }
-  };
+  }, []);
 
   // Save notice to Supabase
-  const saveNoticeToSupabase = async (notice: any) => {
+  const saveNoticeToSupabase = useCallback(async (notice: any) => {
+    if (!supabase) {
+      console.error('Supabase client not available');
+      return;
+    }
+
     try {
       const { error } = await supabase.from('notices').insert({
         id: notice.id,
@@ -133,7 +170,10 @@ export const useSupabaseData = () => {
         date: notice.date
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Notice save error:', error);
+        throw error;
+      }
       
       toast({
         title: "সফল!",
@@ -147,7 +187,7 @@ export const useSupabaseData = () => {
         variant: "destructive",
       });
     }
-  };
+  }, []);
 
   return {
     saveDonorToSupabase,

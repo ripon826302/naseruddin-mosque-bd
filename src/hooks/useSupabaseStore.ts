@@ -1,6 +1,8 @@
+
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMosqueStore } from '@/store/mosqueStore';
+import { toast } from '@/hooks/use-toast';
 
 export const useSupabaseStore = () => {
   const store = useMosqueStore();
@@ -11,11 +13,22 @@ export const useSupabaseStore = () => {
     // Load initial data from Supabase
     const loadData = async () => {
       try {
+        console.log('Loading data from Supabase...');
+
         // Load donors
-        const { data: donors } = await supabase.from('donors').select('*');
-        if (donors) {
+        const { data: donors, error: donorsError } = await supabase
+          .from('donors')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (donorsError) {
+          console.error('Donors fetch error:', donorsError);
+        } else if (donors && donors.length > 0) {
+          console.log(`Loaded ${donors.length} donors`);
+          store.clearDonors();
           donors.forEach(donor => {
             store.addDonor({
+              id: donor.id,
               name: donor.name,
               phone: donor.phone,
               address: donor.address,
@@ -30,10 +43,19 @@ export const useSupabaseStore = () => {
         }
 
         // Load income
-        const { data: income } = await supabase.from('income').select('*');
-        if (income) {
+        const { data: income, error: incomeError } = await supabase
+          .from('income')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (incomeError) {
+          console.error('Income fetch error:', incomeError);
+        } else if (income && income.length > 0) {
+          console.log(`Loaded ${income.length} income records`);
+          store.clearIncome();
           income.forEach(inc => {
             store.addIncome({
+              id: inc.id,
               source: inc.source,
               amount: inc.amount,
               date: inc.date,
@@ -47,10 +69,19 @@ export const useSupabaseStore = () => {
         }
 
         // Load expenses
-        const { data: expenses } = await supabase.from('expenses').select('*');
-        if (expenses) {
+        const { data: expenses, error: expensesError } = await supabase
+          .from('expenses')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (expensesError) {
+          console.error('Expenses fetch error:', expensesError);
+        } else if (expenses && expenses.length > 0) {
+          console.log(`Loaded ${expenses.length} expense records`);
+          store.clearExpenses();
           expenses.forEach(exp => {
             store.addExpense({
+              id: exp.id,
               category: exp.type,
               amount: exp.amount,
               date: exp.date,
@@ -63,10 +94,19 @@ export const useSupabaseStore = () => {
         }
 
         // Load committee
-        const { data: committee } = await supabase.from('committee').select('*');
-        if (committee) {
+        const { data: committee, error: committeeError } = await supabase
+          .from('committee')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (committeeError) {
+          console.error('Committee fetch error:', committeeError);
+        } else if (committee && committee.length > 0) {
+          console.log(`Loaded ${committee.length} committee members`);
+          store.clearCommittee();
           committee.forEach(member => {
             store.addCommitteeMember({
+              id: member.id,
               name: member.name,
               role: member.role,
               phone: member.phone,
@@ -77,66 +117,51 @@ export const useSupabaseStore = () => {
         }
 
         // Load notices
-        const { data: notices } = await supabase.from('notices').select('*');
-        if (notices) {
+        const { data: notices, error: noticesError } = await supabase
+          .from('notices')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (noticesError) {
+          console.error('Notices fetch error:', noticesError);
+        } else if (notices && notices.length > 0) {
+          console.log(`Loaded ${notices.length} notices`);
+          store.clearNotices();
           notices.forEach(notice => {
             store.addNotice({
+              id: notice.id,
               title: notice.title,
               message: notice.message,
-              type: notice.type as any
+              type: notice.type as any,
+              date: notice.date
             });
           });
         }
 
+        console.log('Data loading completed successfully');
+
       } catch (error) {
         console.error('Error loading data from Supabase:', error);
+        toast({
+          title: "ডাটা লোড করতে সমস্যা",
+          description: "ডাটাবেজ থেকে তথ্য লোড করতে সমস্যা হয়েছে।",
+          variant: "destructive",
+        });
       }
     };
 
+    // Listen for data refresh events
+    const handleDataRefresh = () => {
+      loadData();
+    };
+
+    window.addEventListener('dataRefresh', handleDataRefresh);
+    
+    // Load data immediately
     loadData();
 
-    // Set up realtime listeners
-    const donorsChannel = supabase
-      .channel('donors-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'donors'
-      }, (payload) => {
-        console.log('Donors realtime update:', payload);
-        // Reload data on changes
-        loadData();
-      })
-      .subscribe();
-
-    const incomeChannel = supabase
-      .channel('income-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'income'
-      }, (payload) => {
-        console.log('Income realtime update:', payload);
-        loadData();
-      })
-      .subscribe();
-
-    const expensesChannel = supabase
-      .channel('expenses-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'expenses'
-      }, (payload) => {
-        console.log('Expenses realtime update:', payload);
-        loadData();
-      })
-      .subscribe();
-
     return () => {
-      supabase.removeChannel(donorsChannel);
-      supabase.removeChannel(incomeChannel);
-      supabase.removeChannel(expensesChannel);
+      window.removeEventListener('dataRefresh', handleDataRefresh);
     };
   }, []);
 };

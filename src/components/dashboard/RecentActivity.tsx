@@ -1,101 +1,78 @@
 
 import React from 'react';
-import { Activity, DollarSign, Users, Calendar, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMosqueStore } from '@/store/mosqueStore';
-import { formatCurrency } from '@/utils/dates';
+import { Clock, TrendingUp, TrendingDown } from 'lucide-react';
 
-const RecentActivity: React.FC = () => {
-  const { income, expenses, donors, events } = useMosqueStore();
+const RecentActivity = () => {
+  const { income, expenses } = useMosqueStore();
 
-  // Combine and sort recent activities
-  const recentActivities = [
-    ...income.slice(-3).map(item => ({
-      id: item.id,
-      type: 'income',
-      title: `আয়: ${item.source}`,
-      amount: item.amount,
-      date: item.date,
-      icon: DollarSign,
-      color: 'text-green-400'
+  // Get recent activities (last 10 items)
+  const recentIncome = [...income]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+  
+  const recentExpenses = [...expenses]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())  
+    .slice(0, 5);
+
+  // Combine and sort all activities
+  const allActivities = [
+    ...recentIncome.map(item => ({
+      ...item,
+      type: 'income' as const,
+      title: item.source || item.category,
+      description: `আয়: ৳${item.amount.toLocaleString()}`
     })),
-    ...expenses.slice(-3).map(item => ({
-      id: item.id,
-      type: 'expense',
-      title: `খরচ: ${item.type}`,
-      amount: item.amount,
-      date: item.date,
-      icon: TrendingUp,
-      color: 'text-red-400'
-    })),
-    ...donors.slice(-2).map(donor => ({
-      id: donor.id,
-      type: 'donor',
-      title: `নতুন দাতা: ${donor.name}`,
-      amount: donor.monthlyAmount,
-      date: donor.startDate,
-      icon: Users,
-      color: 'text-blue-400'
-    })),
-    ...events.slice(-2).map(event => ({
-      id: event.id,
-      type: 'event',
-      title: `ইভেন্ট: ${event.title}`,
-      amount: 0,
-      date: event.date,
-      icon: Calendar,
-      color: 'text-purple-400'
+    ...recentExpenses.map(item => ({
+      ...item,
+      type: 'expense' as const,
+      title: item.category || item.type,
+      description: `ব্যয়: ৳${item.amount.toLocaleString()}`
     }))
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 6);
+    .slice(0, 8);
 
   return (
-    <Card className="bg-gray-900/50 border-gray-700">
-      <CardHeader>
-        <CardTitle className="text-white flex items-center">
-          <Activity className="h-6 w-6 mr-2 text-green-400" />
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <Clock className="h-5 w-5 text-blue-600" />
           সাম্প্রতিক কার্যক্রম
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {recentActivities.length === 0 ? (
-            <div className="text-center text-gray-400 py-8">
-              কোন সাম্প্রতিক কার্যক্রম নেই
-            </div>
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          {allActivities.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">কোন সাম্প্রতিক কার্যক্রম নেই</p>
           ) : (
-            recentActivities.map((activity, index) => {
-              const IconComponent = activity.icon;
-              
-              return (
-                <div 
-                  key={activity.id}
-                  className="flex items-center space-x-4 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-all duration-300"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <div className={`p-2 rounded-full bg-gray-700/50 ${activity.color}`}>
-                    <IconComponent className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium text-sm truncate">
-                      {activity.title}
-                    </p>
-                    <p className="text-gray-400 text-xs">
-                      {new Date(activity.date).toLocaleDateString('bn-BD')}
-                    </p>
-                  </div>
-                  {activity.amount > 0 && (
-                    <div className={`text-right ${activity.color}`}>
-                      <p className="font-semibold text-sm">
-                        {activity.type === 'expense' ? '-' : '+'}
-                        {formatCurrency(activity.amount)}
-                      </p>
-                    </div>
+            allActivities.map((activity, index) => (
+              <div key={`${activity.type}-${activity.id || index}`} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className={`p-2 rounded-full ${
+                  activity.type === 'income' 
+                    ? 'bg-green-100 text-green-600' 
+                    : 'bg-red-100 text-red-600'
+                }`}>
+                  {activity.type === 'income' ? (
+                    <TrendingUp className="h-4 w-4" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4" />
                   )}
                 </div>
-              );
-            })
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {activity.title}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {activity.description}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(activity.date).toLocaleDateString('bn-BD')}
+                  </p>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </CardContent>

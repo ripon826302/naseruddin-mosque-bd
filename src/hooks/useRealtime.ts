@@ -1,86 +1,105 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useMosqueStore } from '@/store/mosqueStore';
 
 export const useRealtime = () => {
-  const store = useMosqueStore();
-
   useEffect(() => {
     if (!supabase) return;
 
-    // Listen to donors table changes
+    const channels: any[] = [];
+
+    // Create separate channels for each table to avoid subscription conflicts
     const donorsChannel = supabase
-      .channel('donors-changes')
+      .channel(`donors-changes-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'donors'
       }, (payload) => {
         console.log('Donors realtime update:', payload);
-        // Refresh donors data when change occurs
-        window.location.reload();
-      })
-      .subscribe();
+        // Refresh data without full page reload
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('dataRefresh'));
+        }, 1000);
+      });
 
-    // Listen to income table changes
     const incomeChannel = supabase
-      .channel('income-changes')
+      .channel(`income-changes-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'income'
       }, (payload) => {
         console.log('Income realtime update:', payload);
-        window.location.reload();
-      })
-      .subscribe();
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('dataRefresh'));
+        }, 1000);
+      });
 
-    // Listen to expenses table changes
     const expensesChannel = supabase
-      .channel('expenses-changes')
+      .channel(`expenses-changes-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'expenses'
       }, (payload) => {
         console.log('Expenses realtime update:', payload);
-        window.location.reload();
-      })
-      .subscribe();
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('dataRefresh'));
+        }, 1000);
+      });
 
-    // Listen to committee table changes
     const committeeChannel = supabase
-      .channel('committee-changes')
+      .channel(`committee-changes-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'committee'
       }, (payload) => {
         console.log('Committee realtime update:', payload);
-        window.location.reload();
-      })
-      .subscribe();
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('dataRefresh'));
+        }, 1000);
+      });
 
-    // Listen to notices table changes
     const noticesChannel = supabase
-      .channel('notices-changes')
+      .channel(`notices-changes-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'notices'
       }, (payload) => {
         console.log('Notices realtime update:', payload);
-        window.location.reload();
-      })
-      .subscribe();
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('dataRefresh'));
+        }, 1000);
+      });
+
+    // Subscribe to all channels
+    const subscribeChannels = async () => {
+      try {
+        await donorsChannel.subscribe();
+        await incomeChannel.subscribe();
+        await expensesChannel.subscribe();
+        await committeeChannel.subscribe();
+        await noticesChannel.subscribe();
+        
+        channels.push(donorsChannel, incomeChannel, expensesChannel, committeeChannel, noticesChannel);
+      } catch (error) {
+        console.error('Realtime subscription error:', error);
+      }
+    };
+
+    subscribeChannels();
 
     return () => {
-      supabase.removeChannel(donorsChannel);
-      supabase.removeChannel(incomeChannel);
-      supabase.removeChannel(expensesChannel);
-      supabase.removeChannel(committeeChannel);
-      supabase.removeChannel(noticesChannel);
+      channels.forEach(channel => {
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.error('Channel cleanup error:', error);
+        }
+      });
     };
   }, []);
 };
