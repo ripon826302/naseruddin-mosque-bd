@@ -67,9 +67,9 @@ const Index = () => {
       case 'payment-tracking':
         return <PaymentTrackingPage onBack={handleBackToDashboard} />;
       case 'attendance':
-        return <AttendanceManagement />;
+        return <AttendanceManagement onBack={handleBackToDashboard} />;
       case 'events':
-        return <EventManagement />;
+        return <EventManagement onBack={handleBackToDashboard} />;
       case 'notices':
         return <NoticeBoardPage onBack={handleBackToDashboard} />;
       case 'settings':

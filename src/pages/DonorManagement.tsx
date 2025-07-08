@@ -371,6 +371,7 @@ const DonorManagement: React.FC = () => {
       {selectedDonor && (
         <DonorDetails
           donor={selectedDonor}
+          isOpen={!!selectedDonor}
           onClose={() => setSelectedDonor(null)}
         />
       )}
