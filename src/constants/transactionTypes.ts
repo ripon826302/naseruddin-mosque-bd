@@ -36,6 +36,21 @@ export const EVENT_TYPES = [
   'Fundraising'
 ] as const;
 
+export const MONTHS = [
+  'জানুয়ারি',
+  'ফেব্রুয়ারি', 
+  'মার্চ',
+  'এপ্রিল',
+  'মে',
+  'জুন',
+  'জুলাই',
+  'আগস্ট',
+  'সেপ্টেম্বর',
+  'অক্টোবর',
+  'নভেম্বর',
+  'ডিসেম্বর'
+] as const;
+
 export const MONTHS_BANGLA = [
   'জানুয়ারি',
   'ফেব্রুয়ারি', 

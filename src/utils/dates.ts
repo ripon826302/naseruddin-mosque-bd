@@ -32,3 +32,40 @@ export const generateReceiptNumber = (): string => {
   
   return `R${year}${month}${day}${random}`;
 };
+
+export const getBengaliDate = (): string => {
+  const date = new Date();
+  return date.toLocaleDateString('bn-BD', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+export const getBengaliBanglaDate = (): string => {
+  const date = new Date();
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  return date.toLocaleDateString('bn-BD', options);
+};
+
+export const getArabicHijriDate = (): string => {
+  const date = new Date();
+  try {
+    return date.toLocaleDateString('ar-SA-u-ca-islamic', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch (error) {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+};
