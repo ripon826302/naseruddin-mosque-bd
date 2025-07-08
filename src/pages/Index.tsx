@@ -17,14 +17,16 @@ import AttendanceManagement from '@/pages/AttendanceManagement';
 import EventManagement from '@/pages/EventManagement';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { useSupabaseStore } from '@/hooks/useSupabaseStore';
+import { useRealtime } from '@/hooks/useRealtime';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { user, logout } = useMosqueStore();
   
-  // Initialize Supabase integration
+  // Initialize Supabase integration and realtime updates
   useSupabaseStore();
+  useRealtime();
 
   // Auto-logout to viewer mode on initial load
   useEffect(() => {

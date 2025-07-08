@@ -1,11 +1,25 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useMosqueStore } from '@/store/mosqueStore';
-import { FileText, Printer, Download, Users, DollarSign } from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line
+} from 'recharts';
+import { 
+  DollarSign, 
+  TrendingUp, 
+  TrendingDown, 
+  Users, 
+  AlertTriangle,
+  FileText,
+  Download,
+  Calendar,
+  ArrowLeft
+} from 'lucide-react';
+import BackButton from '@/components/ui/BackButton';
 import { formatCurrency } from '@/utils/dates';
-import PageHeader from '@/components/common/PageHeader';
-import DetailedReports from './DetailedReports';
 
 interface CompleteReportsProps {
   onBack?: () => void;
@@ -14,358 +28,299 @@ interface CompleteReportsProps {
 const CompleteReports: React.FC<CompleteReportsProps> = ({ onBack }) => {
   const { 
     donors, 
-    committee, 
     income, 
     expenses, 
     getTotalIncome, 
     getTotalExpenses, 
     getBalance,
-    settings 
+    getDefaulters,
+    getTotalDueAmount
   } = useMosqueStore();
-  
-  const [selectedReport, setSelectedReport] = useState<string | null>(null);
-  const [showDetailed, setShowDetailed] = useState(false);
 
-  if (showDetailed) {
-    return <DetailedReports onBack={() => setShowDetailed(false)} />;
-  }
+  const [selectedPeriod, setSelectedPeriod] = useState('current-month');
 
-  const handlePrintAllDonors = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+  // Calculate statistics
+  const totalIncome = getTotalIncome();
+  const totalExpenses = getTotalExpenses();
+  const balance = getBalance();
+  const defaulters = getDefaulters();
+  const totalDue = getTotalDueAmount();
 
-    const totalDonated = donors.reduce((sum, donor) => {
-      return sum + (donor.payments?.reduce((pSum, payment) => 
-        payment.status === 'Paid' ? pSum + payment.amount : pSum, 0) || 0);
-    }, 0);
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>সকল দাতার তালিকা</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-          th { background-color: #f5f5f5; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .summary { margin: 20px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>${settings.name}</h1>
-          <p>${settings.address}</p>
-          <h2>সকল দাতার তালিকা</h2>
-          <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
-        </div>
-        
-        <div class="summary">
-          <p><strong>মোট দাতা:</strong> ${donors.length} জন</p>
-          <p><strong>সক্রিয় দাতা:</strong> ${donors.filter(d => d.status === 'Active').length} জন</p>
-          <p><strong>মোট প্রাপ্ত দান:</strong> ${formatCurrency(totalDonated)}</p>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>ক্রমিক</th>
-              <th>নাম</th>
-              <th>ফোন</th>
-              <th>ঠিকানা</th>
-              <th>মাসিক চাঁদা</th>
-              <th>মোট দান</th>
-              <th>অবস্থা</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${donors.map((donor, index) => {
-              const totalDonation = donor.payments?.reduce((sum, payment) => 
-                payment.status === 'Paid' ? sum + payment.amount : sum, 0) || 0;
-              return `
-                <tr>
-                  <td>${index + 1}</td>
-                  <td>${donor.name}</td>
-                  <td>${donor.phone}</td>
-                  <td>${donor.address}</td>
-                  <td>${formatCurrency(donor.monthlyAmount)}</td>
-                  <td>${formatCurrency(totalDonation)}</td>
-                  <td>${donor.status === 'Active' ? 'সক্রিয়' : donor.status === 'Defaulter' ? 'বকেয়াদার' : 'নিষ্ক্রিয়'}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `);
+  // Monthly data for charts
+  const monthlyData = React.useMemo(() => {
+    const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
     
-    printWindow.document.close();
-    printWindow.print();
-  };
+    return months.map(month => {
+      const monthIncome = income.filter(inc => inc.month === month).reduce((sum, inc) => sum + inc.amount, 0);
+      const monthExpenses = expenses.filter(exp => exp.month === month).reduce((sum, exp) => sum + exp.amount, 0);
+      
+      return {
+        month,
+        income: monthIncome,
+        expenses: monthExpenses,
+        balance: monthIncome - monthExpenses
+      };
+    });
+  }, [income, expenses]);
 
-  const handlePrintAllCommittee = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>কমিটির সদস্যদের তালিকা</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-          th { background-color: #f5f5f5; }
-          .header { text-align: center; margin-bottom: 30px; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>${settings.name}</h1>
-          <p>${settings.address}</p>
-          <h2>কমিটির সদস্যদের তালিকা</h2>
-          <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>ক্রমিক</th>
-              <th>নাম</th>
-              <th>পদবি</th>
-              <th>ফোন</th>
-              <th>ইমেইল</th>
-              <th>যোগদানের তারিখ</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${committee.map((member, index) => `
-              <tr>
-                <td>${index + 1}</td>
-                <td>${member.name}</td>
-                <td>${member.role}</td>
-                <td>${member.phone}</td>
-                <td>${member.email || 'N/A'}</td>
-                <td>${new Date(member.joinDate).toLocaleDateString('bn-BD')}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `);
+  // Income source breakdown
+  const incomeBySource = React.useMemo(() => {
+    const sources: { [key: string]: number } = {};
+    income.forEach(inc => {
+      sources[inc.source] = (sources[inc.source] || 0) + inc.amount;
+    });
     
-    printWindow.document.close();
-    printWindow.print();
-  };
+    return Object.entries(sources).map(([source, amount]) => ({
+      name: source,
+      value: amount
+    }));
+  }, [income]);
 
-  const handlePrintFinancialReport = () => {
-    const totalIncome = getTotalIncome();
-    const totalExpenses = getTotalExpenses();
-    const balance = getBalance();
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>আর্থিক রিপোর্ট</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-          th { background-color: #f5f5f5; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .summary { margin: 20px 0; padding: 15px; border: 2px solid #000; }
-          .text-right { text-align: right; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>${settings.name}</h1>
-          <p>${settings.address}</p>
-          <h2>আর্থিক রিপোর্ট</h2>
-          <p>তারিখ: ${new Date().toLocaleDateString('bn-BD')}</p>
-        </div>
-
-        <div class="summary">
-          <h3>সারসংক্ষেপ</h3>
-          <p><strong>মোট আয়:</strong> ${formatCurrency(totalIncome)}</p>
-          <p><strong>মোট ব্যয়:</strong> ${formatCurrency(totalExpenses)}</p>
-          <p><strong>বর্তমান ব্যালেন্স:</strong> ${formatCurrency(balance)}</p>
-        </div>
-
-        <h3>আয়ের বিবরণ</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>তারিখ</th>
-              <th>উৎস</th>
-              <th>পরিমাণ</th>
-              <th>রশিদ নং</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${income.map(item => `
-              <tr>
-                <td>${new Date(item.date).toLocaleDateString('bn-BD')}</td>
-                <td>${item.source}</td>
-                <td class="text-right">${formatCurrency(item.amount)}</td>
-                <td>${item.receiptNumber}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-
-        <h3>ব্যয়ের বিবরণ</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>তারিখ</th>
-              <th>ধরন</th>
-              <th>পরিমাণ</th>
-              <th>বিবরণ</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${expenses.map(item => `
-              <tr>
-                <td>${new Date(item.date).toLocaleDateString('bn-BD')}</td>
-                <td>${item.type}</td>
-                <td class="text-right">${formatCurrency(item.amount)}</td>
-                <td>${item.description || 'N/A'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `);
+  // Expense type breakdown
+  const expensesByType = React.useMemo(() => {
+    const types: { [key: string]: number } = {};
+    expenses.forEach(exp => {
+      types[exp.type] = (types[exp.type] || 0) + exp.amount;
+    });
     
-    printWindow.document.close();
-    printWindow.print();
+    return Object.entries(types).map(([type, amount]) => ({
+      name: type,
+      value: amount
+    }));
+  }, [expenses]);
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+  const donorStats = React.useMemo(() => {
+    const active = donors.filter(d => d.status === 'Active').length;
+    const inactive = donors.filter(d => d.status === 'Inactive').length;
+    const defaulterCount = donors.filter(d => d.status === 'Defaulter').length;
+    
+    return { active, inactive, defaulter: defaulterCount };
+  }, [donors]);
+
+  const generateReport = () => {
+    const reportData = {
+      period: selectedPeriod,
+      generated: new Date().toISOString(),
+      summary: {
+        totalIncome,
+        totalExpenses,
+        balance,
+        totalDonors: donors.length,
+        activeDonors: donorStats.active,
+        defaulters: defaulters.length,
+        totalDue
+      },
+      monthlyData,
+      incomeBySource,
+      expensesByType
+    };
+
+    const dataStr = JSON.stringify(reportData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `mosque-report-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 p-6">
-      <div className="max-w-7xl mx-auto">
-        <PageHeader title="সম্পূর্ণ রিপোর্ট" onBack={onBack} />
-        
-        {/* Detailed Report Button */}
-        <div className="mb-6 text-center">
-          <Button onClick={() => setShowDetailed(true)} className="bg-green-600 hover:bg-green-700 text-lg px-8 py-3">
-            <FileText size={20} className="mr-2" />
-            বিস্তারিত রিপোর্ট দেখুন
-          </Button>
+    <div className="min-h-screen bg-gray-50 p-6">
+      {onBack && <BackButton onBack={onBack} />}
+      
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">সম্পূর্ণ রিপোর্ট</h1>
+            <p className="text-gray-600 mt-1">মসজিদ কমিটির আর্থিক বিবরণী</p>
+          </div>
+          <div className="flex space-x-3">
+            <select 
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="current-month">এই মাস</option>
+              <option value="last-month">গত মাস</option>
+              <option value="current-year">এই বছর</option>
+              <option value="all-time">সব সময়</option>
+            </select>
+            <Button onClick={generateReport} className="flex items-center space-x-2">
+              <Download className="h-4 w-4" />
+              <span>রিপোর্ট ডাউনলোড</span>
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Donors Report */}
-          <Card className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <Users className="mr-2 text-blue-400" />
-                দাতাদের রিপোর্ট
-              </CardTitle>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-green-100">মোট আয়</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-gray-300">
-                <p>মোট দাতা: <span className="text-white font-semibold">{donors.length} জন</span></p>
-                <p>সক্রিয় দাতা: <span className="text-green-400 font-semibold">{donors.filter(d => d.status === 'Active').length} জন</span></p>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{formatCurrency(totalIncome)}</div>
+                <TrendingUp className="h-8 w-8 text-green-200" />
               </div>
-              <Button 
-                onClick={handlePrintAllDonors}
-                className="w-full bg-blue-600 hover:bg-blue-700"
-              >
-                <Printer className="mr-2" size={16} />
-                সকল দাতার তালিকা প্রিন্ট করুন
-              </Button>
             </CardContent>
           </Card>
 
-          {/* Committee Report */}
-          <Card className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <Users className="mr-2 text-purple-400" />
-                কমিটির রিপোর্ট
-              </CardTitle>
+          <Card className="bg-gradient-to-r from-red-500 to-red-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-red-100">মোট ব্যয়</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-gray-300">
-                <p>মোট সদস্য: <span className="text-white font-semibold">{committee.length} জন</span></p>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{formatCurrency(totalExpenses)}</div>
+                <TrendingDown className="h-8 w-8 text-red-200" />
               </div>
-              <Button 
-                onClick={handlePrintAllCommittee}
-                className="w-full bg-purple-600 hover:bg-purple-700"
-              >
-                <Printer className="mr-2" size={16} />
-                কমিটির তালিকা প্রিন্ট করুন
-              </Button>
             </CardContent>
           </Card>
 
-          {/* Financial Report */}
-          <Card className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <DollarSign className="mr-2 text-green-400" />
-                আর্থিক রিপোর্ট
-              </CardTitle>
+          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-blue-100">ব্যালেন্স</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-gray-300">
-                <p>মোট আয়: <span className="text-green-400 font-semibold">{formatCurrency(getTotalIncome())}</span></p>
-                <p>মোট ব্যয়: <span className="text-red-400 font-semibold">{formatCurrency(getTotalExpenses())}</span></p>
-                <p>ব্যালেন্স: <span className={`font-semibold ${getBalance() >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {formatCurrency(getBalance())}
-                </span></p>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{formatCurrency(balance)}</div>
+                <DollarSign className="h-8 w-8 text-blue-200" />
               </div>
-              <Button 
-                onClick={handlePrintFinancialReport}
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
-                <Printer className="mr-2" size={16} />
-                আর্থিক রিপোর্ট প্রিন্ট করুন
-              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-yellow-100">বকেয়া</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{formatCurrency(totalDue)}</div>
+                <AlertTriangle className="h-8 w-8 text-yellow-200" />
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Additional Statistics */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-gray-900/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-400">{income.length}</div>
-              <div className="text-gray-400">আয়ের এন্ট্রি</div>
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Monthly Income vs Expenses */}
+          <Card>
+            <CardHeader>
+              <CardTitle>মাসিক আয় ও ব্যয়</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `৳${value}`} />
+                  <Bar dataKey="income" fill="#10B981" name="আয়" />
+                  <Bar dataKey="expenses" fill="#EF4444" name="ব্যয়" />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-red-400">{expenses.length}</div>
-              <div className="text-gray-400">ব্যয়ের এন্ট্রি</div>
+          {/* Income Sources */}
+          <Card>
+            <CardHeader>
+              <CardTitle>আয়ের উৎস</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={incomeBySource}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {incomeBySource.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => `৳${value}`} />
+                </PieChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
+        </div>
 
-          <Card className="bg-gray-900/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-400">
-                {donors.filter(d => d.status === 'Defaulter').length}
+        {/* Donor Statistics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="h-5 w-5" />
+              <span>দাতা পরিসংখ্যান</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{donorStats.active}</div>
+                <div className="text-sm text-green-700">সক্রিয় দাতা</div>
               </div>
-              <div className="text-gray-400">বকেয়াদার</div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">{donorStats.inactive}</div>
+                <div className="text-sm text-yellow-700">নিষ্ক্রিয় দাতা</div>
+              </div>
+              <div className="text-center p-4 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">{donorStats.defaulter}</div>
+                <div className="text-sm text-red-700">বকেয়াদার</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Transactions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>সাম্প্রতিক আয়</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {income.slice(0, 5).map((inc, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-green-800">{inc.source}</p>
+                      <p className="text-sm text-green-600">{new Date(inc.date).toLocaleDateString('bn-BD')}</p>
+                    </div>
+                    <div className="text-green-700 font-bold">৳{inc.amount}</div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gray-900/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-purple-400">{committee.length}</div>
-              <div className="text-gray-400">কমিটি সদস্য</div>
+          <Card>
+            <CardHeader>
+              <CardTitle>সাম্প্রতিক ব্যয়</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {expenses.slice(0, 5).map((exp, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-red-800">{exp.type}</p>
+                      <p className="text-sm text-red-600">{new Date(exp.date).toLocaleDateString('bn-BD')}</p>
+                    </div>
+                    <div className="text-red-700 font-bold">৳{exp.amount}</div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>

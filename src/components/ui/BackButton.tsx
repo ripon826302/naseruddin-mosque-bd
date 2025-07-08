@@ -1,22 +1,22 @@
 
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 
 interface BackButtonProps {
   onBack: () => void;
   label?: string;
 }
 
-const BackButton: React.FC<BackButtonProps> = ({ onBack, label = 'পিছনে' }) => {
+const BackButton: React.FC<BackButtonProps> = ({ onBack, label = "ফিরে যান" }) => {
   return (
     <Button
-      onClick={onBack}
       variant="outline"
-      className="mb-4 text-gray-700 border-gray-300 hover:bg-gray-50 hover:text-green-600 hover:border-green-300"
+      onClick={onBack}
+      className="mb-6 flex items-center space-x-2 hover:bg-gray-50"
     >
-      <ArrowLeft size={16} className="mr-2" />
-      {label}
+      <ArrowLeft className="h-4 w-4" />
+      <span>{label}</span>
     </Button>
   );
 };

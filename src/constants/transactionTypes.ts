@@ -1,34 +1,46 @@
 
 export const INCOME_SOURCES = [
-  'মাসিক চাঁদা',
-  'এককালীন দান', 
-  'দান বাক্স',
-  'নির্মাণ কাজে অনুদান',
-  'অন্যান্য'
-];
+  'Monthly Donation',
+  'One-time Donation', 
+  'Donation Box',
+  'Others'
+] as const;
 
 export const EXPENSE_TYPES = [
-  'ইমামের বেতন',
-  'বিদ্যুৎ বিল',
-  'নির্মাণ খরচ', 
-  'অন্যান্য'
-];
+  'Imam Salary',
+  'Imam Bonus',
+  'Electricity Bill',
+  'Others'
+] as const;
 
-export const COMMITTEE_POSITIONS = [
-  'সভাপতি',
-  'সহ-সভাপতি', 
-  'সাধারণ সম্পাদক',
-  'সহকারী সম্পাদক',
-  'কোষাধ্যক্ষ',
-  'সদস্য',
-  'উপদেষ্টা'
-];
+export const DONOR_STATUS = [
+  'Active',
+  'Inactive', 
+  'Defaulter'
+] as const;
 
-export const MONTHS = [
+export const NOTICE_TYPES = [
+  'general',
+  'urgent',
+  'warning',
+  'info'
+] as const;
+
+export const EVENT_TYPES = [
+  'Prayer',
+  'Event',
+  'Program', 
+  'Religious',
+  'Educational',
+  'Social',
+  'Fundraising'
+] as const;
+
+export const MONTHS_BANGLA = [
   'জানুয়ারি',
-  'ফেব্রুয়ারি',
+  'ফেব্রুয়ারি', 
   'মার্চ',
-  'এপ্রিল', 
+  'এপ্রিল',
   'মে',
   'জুন',
   'জুলাই',
@@ -37,4 +49,4 @@ export const MONTHS = [
   'অক্টোবর',
   'নভেম্বর',
   'ডিসেম্বর'
-];
+] as const;

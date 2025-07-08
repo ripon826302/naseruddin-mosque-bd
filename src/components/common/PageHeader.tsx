@@ -1,58 +1,41 @@
 
 import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Menu } from 'lucide-react';
 
 interface PageHeaderProps {
   title: string;
+  subtitle?: string;
   onBack?: () => void;
-  showBackButton?: boolean;
-  rightContent?: React.ReactNode;
+  actions?: React.ReactNode;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ 
-  title, 
-  onBack, 
-  showBackButton = true,
-  rightContent 
-}) => {
-  const handleMenuToggle = () => {
-    const event = new CustomEvent('toggleNav');
-    window.dispatchEvent(event);
-  };
-
+const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, onBack, actions }) => {
   return (
-    <div className="bg-gradient-to-r from-green-600 to-green-700 shadow-lg border-b-2 border-green-800 px-4 lg:px-8 py-6 mb-6">
+    <div className="bg-white border-b border-gray-200 px-4 py-6 sm:px-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 text-white hover:text-green-200 hover:bg-green-600 rounded-lg transition-colors"
-            onClick={handleMenuToggle}
-          >
-            <Menu size={24} />
-          </button>
-
-          {/* Back Button */}
-          {showBackButton && onBack && (
+          {onBack && (
             <Button
-              onClick={onBack}
               variant="ghost"
-              className="text-white hover:text-green-200 hover:bg-green-600 p-2"
+              size="sm"
+              onClick={onBack}
+              className="flex items-center space-x-2"
             >
-              <ArrowLeft size={20} className="mr-2" />
-              <span className="hidden sm:inline">ফিরে যান</span>
+              <ArrowLeft className="h-4 w-4" />
+              <span>ফিরে যান</span>
             </Button>
           )}
-
-          {/* Page Title */}
-          <h1 className="text-xl lg:text-2xl font-bold text-white">{title}</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+            {subtitle && (
+              <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+            )}
+          </div>
         </div>
-
-        {/* Right Content */}
-        {rightContent && (
+        {actions && (
           <div className="flex items-center space-x-2">
-            {rightContent}
+            {actions}
           </div>
         )}
       </div>

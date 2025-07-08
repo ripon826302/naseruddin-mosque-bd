@@ -1,8 +1,17 @@
 
 import React from 'react';
-import { Plus, Users, DollarSign, Calendar, Bell, CreditCard } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { 
+  PlusCircle, 
+  UserPlus, 
+  DollarSign, 
+  FileText,
+  Users,
+  Calendar,
+  Bell,
+  Settings
+} from 'lucide-react';
 
 interface QuickActionsProps {
   onPageChange: (page: string) => void;
@@ -11,69 +20,75 @@ interface QuickActionsProps {
 const QuickActions: React.FC<QuickActionsProps> = ({ onPageChange }) => {
   const actions = [
     {
-      title: 'নতুন দাতা যোগ',
-      description: 'নতুন দাতা যোগ করুন',
-      icon: Users,
-      color: 'from-blue-500 to-blue-600',
-      page: 'donors'
+      title: "নতুন দাতা যোগ করুন",
+      icon: UserPlus,
+      color: "bg-blue-500 hover:bg-blue-600",
+      onClick: () => onPageChange('donors')
     },
     {
-      title: 'আয় রেকর্ড',
-      description: 'নতুন আয় যোগ করুন',
+      title: "আয় রেকর্ড করুন",
       icon: DollarSign,
-      color: 'from-green-500 to-green-600',
-      page: 'income'
+      color: "bg-green-500 hover:bg-green-600",
+      onClick: () => onPageChange('income')
     },
     {
-      title: 'নতুন ইভেন্ট',
-      description: 'ইভেন্ট তৈরি করুন',
+      title: "ব্যয় যোগ করুন",
+      icon: PlusCircle,
+      color: "bg-red-500 hover:bg-red-600",
+      onClick: () => onPageChange('expense')
+    },
+    {
+      title: "রিপোর্ট দেখুন",
+      icon: FileText,
+      color: "bg-purple-500 hover:bg-purple-600",
+      onClick: () => onPageChange('reports')
+    },
+    {
+      title: "কমিটি সদস্য",
+      icon: Users,
+      color: "bg-indigo-500 hover:bg-indigo-600",
+      onClick: () => onPageChange('committee')
+    },
+    {
+      title: "ইভেন্ট ম্যানেজমেন্ট",
       icon: Calendar,
-      color: 'from-purple-500 to-purple-600',
-      page: 'events'
+      color: "bg-yellow-500 hover:bg-yellow-600",
+      onClick: () => onPageChange('events')
     },
     {
-      title: 'নোটিশ দিন',
-      description: 'গুরুত্বপূর্ণ নোটিশ',
+      title: "নোটিশ বোর্ড",
       icon: Bell,
-      color: 'from-orange-500 to-orange-600',
-      page: 'notices'
+      color: "bg-orange-500 hover:bg-orange-600",
+      onClick: () => onPageChange('notices')
     },
     {
-      title: 'পেমেন্ট চেক',
-      description: 'পেমেন্ট স্ট্যাটাস',
-      icon: CreditCard,
-      color: 'from-indigo-500 to-indigo-600',
-      page: 'payment-tracking'
+      title: "সেটিংস",
+      icon: Settings,
+      color: "bg-gray-500 hover:bg-gray-600",
+      onClick: () => onPageChange('settings')
     }
   ];
 
   return (
-    <Card className="bg-gray-900/50 border-gray-700">
-      <CardContent className="p-6">
-        <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-          <Plus className="h-6 w-6 mr-2 text-blue-400" />
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-gray-800">
           দ্রুত কাজ
-        </h3>
-        
-        <div className="grid grid-cols-1 gap-3">
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {actions.map((action, index) => {
-            const IconComponent = action.icon;
-            
+            const Icon = action.icon;
             return (
               <Button
                 key={index}
-                onClick={() => onPageChange(action.page)}
-                className={`bg-gradient-to-r ${action.color} hover:scale-105 transform transition-all duration-300 text-white p-4 rounded-xl shadow-lg justify-start h-auto`}
+                variant="outline"
+                className={`h-20 flex flex-col items-center justify-center space-y-2 text-white border-0 ${action.color} transition-all duration-200 hover:scale-105`}
+                onClick={action.onClick}
               >
-                <div className="flex items-center space-x-3 w-full">
-                  <div className="bg-white/20 p-2 rounded-lg">
-                    <IconComponent className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold">{action.title}</p>
-                    <p className="text-white/80 text-sm">{action.description}</p>
-                  </div>
-                </div>
+                <Icon className="h-6 w-6" />
+                <span className="text-xs text-center leading-tight">{action.title}</span>
               </Button>
             );
           })}
