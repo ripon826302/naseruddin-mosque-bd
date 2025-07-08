@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/layout/Navigation';
 import Dashboard from '@/pages/Dashboard';
@@ -29,10 +28,14 @@ const Index = () => {
   useSupabaseStore();
   useRealtime();
 
-  // Start in viewer mode by default
+  // Start in viewer mode by default (no login required for viewing)
   useEffect(() => {
-    if (!user) {
-      logout(); // This sets user to viewer mode (null)
+    // Keep user as null (viewer mode) initially
+    if (user && user.role) {
+      // User is logged in, keep them logged in
+    } else {
+      // Set to viewer mode
+      logout();
     }
   }, []);
 

@@ -6,17 +6,21 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Gift, Plus, Edit, Trash2, Phone, MapPin, Users, UserCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Gift, Plus, Phone, MapPin, Edit, Trash2, Eye } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 import BackButton from '@/components/ui/BackButton';
-import { PageWithBackProps } from '@/types/pageProps';
-import { formatCurrency } from '@/utils/dates';
 
-const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
+interface DonorManagementPageProps {
+  onBack?: () => void;
+}
+
+const DonorManagementPage: React.FC<DonorManagementPageProps> = ({ onBack }) => {
   const { donors, addDonor, updateDonor, deleteDonor, user } = useMosqueStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDonor, setEditingDonor] = useState<any>(null);
+  const [viewingDonor, setViewingDonor] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -27,23 +31,25 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
     joinDate: new Date().toISOString().split('T')[0]
   });
 
+  const isAdmin = user?.role === 'admin';
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const donorData = {
-      ...formData,
-      monthlyAmount: parseInt(formData.monthlyAmount),
-      joinDate: formData.joinDate,
-      payments: [],
-      paymentHistory: []
-    };
-
     if (editingDonor) {
-      updateDonor(editingDonor.id, donorData);
+      updateDonor(editingDonor.id, {
+        ...formData,
+        monthlyAmount: parseInt(formData.monthlyAmount)
+      });
       toast({ title: "সফল!", description: "দাতার তথ্য আপডেট হয়েছে।" });
       setEditingDonor(null);
     } else {
-      addDonor(donorData);
+      addDonor({
+        ...formData,
+        monthlyAmount: parseInt(formData.monthlyAmount),
+        payments: [],
+        paymentHistory: []
+      });
       toast({ title: "সফল!", description: "নতুন দাতা যোগ করা হয়েছে।" });
       setIsAddDialogOpen(false);
     }
@@ -68,341 +74,317 @@ const DonorManagementPage: React.FC<PageWithBackProps> = ({ onBack }) => {
       monthlyAmount: donor.monthlyAmount.toString(),
       status: donor.status,
       startDate: donor.startDate,
-      joinDate: donor.joinDate || donor.startDate
+      joinDate: donor.joinDate
     });
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('আপনি কি নিশ্চিত যে এই দাতাকে মুছে দিতে চান?')) {
+    if (confirm('আপনি কি এই দাতাকে মুছে দিতে চান?')) {
       deleteDonor(id);
       toast({ title: "সফল!", description: "দাতা মুছে দেওয়া হয়েছে।" });
     }
   };
 
-  const activeDonors = donors.filter(d => d.status === 'Active');
-  const totalMonthlyAmount = activeDonors.reduce((sum, donor) => sum + donor.monthlyAmount, 0);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Active': return 'bg-green-100 text-green-800';
+      case 'Inactive': return 'bg-gray-100 text-gray-800';
+      case 'Defaulter': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  const isAdmin = user?.role === 'admin';
+  const getStatusBangla = (status: string) => {
+    switch (status) {
+      case 'Active': return 'সক্রিয়';
+      case 'Inactive': return 'নিষ্ক্রিয়';
+      case 'Defaulter': return 'খেলাপী';
+      default: return status;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 p-6">
-      <div className="max-w-7xl mx-auto">
-        {onBack && <BackButton onBack={onBack} />}
+    <div className="p-6 space-y-6">
+      {onBack && <BackButton onBack={onBack} />}
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Gift className="text-purple-600" size={32} />
+          <h1 className="text-3xl font-bold text-purple-800">দাতা ব্যবস্থাপনা</h1>
+        </div>
         
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-3">
-            <Gift className="text-purple-400" size={32} />
-            <h1 className="text-3xl font-bold text-white">দাতা ব্যবস্থাপনা</h1>
-          </div>
-          
-          {isAdmin && (
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-purple-600 hover:bg-purple-700">
-                  <Plus size={16} className="mr-2" />
-                  নতুন দাতা যোগ করুন
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-gray-900 border-gray-700 text-white">
-                <DialogHeader>
-                  <DialogTitle>নতুন দাতা যোগ করুন</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">নাম</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      placeholder="দাতার নাম লিখুন"
-                      className="bg-gray-800 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="phone">ফোন নম্বর</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                      placeholder="ফোন নম্বর লিখুন"
-                      className="bg-gray-800 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="address">ঠিকানা</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({...formData, address: e.target.value})}
-                      placeholder="ঠিকানা লিখুন"
-                      className="bg-gray-800 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="monthlyAmount">মাসিক অনুদান (টাকা)</Label>
-                    <Input
-                      id="monthlyAmount"
-                      type="number"
-                      value={formData.monthlyAmount}
-                      onChange={(e) => setFormData({...formData, monthlyAmount: e.target.value})}
-                      placeholder="মাসিক অনুদানের পরিমাণ"
-                      className="bg-gray-800 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="status">স্ট্যাটাস</Label>
-                    <Select value={formData.status} onValueChange={(value: 'Active' | 'Inactive' | 'Defaulter') => setFormData({...formData, status: value})}>
-                      <SelectTrigger className="bg-gray-800 border-gray-600">
-                        <SelectValue placeholder="স্ট্যাটাস নির্বাচন করুন" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-600">
-                        <SelectItem value="Active">সক্রিয়</SelectItem>
-                        <SelectItem value="Inactive">নিষ্ক্রিয়</SelectItem>
-                        <SelectItem value="Defaulter">খেলাপি</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="startDate">শুরুর তারিখ</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                      className="bg-gray-800 border-gray-600 text-white"
-                      required
-                    />
-                  </div>
-                  
-                  <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
-                    দাতা যোগ করুন
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
-
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-sm">মোট দাতা</p>
-                  <p className="text-2xl font-bold">{donors.length}</p>
-                </div>
-                <Users className="h-8 w-8 text-purple-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-sm">সক্রিয় দাতা</p>
-                  <p className="text-2xl font-bold">{activeDonors.length}</p>
-                </div>
-                <UserCheck className="h-8 w-8 text-green-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm">মাসিক অনুদান</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalMonthlyAmount)}</p>
-                </div>
-                <Gift className="h-8 w-8 text-blue-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-red-600 to-orange-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-red-100 text-sm">খেলাপি দাতা</p>
-                  <p className="text-2xl font-bold">{donors.filter(d => d.status === 'Defaulter').length}</p>
-                </div>
-                <Users className="h-8 w-8 text-red-200" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Donors List */}
-        <Card className="bg-gray-900/50 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white">দাতাদের তালিকা</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {donors.map((donor) => (
-                <div key={donor.id} className={`p-4 rounded-lg border-2 ${
-                  donor.status === 'Active' 
-                    ? 'bg-green-500/20 border-green-400/50' 
-                    : donor.status === 'Defaulter'
-                    ? 'bg-red-500/20 border-red-400/50'
-                    : 'bg-gray-800/50 border-gray-600/50'
-                }`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-semibold text-lg">{donor.name}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      donor.status === 'Active' 
-                        ? 'bg-green-500 text-white' 
-                        : donor.status === 'Defaulter'
-                        ? 'bg-red-500 text-white'
-                        : 'bg-gray-500 text-white'
-                    }`}>
-                      {donor.status === 'Active' ? 'সক্রিয়' : donor.status === 'Defaulter' ? 'খেলাপি' : 'নিষ্ক্রিয়'}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center space-x-2 text-gray-300">
-                      <Phone size={16} />
-                      <span>{donor.phone}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-gray-300">
-                      <MapPin size={16} />
-                      <span>{donor.address}</span>
-                    </div>
-                    <div className="text-gray-300 text-sm">
-                      যোগদান: {new Date(donor.startDate).toLocaleDateString('bn-BD')}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-400 text-sm">মাসিক অনুদান</p>
-                      <p className="text-green-400 font-bold text-lg">{formatCurrency(donor.monthlyAmount)}</p>
-                    </div>
-                    
-                    {isAdmin && (
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(donor)}
-                          className="text-blue-400 hover:text-blue-300"
-                        >
-                          <Edit size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(donor.id)}
-                          className="text-red-400 hover:text-red-300"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Edit Dialog */}
-        {editingDonor && (
-          <Dialog open={!!editingDonor} onOpenChange={() => setEditingDonor(null)}>
-            <DialogContent className="bg-gray-900 border-gray-700 text-white">
+        {isAdmin && (
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                <Plus size={16} className="mr-2" />
+                নতুন দাতা যোগ করুন
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>দাতার তথ্য সম্পাদনা</DialogTitle>
+                <DialogTitle>নতুন দাতা যোগ করুন</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="edit-name">নাম</Label>
+                  <Label htmlFor="name">নাম</Label>
                   <Input
-                    id="edit-name"
+                    id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    placeholder="দাতার নাম লিখুন"
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="edit-phone">ফোন নম্বর</Label>
+                  <Label htmlFor="phone">ফোন নম্বর</Label>
                   <Input
-                    id="edit-phone"
+                    id="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    placeholder="ফোন নম্বর লিখুন"
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="edit-address">ঠিকানা</Label>
+                  <Label htmlFor="address">ঠিকানা</Label>
                   <Input
-                    id="edit-address"
+                    id="address"
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    placeholder="ঠিকানা লিখুন"
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="edit-monthlyAmount">মাসিক অনুদান (টাকা)</Label>
+                  <Label htmlFor="monthlyAmount">মাসিক চাঁদা</Label>
                   <Input
-                    id="edit-monthlyAmount"
+                    id="monthlyAmount"
                     type="number"
                     value={formData.monthlyAmount}
                     onChange={(e) => setFormData({...formData, monthlyAmount: e.target.value})}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    placeholder="মাসিক চাঁদার পরিমাণ"
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="edit-status">স্ট্যাটাস</Label>
-                  <Select value={formData.status} onValueChange={(value: 'Active' | 'Inactive' | 'Defaulter') => setFormData({...formData, status: value})}>
-                    <SelectTrigger className="bg-gray-800 border-gray-600">
-                      <SelectValue placeholder="স্ট্যাটাস নির্বাচন করুন" />
+                  <Label htmlFor="status">অবস্থা</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value as any})}>
+                    <SelectTrigger>
+                      <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectContent>
                       <SelectItem value="Active">সক্রিয়</SelectItem>
                       <SelectItem value="Inactive">নিষ্ক্রিয়</SelectItem>
-                      <SelectItem value="Defaulter">খেলাপি</SelectItem>
+                      <SelectItem value="Defaulter">খেলাপী</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
-                <div className="flex space-x-2">
-                  <Button type="submit" className="flex-1 bg-purple-600 hover:bg-purple-700">
-                    আপডেট করুন
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="flex-1 border-gray-600 text-gray-300"
-                    onClick={() => setEditingDonor(null)}
-                  >
-                    বাতিল
-                  </Button>
-                </div>
+                <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+                  দাতা যোগ করুন
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
         )}
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {donors.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <Gift className="mx-auto mb-4 text-gray-400" size={48} />
+            <p className="text-gray-500">কোন দাতা পাওয়া যায়নি।</p>
+          </div>
+        ) : (
+          donors.map((donor) => (
+            <Card key={donor.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg text-purple-800">{donor.name}</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewingDonor(donor)}
+                    >
+                      <Eye size={16} className="text-blue-600" />
+                    </Button>
+                    {isAdmin && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(donor)}
+                        >
+                          <Edit size={16} className="text-green-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(donor.id)}
+                        >
+                          <Trash2 size={16} className="text-red-600" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <Badge className={getStatusColor(donor.status)}>
+                  {getStatusBangla(donor.status)}
+                </Badge>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Phone size={16} />
+                  <span>{donor.phone}</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <MapPin size={16} />
+                  <span>{donor.address}</span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  <strong>মাসিক চাঁদা:</strong> ৳{donor.monthlyAmount}
+                </div>
+                <div className="text-sm text-gray-600">
+                  <strong>যোগদানের তারিখ:</strong> {new Date(donor.joinDate).toLocaleDateString('bn-BD')}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Edit Dialog */}
+      {editingDonor && (
+        <Dialog open={!!editingDonor} onOpenChange={() => setEditingDonor(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>দাতা সম্পাদনা</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="edit-name">নাম</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-phone">ফোন নম্বর</Label>
+                <Input
+                  id="edit-phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-address">ঠিকানা</Label>
+                <Input
+                  id="edit-address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-monthlyAmount">মাসিক চাঁদা</Label>
+                <Input
+                  id="edit-monthlyAmount"
+                  type="number"
+                  value={formData.monthlyAmount}
+                  onChange={(e) => setFormData({...formData, monthlyAmount: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-status">অবস্থা</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value as any})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Active">সক্রিয়</SelectItem>
+                    <SelectItem value="Inactive">নিষ্ক্রিয়</SelectItem>
+                    <SelectItem value="Defaulter">খেলাপী</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button type="submit" className="flex-1 bg-purple-600 hover:bg-purple-700">
+                  আপডেট করুন
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setEditingDonor(null)}
+                >
+                  বাতিল
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* View Dialog */}
+      {viewingDonor && (
+        <Dialog open={!!viewingDonor} onOpenChange={() => setViewingDonor(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>দাতার বিস্তারিত</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>নাম</Label>
+                <p className="text-sm text-gray-600">{viewingDonor.name}</p>
+              </div>
+              <div>
+                <Label>ফোন নম্বর</Label>
+                <p className="text-sm text-gray-600">{viewingDonor.phone}</p>
+              </div>
+              <div>
+                <Label>ঠিকানা</Label>
+                <p className="text-sm text-gray-600">{viewingDonor.address}</p>
+              </div>
+              <div>
+                <Label>মাসিক চাঁদা</Label>
+                <p className="text-sm text-gray-600">৳{viewingDonor.monthlyAmount}</p>
+              </div>
+              <div>
+                <Label>অবস্থা</Label>
+                <Badge className={getStatusColor(viewingDonor.status)}>
+                  {getStatusBangla(viewingDonor.status)}
+                </Badge>
+              </div>
+              <div>
+                <Label>যোগদানের তারিখ</Label>
+                <p className="text-sm text-gray-600">{new Date(viewingDonor.joinDate).toLocaleDateString('bn-BD')}</p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => setViewingDonor(null)}
+              className="w-full"
+              variant="outline"
+            >
+              বন্ধ করুন
+            </Button>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
