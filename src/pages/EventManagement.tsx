@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Plus, Clock, MapPin, Edit, Trash2, Users } from 'lucide-react';
+import { Calendar, Plus, Clock, MapPin, Edit, Trash2 } from 'lucide-react';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { toast } from '@/hooks/use-toast';
 import BackButton from '@/components/ui/BackButton';
@@ -25,12 +25,12 @@ const EventManagement: React.FC<EventManagementProps> = ({ onBack }) => {
     title: '',
     date: '',
     time: '',
-    type: '',
+    type: 'Event' as 'Prayer' | 'Event' | 'Program' | 'Religious' | 'Educational' | 'Social' | 'Fundraising',
     location: '',
     description: ''
   });
 
-  const eventTypes = [
+  const eventTypes: Array<'Prayer' | 'Event' | 'Program' | 'Religious' | 'Educational' | 'Social' | 'Fundraising'> = [
     'Prayer', 'Event', 'Program', 'Religious', 'Educational', 'Social', 'Fundraising'
   ];
 
@@ -63,7 +63,7 @@ const EventManagement: React.FC<EventManagementProps> = ({ onBack }) => {
       title: '',
       date: '',
       time: '',
-      type: '',
+      type: 'Event',
       location: '',
       description: ''
     });
@@ -161,14 +161,14 @@ const EventManagement: React.FC<EventManagementProps> = ({ onBack }) => {
                 
                 <div>
                   <Label htmlFor="type">ধরন</Label>
-                  <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                  <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value as any})}>
                     <SelectTrigger>
                       <SelectValue placeholder="ইভেন্টের ধরন নির্বাচন করুন" />
                     </SelectTrigger>
                     <SelectContent>
                       {eventTypes.map((type) => (
                         <SelectItem key={type} value={type}>
-                          {eventTypesBangla[type as keyof typeof eventTypesBangla]}
+                          {eventTypesBangla[type]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -307,14 +307,14 @@ const EventManagement: React.FC<EventManagementProps> = ({ onBack }) => {
               
               <div>
                 <Label htmlFor="edit-type">ধরন</Label>
-                <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value})}>
+                <Select value={formData.type} onValueChange={(value) => setFormData({...formData, type: value as any})}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {eventTypes.map((type) => (
                       <SelectItem key={type} value={type}>
-                        {eventTypesBangla[type as keyof typeof eventTypesBangla]}
+                        {eventTypesBangla[type]}
                       </SelectItem>
                     ))}
                   </SelectContent>

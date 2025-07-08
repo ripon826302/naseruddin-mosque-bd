@@ -29,9 +29,11 @@ const Index = () => {
   useSupabaseStore();
   useRealtime();
 
-  // Auto-logout to viewer mode on initial load
+  // Start in viewer mode by default
   useEffect(() => {
-    logout(); // This sets user to viewer mode
+    if (!user) {
+      logout(); // This sets user to viewer mode (null)
+    }
   }, []);
 
   useEffect(() => {
