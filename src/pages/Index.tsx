@@ -15,6 +15,7 @@ import AdvancedReportsPage from '@/pages/AdvancedReportsPage';
 import PaymentTrackingPage from '@/pages/PaymentTrackingPage';
 import AttendanceManagement from '@/pages/AttendanceManagement';
 import EventManagement from '@/pages/EventManagement';
+import Settings from '@/pages/Settings';
 import { useMosqueStore } from '@/store/mosqueStore';
 import { useSupabaseStore } from '@/hooks/useSupabaseStore';
 import { useRealtime } from '@/hooks/useRealtime';
@@ -73,7 +74,7 @@ const Index = () => {
       case 'notices':
         return <NoticeBoardPage onBack={handleBackToDashboard} />;
       case 'settings':
-        return <SettingsPage onBack={handleBackToDashboard} />;
+        return <Settings onBack={handleBackToDashboard} />;
       case 'login':
         return <Login onLogin={() => setCurrentPage('dashboard')} />;
       default:
